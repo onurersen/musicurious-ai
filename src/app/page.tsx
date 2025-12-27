@@ -4,6 +4,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Play, AlertCircle } from "lucide-react";
 import { checkVideoCategory, createVideoRecord } from "./actions";
+import { SignedIn, SignedOut, SignUpButton } from "@clerk/nextjs";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -77,69 +78,88 @@ export default function Home() {
           Transform Your <span className="gradient-text">Music Experience</span>
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Paste a YouTube link below to extract stems, detect chords, and start jamming with your favorite tracks.
+          {/* Dynamic text based on auth state could go here, but kept generic for now */}
+          Extract stems, detect chords, and start jamming with your favorite tracks.
         </p>
       </section>
 
-      {/* Submission Form */}
-      <div className="glass-panel w-full max-w-2xl p-10 shadow-2xl relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="youtube-url" className="text-sm font-medium text-muted-foreground ml-1">
-              YouTube Video URL
-            </label>
-            <input
-              id="youtube-url"
-              type="text"
-              placeholder="https://www.youtube.com/watch?v=..."
-              value={url}
-              onChange={(e) => {
-                setUrl(e.target.value);
-                if (error) setError("");
-                if (warning) setWarning("");
-              }}
-              required
-              className={cn(
-                "w-full bg-white/5 border rounded-xl px-5 py-3 text-base text-white placeholder:text-white/20 focus:outline-none focus:ring-2 transition-all duration-300",
-                error
-                  ? "border-destructive focus:ring-destructive/50 focus:border-destructive"
-                  : warning
-                    ? "border-yellow-500 focus:ring-yellow-500/50 focus:border-yellow-500"
-                    : "border-white/10 focus:ring-primary/50 focus:border-primary"
-              )}
-            />
-            {error && (
-              <p className="text-destructive text-sm font-medium animate-in fade-in slide-in-from-top-1">
-                {error}
-              </p>
-            )}
+      {/* Authentication & Submission Logic */}
+      <div className="glass-panel w-full max-w-2xl shadow-2xl relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <SignedIn>
+          <div className="p-10">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="youtube-url" className="text-sm font-medium text-muted-foreground ml-1">
+                  YouTube Video URL
+                </label>
+                <input
+                  id="youtube-url"
+                  type="text"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  value={url}
+                  onChange={(e) => {
+                    setUrl(e.target.value);
+                    if (error) setError("");
+                    if (warning) setWarning("");
+                  }}
+                  required
+                  className={cn(
+                    "w-full bg-white/5 border rounded-xl px-5 py-3 text-base text-white placeholder:text-white/20 focus:outline-none focus:ring-2 transition-all duration-300",
+                    error
+                      ? "border-destructive focus:ring-destructive/50 focus:border-destructive"
+                      : warning
+                        ? "border-yellow-500 focus:ring-yellow-500/50 focus:border-yellow-500"
+                        : "border-white/10 focus:ring-primary/50 focus:border-primary"
+                  )}
+                />
+                {error && (
+                  <p className="text-destructive text-sm font-medium animate-in fade-in slide-in-from-top-1">
+                    {error}
+                  </p>
+                )}
 
-            {warning && (
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 animate-in fade-in slide-in-from-top-1">
-                <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                <div className="flex flex-col gap-2">
-                  <p className="text-sm font-medium">{warning}</p>
-                </div>
+                {warning && (
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 animate-in fade-in slide-in-from-top-1">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <div className="flex flex-col gap-2">
+                      <p className="text-sm font-medium">{warning}</p>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={cn(
-              "w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-primary to-secondary text-white shadow-lg hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2",
-              isLoading && "opacity-70 cursor-not-allowed"
-            )}
-          >
-            {isLoading ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Play className="w-5 h-5 fill-current" />
-            )}
-            {isLoading ? "Checking Video..." : "Work on Video"}
-          </button>
-        </form>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={cn(
+                  "w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-primary to-secondary text-white shadow-lg hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2",
+                  isLoading && "opacity-70 cursor-not-allowed"
+                )}
+              >
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Play className="w-5 h-5 fill-current" />
+                )}
+                {isLoading ? "Checking Video..." : "Work on Video"}
+              </button>
+            </form>
+          </div>
+        </SignedIn>
+
+        <SignedOut>
+          <div className="p-12 flex flex-col items-center gap-6 text-center">
+            <h2 className="text-2xl font-bold">Ready to Start Jamming?</h2>
+            <p className="text-muted-foreground">
+              Sign up to unlock the full power of AI music analysis. Extract stems, visualize chords, and play along instantly.
+            </p>
+            <SignUpButton mode="modal">
+              <button className="h-14 px-8 text-lg font-semibold rounded-xl bg-gradient-to-r from-primary to-secondary text-white shadow-lg hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300">
+                Get Started for Free
+              </button>
+            </SignUpButton>
+          </div>
+        </SignedOut>
       </div>
 
       {/* How it works */}
