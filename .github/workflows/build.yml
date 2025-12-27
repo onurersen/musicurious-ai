@@ -1,0 +1,39 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build
+      env:
+        # If your build process requires environment variables (e.g. for static generation),
+        # make sure to add them to your repository secrets and reference them here.
+        # For now, we'll set dummy values for the required Postgres env vars to prevent build errors
+        # if the code tries to validate them, though ideally, you should add these to GitHub Secrets.
+        POSTGRES_URL: ${{ secrets.POSTGRES_URL || 'postgres://user:password@host:5432/db' }}
+        POSTGRES_PRISMA_URL: ${{ secrets.POSTGRES_PRISMA_URL || 'postgres://user:password@host:5432/db' }}
+        POSTGRES_URL_NON_POOLING: ${{ secrets.POSTGRES_URL_NON_POOLING || 'postgres://user:password@host:5432/db' }}
+        POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'user' }}
+        POSTGRES_HOST: ${{ secrets.POSTGRES_HOST || 'host' }}
+        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'password' }}
+        POSTGRES_DATABASE: ${{ secrets.POSTGRES_DATABASE || 'db' }}
+        BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN || 'dummy_token' }}
+      run: npm run build
