@@ -1,16 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Play, AlertCircle } from "lucide-react";
-import { checkVideoCategory, createVideoRecord } from "./actions";
+import { Play, AlertCircle, Lock } from "lucide-react";
+import { checkVideoCategory, createVideoRecord, getUserStatus } from "./actions";
 import { SignedIn, SignedOut, SignUpButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
   const [warning, setWarning] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showApprovalWarning, setShowApprovalWarning] = useState(false);
+  const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
+  const [userStatus, setUserStatus] = useState<'pending' | 'approved' | 'blocked' | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check status on mount
+    console.log("Checking user status...");
+    getUserStatus()
+      .then((status: any) => {
+        console.log("Received status:", status);
+        // If status is null (e.g. server thinks logged out) but client is SignedIn,
+        // we default to 'pending' (locked) to be safe and avoid hanging.
+        setUserStatus(status || 'pending');
+      })
+      .catch((err) => {
+        console.error("Failed to check user status:", err);
+        setUserStatus('pending'); // Default to locked on error
+      });
+  }, []);
+
+  console.log("Current userStatus state:", userStatus);
 
   const validateYoutubeUrl = (url: string) => {
     const pattern = /^(https?:\/\/)?(www\.|m\.)?(youtube\.com\/(watch\?v=|shorts\/)|youtu\.be\/)[\w-]{11}(&.*)?$/;
@@ -27,9 +50,14 @@ export default function Home() {
       return;
     }
 
+    if (userStatus !== 'approved') {
+      setShowApprovalWarning(true);
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const { isMusic } = await checkVideoCategory(url);
+      const { isMusic, title } = await checkVideoCategory(url);
 
       if (!isMusic) {
         setWarning("This video doesn't appear to be a music video.");
@@ -37,23 +65,27 @@ export default function Home() {
         return;
       }
 
-      processVideo(url);
+      processVideo(url, title);
     } catch (err) {
       console.error(err);
       processVideo(url);
     }
   };
 
-  const processVideo = async (videoUrl: string) => {
-    console.log("Working on video:", videoUrl);
+  const processVideo = async (videoUrl: string, title?: string) => {
+    console.log("Working on video:", videoUrl, "title:", title);
 
     try {
-      const result = await createVideoRecord(videoUrl);
+      const result = await createVideoRecord(videoUrl, title);
       if (result.success) {
         console.log("Created video record:", result.video);
-        // TODO: Redirect to jam page
+        router.push('/videos');
       } else {
-        setError("Failed to create session. Database might not be connected.");
+        if (result.error === 'Duplicate submission') {
+          setShowDuplicateWarning(true);
+        } else {
+          setError(result.error || "Failed to create session. Database might not be connected.");
+        }
       }
     } catch (err) {
       setError("An unexpected error occurred.");
@@ -144,6 +176,76 @@ export default function Home() {
                 {isLoading ? "Checking Video..." : "Work on Video"}
               </button>
             </form>
+
+            {/* Approval Warning Modal */}
+            {showApprovalWarning && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="bg-zinc-950 w-full max-w-md p-8 relative animate-in zoom-in-95 duration-200 shadow-2xl border border-yellow-500/30 rounded-2xl">
+                  <button
+                    onClick={() => setShowApprovalWarning(false)}
+                    className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
+                  >
+                    ✕
+                  </button>
+                  <div className="flex flex-col items-center gap-6 text-center">
+                    <div className="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500 mb-2">
+                      <Lock size={32} />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-bold text-white">Access Pending</h3>
+                      <p className="text-muted-foreground">
+                        Your account is currently under review. You will be able to submit videos once an administrator approves your registration.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowApprovalWarning(false)}
+                      className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium transition-colors"
+                    >
+                      Understood
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Duplicate Warning Modal */}
+            {showDuplicateWarning && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="bg-zinc-950 w-full max-w-md p-8 relative animate-in zoom-in-95 duration-200 shadow-2xl border border-yellow-500/30 rounded-2xl">
+                  <button
+                    onClick={() => setShowDuplicateWarning(false)}
+                    className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
+                  >
+                    ✕
+                  </button>
+                  <div className="flex flex-col items-center gap-6 text-center">
+                    <div className="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500 mb-2">
+                      <AlertCircle size={32} />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-bold text-white">Video Already Exists</h3>
+                      <p className="text-muted-foreground">
+                        You have already submitted this video. Please check your "My Videos" list to view your previous jam.
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-3 w-full">
+                      <button
+                        onClick={() => router.push('/videos')}
+                        className="w-full py-3 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium transition-colors"
+                      >
+                        Go to My Videos
+                      </button>
+                      <button
+                        onClick={() => setShowDuplicateWarning(false)}
+                        className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium transition-colors"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </SignedIn>
 
@@ -185,6 +287,6 @@ export default function Home() {
       {/* Decorative Background Elements */}
       <div className="fixed top-[10%] right-[5%] w-[500px] h-[500px] bg-primary/20 blur-[120px] rounded-full -z-10 pointer-events-none animate-pulse duration-[10000ms]"></div>
       <div className="fixed bottom-[10%] left-[5%] w-[600px] h-[600px] bg-secondary/20 blur-[150px] rounded-full -z-10 pointer-events-none animate-pulse duration-[12000ms]"></div>
-    </main>
+    </main >
   );
 }
