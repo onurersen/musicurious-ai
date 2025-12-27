@@ -1,3 +1,8 @@
+import { loadEnvConfig } from '@next/env';
+
+const projectDir = process.cwd();
+loadEnvConfig(projectDir);
+
 import { createVideosTable, createStemsTable } from './src/lib/schema';
 import { sql } from '@vercel/postgres';
 
