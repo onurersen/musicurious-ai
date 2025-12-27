@@ -14,6 +14,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [showApprovalWarning, setShowApprovalWarning] = useState(false);
   const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
+  const [showNonMusicWarning, setShowNonMusicWarning] = useState(false);
+  const [pendingVideo, setPendingVideo] = useState<{ url: string; title?: string } | null>(null);
   const [userStatus, setUserStatus] = useState<'pending' | 'approved' | 'blocked' | null>(null);
   const router = useRouter();
 
@@ -60,7 +62,8 @@ export default function Home() {
       const { isMusic, title } = await checkVideoCategory(url);
 
       if (!isMusic) {
-        setWarning("This video doesn't appear to be a music video.");
+        setPendingVideo({ url, title });
+        setShowNonMusicWarning(true);
         setIsLoading(false);
         return;
       }
@@ -240,6 +243,51 @@ export default function Home() {
                         className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium transition-colors"
                       >
                         Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Non-Music Confirmation Modal */}
+            {showNonMusicWarning && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="bg-zinc-950 w-full max-w-md p-8 relative animate-in zoom-in-95 duration-200 shadow-2xl border border-yellow-500/30 rounded-2xl">
+                  <button
+                    onClick={() => setShowNonMusicWarning(false)}
+                    className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
+                  >
+                    ✕
+                  </button>
+                  <div className="flex flex-col items-center gap-6 text-center">
+                    <div className="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500 mb-2">
+                      <AlertCircle size={32} />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-bold text-white">Music Video Check</h3>
+                      <p className="text-muted-foreground">
+                        This video doesn't appear to be categorized as Music on YouTube. Are you sure you want to proceed?
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-3 w-full">
+                      <button
+                        onClick={() => {
+                          setShowNonMusicWarning(false);
+                          if (pendingVideo) {
+                            setIsLoading(true); // Restart loading state
+                            processVideo(pendingVideo.url, pendingVideo.title);
+                          }
+                        }}
+                        className="w-full py-3 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium transition-colors"
+                      >
+                        Yes, Submit Anyway
+                      </button>
+                      <button
+                        onClick={() => setShowNonMusicWarning(false)}
+                        className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium transition-colors"
+                      >
+                        Cancel
                       </button>
                     </div>
                   </div>

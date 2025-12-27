@@ -76,14 +76,14 @@ export default function VideoGallery({ videos, isAdmin }: { videos: Video[], isA
                             <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
                                 <span className={`px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider backdrop-blur-md border border-white/10 ${video.status === 'completed' ? 'bg-green-500/20 text-green-200' : 'bg-blue-500/20 text-blue-200'
                                     }`}>
-                                    {video.status}
+                                    {video.status === 'completed' ? 'Ready' : (isAdmin ? 'Requested' : 'Processing')}
                                 </span>
 
-                                {isAdmin && (
+                                {(isAdmin || video.approval_status === 'pending') && (
                                     <span className={`px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider backdrop-blur-md border border-white/10 ${video.approval_status === 'approved' ? 'bg-emerald-500/80 text-white' :
                                         video.approval_status === 'rejected' ? 'bg-red-500/80 text-white' : 'bg-yellow-500/80 text-white'
                                         }`}>
-                                        {video.approval_status}
+                                        {video.approval_status === 'pending' ? 'In Review' : video.approval_status}
                                     </span>
                                 )}
                             </div>
@@ -113,9 +113,31 @@ export default function VideoGallery({ videos, isAdmin }: { videos: Video[], isA
                             )}
 
                             <div className="mt-auto pt-2">
-                                <Link href={`#`} className="block w-full py-3 bg-white/5 hover:bg-primary hover:text-white text-center rounded-xl transition-all duration-300 font-semibold text-sm">
-                                    View Session
-                                </Link>
+                                {video.status === 'completed' ? (
+                                    <Link href={`#`} className="block w-full py-3 bg-white/5 hover:bg-primary hover:text-white text-center rounded-xl transition-all duration-300 font-semibold text-sm">
+                                        View Session
+                                    </Link>
+                                ) : isAdmin ? (
+                                    video.approval_status === 'pending' ? (
+                                        <Link href={`/admin/videos`} className="block w-full py-3 bg-yellow-500/20 hover:bg-yellow-500 hover:text-white text-yellow-300 text-center rounded-xl transition-all duration-300 font-semibold text-sm border border-yellow-500/30">
+                                            Waiting Approval
+                                        </Link>
+                                    ) : (
+                                        <Link href={`#`} className="block w-full py-3 bg-blue-500/20 hover:bg-blue-500 hover:text-white text-blue-300 text-center rounded-xl transition-all duration-300 font-semibold text-sm border border-blue-500/30">
+                                            Start Processing
+                                        </Link>
+                                    )
+                                ) : (
+                                    video.approval_status === 'pending' ? (
+                                        <div className="block w-full py-3 bg-white/5 text-muted-foreground text-center rounded-xl font-medium text-sm opacity-50 cursor-not-allowed">
+                                            Waiting Approval
+                                        </div>
+                                    ) : (
+                                        <div className="block w-full py-3 bg-white/5 text-muted-foreground text-center rounded-xl font-medium text-sm opacity-50 cursor-not-allowed">
+                                            Processing...
+                                        </div>
+                                    )
+                                )}
                             </div>
                         </div>
                     </div>
