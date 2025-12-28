@@ -94,6 +94,8 @@ export interface Video {
     user_email?: string;
     first_name?: string;
     last_name?: string;
+    processing_status?: 'pending' | 'processing' | 'completed' | 'failed';
+    processing_progress?: number;
 }
 
 export interface User {
@@ -198,9 +200,9 @@ export async function createVideoRecord(url: string, title?: string) {
 
         // Insert and return the new row
         const result = await sql`
-          INSERT INTO videos (youtube_url, title, status, user_id, approval_status)
-          VALUES (${url}, ${title || 'Untitled Jam'}, 'pending', ${user.id}, 'pending')
-          RETURNING id, youtube_url, title, status, created_at, approval_status;
+          INSERT INTO videos (youtube_url, title, status, user_id, approval_status, processing_status, processing_progress)
+          VALUES (${url}, ${title || 'Untitled Jam'}, 'pending', ${user.id}, 'pending', 'pending', 0)
+          RETURNING id, youtube_url, title, status, created_at, approval_status, processing_status, processing_progress;
         `;
         return { success: true, video: result.rows[0] };
     } catch (error) {
@@ -404,4 +406,153 @@ export async function updateUserStatus(userId: string, status: 'approved' | 'blo
     }
 }
 
+export interface Stem {
+    id: number;
+    video_id: number;
+    type: string;
+    blob_url: string;
+    created_at: string;
+}
 
+export async function getJam(id: number) {
+    try {
+        const currentUserObj = await currentUser();
+        const currentEmail = currentUserObj?.emailAddresses[0]?.emailAddress;
+        let isUserAdmin = false;
+
+        if (currentEmail === 'onurersen@gmail.com') {
+            isUserAdmin = true;
+        } else if (currentUserObj) {
+            // Ideally check DB role, but this is a lightweight server action
+            const userRes = await sql`SELECT role FROM users WHERE id = ${currentUserObj.id}`;
+            isUserAdmin = userRes.rows[0]?.role === 'admin';
+        }
+
+        // Fetch Video
+        const videoRes = await sql`
+            SELECT v.*, u.email as user_email, u.first_name, u.last_name 
+            FROM videos v 
+            LEFT JOIN users u ON v.user_id = u.id 
+            WHERE v.id = ${id}
+        `;
+
+        if (videoRes.rows.length === 0) {
+            return null;
+        }
+
+        const rawVideo = videoRes.rows[0];
+
+        // PII Protection
+        const isOwner = currentUserObj && rawVideo.user_id === currentUserObj.id;
+
+        if (!isUserAdmin && !isOwner) {
+            // Redact email
+            delete rawVideo.user_email;
+        }
+
+        const video = {
+            ...rawVideo,
+            created_at: new Date(rawVideo.created_at).toISOString(),
+            updated_at: rawVideo.updated_at ? new Date(rawVideo.updated_at).toISOString() : null
+        } as Video;
+
+        // Fetch Stems
+        const stemsRes = await sql`
+            SELECT * FROM stems 
+            WHERE video_id = ${id}
+        `;
+
+        const stems = stemsRes.rows.map(row => ({
+            ...row,
+            created_at: new Date(row.created_at).toISOString()
+        })) as Stem[];
+
+        return { video, stems };
+
+    } catch (err) {
+        console.error("Error fetching jam:", err);
+        return null;
+    }
+}
+
+export async function getVideoStatus(videoId: number) {
+    // Basic auth check not strictly needed for just status reading but safer
+    const user = await currentUser();
+    if (!user) return null;
+
+    try {
+        const result = await sql`
+            SELECT processing_status, processing_progress 
+            FROM videos WHERE id = ${videoId}
+        `;
+        return result.rows[0] as { processing_status: 'pending' | 'processing' | 'completed' | 'failed', processing_progress: number };
+    } catch (e) {
+        return null;
+    }
+}
+
+export async function removeStems(videoId: number) {
+    const admin = await isAdmin();
+    if (!admin) return { success: false, error: "Forbidden" };
+
+    try {
+        const { join } = await import('path');
+        const { rm, readdir } = await import('fs/promises');
+
+        // Check both potential locations (legacy 4-stem and new 6-stem)
+        const stemRoots = [
+            join(process.cwd(), 'public', 'stems', 'htdemucs'),
+            join(process.cwd(), 'public', 'stems', 'htdemucs_6s')
+        ];
+
+        // Find folders starting with videoId_
+        for (const stemsRoot of stemRoots) {
+            try {
+                let entries = await readdir(stemsRoot, { withFileTypes: true });
+                const folders = entries
+                    .filter(e => e.isDirectory() && e.name.startsWith(`${videoId}_`))
+                    .map(e => join(stemsRoot, e.name));
+
+                for (const folder of folders) {
+                    console.log(`Removing stem folder: ${folder}`);
+                    await rm(folder, { recursive: true, force: true });
+                }
+            } catch (e) {
+                // Ignore missing dirs
+            }
+        }
+
+        // Database Cleanup
+        await sql`BEGIN`;
+        await sql`DELETE FROM stems WHERE video_id = ${videoId}`;
+        await sql`
+            UPDATE videos 
+            SET processing_status = 'pending', processing_progress = 0 
+            WHERE id = ${videoId}
+        `;
+        await sql`COMMIT`;
+
+        // 3. Delete Original Audio from local_uploads
+        try {
+            const uploadsRoot = join(process.cwd(), 'local_uploads');
+            const uploadEntries = await readdir(uploadsRoot, { withFileTypes: true });
+            const uploadFiles = uploadEntries
+                .filter(e => e.isFile() && e.name.startsWith(`${videoId}_`))
+                .map(e => join(uploadsRoot, e.name));
+
+            for (const file of uploadFiles) {
+                console.log(`Removing local upload: ${file}`);
+                await rm(file, { force: true });
+            }
+        } catch (e) {
+            console.warn("Error cleaning up local_uploads (might not exist):", e);
+        }
+
+        revalidatePath('/admin/videos');
+        return { success: true };
+
+    } catch (err: any) {
+        console.error("Error removing stems:", err);
+        return { success: false, error: err.message };
+    }
+}
