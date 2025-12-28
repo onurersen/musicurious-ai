@@ -56,6 +56,8 @@ async function run() {
             '-n', 'htdemucs_6s', // Use 6-stem model
             '--mp3',
             '--mp3-bitrate', '320',
+            '--segment', '7',
+            '--overlap', '0.5',
             filePath
         ], {
             env: {
