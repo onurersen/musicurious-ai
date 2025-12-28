@@ -7,6 +7,11 @@ import { join } from 'path';
 
 export async function POST(request: Request) {
     try {
+        // STRICTLY LOCAL ONLY
+        if (process.env.NODE_ENV === 'production') {
+            return NextResponse.json({ error: 'Stem transfer is disabled in production.' }, { status: 403 });
+        }
+
         const user = await currentUser();
         const email = user?.emailAddresses[0]?.emailAddress;
 

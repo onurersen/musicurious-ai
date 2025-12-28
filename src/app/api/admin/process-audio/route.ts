@@ -17,6 +17,11 @@ async function ensureDir(dir: string) {
 
 export async function POST(req: NextRequest) {
     try {
+        // STRICTLY LOCAL ONLY
+        if (process.env.NODE_ENV === 'production') {
+            return NextResponse.json({ error: 'Audio processing is disabled in production.' }, { status: 403 });
+        }
+
         const user = await currentUser();
         if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

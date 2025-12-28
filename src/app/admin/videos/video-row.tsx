@@ -158,7 +158,12 @@ export function VideoRow({ video }: { video: any }) {
                             Demucs Running...
                         </span>
                     ) : (
-                        <ProcessingUploadButton videoId={video.id} onUploadStart={() => router.refresh()} />
+                        // Only show Start Processing button in Development
+                        process.env.NODE_ENV === 'development' ? (
+                            <ProcessingUploadButton videoId={video.id} onUploadStart={() => router.refresh()} />
+                        ) : (
+                            <span className="text-xs text-muted-foreground/50 italic">Local Dev Only</span>
+                        )
                     )}
                 </div>
             </td>
