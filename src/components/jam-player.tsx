@@ -8,9 +8,10 @@ import { Stem } from '@/app/actions';
 interface JamPlayerProps {
     stems: Stem[];
     title: string;
+    youtubeUrl?: string;
 }
 
-export default function JamPlayer({ stems, title }: JamPlayerProps) {
+export default function JamPlayer({ stems, title, youtubeUrl }: JamPlayerProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [progress, setProgress] = useState(0);
@@ -155,7 +156,12 @@ export default function JamPlayer({ stems, title }: JamPlayerProps) {
 
     return (
         <div className="w-full glass-panel p-6 rounded-2xl shadow-xl border border-white/10">
-            <h2 className="text-2xl font-bold mb-4">{title}</h2>
+            <h2 className="text-2xl font-bold mb-1">{title}</h2>
+            {youtubeUrl && (
+                <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline mb-4 block">
+                    Watch on YouTube
+                </a>
+            )}
 
             {/* Loading State */}
             {isLoading && (
