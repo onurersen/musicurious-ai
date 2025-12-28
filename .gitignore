@@ -49,3 +49,4 @@ local_uploads/
 public/stems/
 __pycache__/
 *.py[cod]
+*.mp3
