@@ -1263,3 +1263,197 @@ Creating no_piano...
 
 [2025-12-28T20:35:01.077Z] Mix generation completed successfully.
 [2025-12-28T20:35:01.077Z] Processing flow finished.
+[2025-12-28T20:50:54.515Z] Worker started. PID: 43925
+[2025-12-28T20:50:54.516Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T20:50:54.518Z] Args: videoId=9, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/9_1766955054328_Sal_na_Sal_na_Sinsice_-_Tarkan.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T20:50:54.518Z] Updating status to processing...
+[2025-12-28T20:50:54.916Z] Spawning Demucs Wrapper: python3 /Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py -m demucs.separate ...
+[2025-12-28T20:51:01.598Z] STDERR: Applying torchaudio.save monkeypatch...
+Running Demucs with args: ['-o', '/Users/jf27yc/Development/musicurious-ai/public/stems', '-n', 'htdemucs_6s', '--mp3', '--mp3-bitrate', '320', '/Users/jf27yc/Development/musicurious-ai/local_uploads/9_1766955054328_Sal_na_Sal_na_Sinsice_-_Tarkan.mp3']
+
+[2025-12-28T20:51:07.681Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs_6s
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/9_1766955054328_Sal_na_Sal_na_Sinsice_-_Tarkan.mp3
+
+[2025-12-28T20:51:07.682Z] STDERR:   0%|                                                                                 | 0.0/239.85 [00:00<?, ?seconds/s]
+[2025-12-28T20:51:13.086Z] STDERR:   2%|█▊                                                                      | 5.85/239.85 [00:05<03:36,  1.08seconds/s]
+[2025-12-28T20:51:14.611Z] STDERR:   5%|███▌                                                                    | 11.7/239.85 [00:06<02:01,  1.87seconds/s]
+[2025-12-28T20:51:16.099Z] STDERR:   7%|████▏                                                     | 17.549999999999997/239.85 [00:08<01:30,  2.46seconds/s]
+[2025-12-28T20:51:17.727Z] STDERR:  10%|███████                                                                 | 23.4/239.85 [00:10<01:16,  2.81seconds/s]
+[2025-12-28T20:51:19.340Z] STDERR:  12%|████████▋                                                              | 29.25/239.85 [00:11<01:08,  3.06seconds/s]
+[2025-12-28T20:51:20.934Z] STDERR:  15%|████████▍                                                 | 35.099999999999994/239.85 [00:13<01:03,  3.24seconds/s]
+[2025-12-28T20:51:22.563Z] STDERR:  17%|█████████▉                                                | 40.949999999999996/239.85 [00:14<00:59,  3.35seconds/s]
+[2025-12-28T20:51:24.165Z] STDERR:  20%|██████████████                                                          | 46.8/239.85 [00:16<00:56,  3.44seconds/s]
+[2025-12-28T20:51:25.664Z] STDERR:  22%|███████████████▌                                                       | 52.65/239.85 [00:17<00:52,  3.57seconds/s]
+[2025-12-28T20:51:27.359Z] STDERR:  24%|█████████████████▌                                                      | 58.5/239.85 [00:19<00:51,  3.53seconds/s]
+[2025-12-28T20:51:28.992Z] STDERR:  27%|███████████████████                                                    | 64.35/239.85 [00:21<00:49,  3.55seconds/s]
+[2025-12-28T20:51:30.632Z] STDERR:  29%|█████████████████▎                                         | 70.19999999999999/239.85 [00:22<00:47,  3.55seconds/s]
+[2025-12-28T20:51:32.262Z] STDERR:  32%|██████████████████████▌                                                | 76.05/239.85 [00:24<00:45,  3.56seconds/s]
+[2025-12-28T20:51:33.797Z] STDERR:  34%|████████████████████▏                                      | 81.89999999999999/239.85 [00:26<00:43,  3.64seconds/s]
+[2025-12-28T20:51:35.617Z] STDERR:  37%|█████████████████████████▉                                             | 87.75/239.85 [00:27<00:43,  3.50seconds/s]
+[2025-12-28T20:51:37.705Z] STDERR:  39%|████████████████████████████                                            | 93.6/239.85 [00:30<00:44,  3.25seconds/s]
+[2025-12-28T20:51:39.445Z] STDERR:  41%|████████████████████████▍                                  | 99.44999999999999/239.85 [00:31<00:42,  3.29seconds/s]
+[2025-12-28T20:51:41.383Z] STDERR:  44%|███████████████████████████████▏                                       | 105.3/239.85 [00:33<00:42,  3.20seconds/s]
+[2025-12-28T20:51:42.997Z] STDERR:  46%|██████████████████████████▉                               | 111.14999999999999/239.85 [00:35<00:38,  3.32seconds/s]
+[2025-12-28T20:51:44.589Z] STDERR:  49%|██████████████████████████████████▋                                    | 117.0/239.85 [00:36<00:35,  3.42seconds/s]
+[2025-12-28T20:51:46.100Z] STDERR:  51%|███████████████████████████████████▊                                  | 122.85/239.85 [00:38<00:33,  3.54seconds/s]
+[2025-12-28T20:51:47.659Z] STDERR:  54%|██████████████████████████████████████                                 | 128.7/239.85 [00:39<00:30,  3.60seconds/s]
+[2025-12-28T20:51:49.267Z] STDERR:  56%|████████████████████████████████▌                         | 134.54999999999998/239.85 [00:41<00:29,  3.61seconds/s]
+[2025-12-28T20:51:50.840Z] STDERR:  59%|█████████████████████████████████▉                        | 140.39999999999998/239.85 [00:43<00:27,  3.64seconds/s]
+[2025-12-28T20:51:52.358Z] STDERR:  61%|██████████████████████████████████████████▋                           | 146.25/239.85 [00:44<00:25,  3.70seconds/s]
+[2025-12-28T20:51:53.908Z] STDERR:  63%|█████████████████████████████████████████████                          | 152.1/239.85 [00:46<00:23,  3.72seconds/s]
+[2025-12-28T20:51:55.434Z] STDERR:  66%|██████████████████████████████████████████████                        | 157.95/239.85 [00:47<00:21,  3.76seconds/s]
+[2025-12-28T20:51:57.019Z] STDERR:  68%|███████████████████████████████████████▌                  | 163.79999999999998/239.85 [00:49<00:20,  3.74seconds/s]
+[2025-12-28T20:51:58.527Z] STDERR:  71%|█████████████████████████████████████████                 | 169.64999999999998/239.85 [00:50<00:18,  3.78seconds/s]
+[2025-12-28T20:52:00.064Z] STDERR:  73%|███████████████████████████████████████████████████▉                   | 175.5/239.85 [00:52<00:16,  3.79seconds/s]
+[2025-12-28T20:52:01.572Z] STDERR:  76%|████████████████████████████████████████████████████▉                 | 181.35/239.85 [00:53<00:15,  3.81seconds/s]
+[2025-12-28T20:52:03.096Z] STDERR:  78%|███████████████████████████████████████████████████████▍               | 187.2/239.85 [00:55<00:13,  3.82seconds/s]
+[2025-12-28T20:52:04.580Z] STDERR:  80%|██████████████████████████████████████████████▋           | 193.04999999999998/239.85 [00:56<00:12,  3.86seconds/s]
+[2025-12-28T20:52:06.128Z] STDERR:  83%|████████████████████████████████████████████████          | 198.89999999999998/239.85 [00:58<00:10,  3.83seconds/s]
+[2025-12-28T20:52:07.666Z] STDERR:  85%|███████████████████████████████████████████████████████████▊          | 204.75/239.85 [00:59<00:09,  3.82seconds/s]
+[2025-12-28T20:52:09.278Z] STDERR:  88%|██████████████████████████████████████████████████████████████▎        | 210.6/239.85 [01:01<00:07,  3.76seconds/s]
+[2025-12-28T20:52:10.871Z] STDERR:  90%|███████████████████████████████████████████████████████████████▏      | 216.45/239.85 [01:03<00:06,  3.74seconds/s]
+[2025-12-28T20:52:12.511Z] STDERR:  93%|█████████████████████████████████████████████████████▊    | 222.29999999999998/239.85 [01:04<00:04,  3.68seconds/s]
+[2025-12-28T20:52:14.036Z] STDERR:  95%|███████████████████████████████████████████████████████▏  | 228.14999999999998/239.85 [01:06<00:03,  3.73seconds/s]
+[2025-12-28T20:52:15.575Z] STDERR:  98%|█████████████████████████████████████████████████████████████████████▎ | 234.0/239.85 [01:07<00:01,  3.75seconds/s]
+[2025-12-28T20:52:17.156Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:09<00:00,  3.73seconds/s]
+[2025-12-28T20:52:17.158Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:09<00:00,  3.45seconds/s]
+
+[2025-12-28T20:52:34.842Z] Demucs processing successfully completed. Starting mix generation...
+[2025-12-28T20:52:34.844Z] Running mix generation on: /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs_6s/9_1766955054328_Sal_na_Sal_na_Sinsice_-_Tarkan
+[2025-12-28T20:53:21.241Z] Mixer STDOUT: Loading stems from /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs_6s/9_1766955054328_Sal_na_Sal_na_Sinsice_-_Tarkan...
+Generating mixes...
+Creating no_vocals...
+Creating no_drums...
+Creating no_bass...
+Creating no_guitar...
+Creating no_piano...
+
+[2025-12-28T20:53:21.270Z] Mix generation completed successfully.
+[2025-12-28T20:53:21.271Z] Processing flow finished.
+[2025-12-28T21:01:47.147Z] Worker started. PID: 45240
+[2025-12-28T21:01:47.149Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T21:01:47.151Z] Args: videoId=9, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/9_1766955706942_Sal_na_Sal_na_Sinsice_-_Tarkan.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T21:01:47.152Z] Updating status to processing...
+[2025-12-28T21:01:47.540Z] Spawning Demucs Wrapper: python3 /Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py -m demucs.separate ...
+[2025-12-28T21:01:52.361Z] STDERR: Applying torchaudio.save monkeypatch...
+Running Demucs with args: ['-o', '/Users/jf27yc/Development/musicurious-ai/public/stems', '-n', 'htdemucs_6s', '--mp3', '--mp3-bitrate', '320', '--segment', '10', '--overlap', '0.5', '/Users/jf27yc/Development/musicurious-ai/local_uploads/9_1766955706942_Sal_na_Sal_na_Sinsice_-_Tarkan.mp3']
+
+[2025-12-28T21:01:52.576Z] STDERR: [1mFATAL:[0m Cannot use a Transformer model with a longer segment than it was trained for. Maximum segment is: 7.8
+
+[2025-12-28T21:01:52.781Z] Demucs process exited with code 1
+[2025-12-28T21:07:25.722Z] Worker started. PID: 46104
+[2025-12-28T21:07:25.723Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T21:07:25.725Z] Args: videoId=9, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/9_1766956045522_Sal_na_Sal_na_Sinsice_-_Tarkan.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T21:07:25.725Z] Updating status to processing...
+[2025-12-28T21:07:26.114Z] Spawning Demucs Wrapper: python3 /Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py -m demucs.separate ...
+[2025-12-28T21:07:27.187Z] STDERR: Applying torchaudio.save monkeypatch...
+Running Demucs with args: ['-o', '/Users/jf27yc/Development/musicurious-ai/public/stems', '-n', 'htdemucs_6s', '--mp3', '--mp3-bitrate', '320', '--segment', '7.5', '--overlap', '0.5', '/Users/jf27yc/Development/musicurious-ai/local_uploads/9_1766956045522_Sal_na_Sal_na_Sinsice_-_Tarkan.mp3']
+
+[2025-12-28T21:07:27.187Z] STDERR: usage: demucs.separate [-h] [-s SIG | -n NAME] [--repo REPO] [-v] [-o OUT]
+                       [--filename FILENAME] [-d DEVICE] [--shifts SHIFTS]
+                       [--overlap OVERLAP] [--no-split | --segment SEGMENT]
+                       [--two-stems STEM] [--int24 | --float32]
+                       [--clip-mode {rescale,clamp}] [--flac | --mp3]
+                       [--mp3-bitrate MP3_BITRATE]
+                       [--mp3-preset {2,3,4,5,6,7}] [-j JOBS]
+                       tracks [tracks ...]
+
+[2025-12-28T21:07:27.188Z] STDERR: demucs.separate: error: argument --segment: invalid int value: '7.5'
+
+[2025-12-28T21:07:27.348Z] Demucs process exited with code 2
+[2025-12-28T21:09:59.180Z] Worker started. PID: 46785
+[2025-12-28T21:09:59.181Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T21:09:59.183Z] Args: videoId=9, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/9_1766956198976_Sal_na_Sal_na_Sinsice_-_Tarkan.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T21:09:59.183Z] Updating status to processing...
+[2025-12-28T21:09:59.575Z] Spawning Demucs Wrapper: python3 /Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py -m demucs.separate ...
+[2025-12-28T21:10:04.712Z] STDERR: Applying torchaudio.save monkeypatch...
+Running Demucs with args: ['-o', '/Users/jf27yc/Development/musicurious-ai/public/stems', '-n', 'htdemucs_6s', '--mp3', '--mp3-bitrate', '320', '--segment', '7', '--overlap', '0.5', '/Users/jf27yc/Development/musicurious-ai/local_uploads/9_1766956198976_Sal_na_Sal_na_Sinsice_-_Tarkan.mp3']
+
+[2025-12-28T21:10:06.309Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs_6s
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/9_1766956198976_Sal_na_Sal_na_Sinsice_-_Tarkan.mp3
+
+[2025-12-28T21:10:06.309Z] STDERR:   0%|                                                                                  | 0.0/238.0 [00:00<?, ?seconds/s]
+[2025-12-28T21:10:12.018Z] STDERR:   1%|█                                                                         | 3.5/238.0 [00:05<06:22,  1.63s/seconds]
+[2025-12-28T21:10:13.506Z] STDERR:   3%|██▏                                                                       | 7.0/238.0 [00:07<03:32,  1.08seconds/s]
+[2025-12-28T21:10:14.979Z] STDERR:   4%|███▏                                                                     | 10.5/238.0 [00:08<02:37,  1.44seconds/s]
+[2025-12-28T21:10:16.494Z] STDERR:   6%|████▎                                                                    | 14.0/238.0 [00:10<02:12,  1.69seconds/s]
+[2025-12-28T21:10:17.931Z] STDERR:   7%|█████▎                                                                   | 17.5/238.0 [00:11<01:55,  1.90seconds/s]
+[2025-12-28T21:10:19.394Z] STDERR:   9%|██████▍                                                                  | 21.0/238.0 [00:13<01:46,  2.05seconds/s]
+[2025-12-28T21:10:20.833Z] STDERR:  10%|███████▌                                                                 | 24.5/238.0 [00:14<01:38,  2.16seconds/s]
+[2025-12-28T21:10:22.450Z] STDERR:  12%|████████▌                                                                | 28.0/238.0 [00:16<01:37,  2.16seconds/s]
+[2025-12-28T21:10:24.019Z] STDERR:  13%|█████████▋                                                               | 31.5/238.0 [00:17<01:34,  2.18seconds/s]
+[2025-12-28T21:10:25.522Z] STDERR:  15%|██████████▋                                                              | 35.0/238.0 [00:19<01:31,  2.22seconds/s]
+[2025-12-28T21:10:27.084Z] STDERR:  16%|███████████▊                                                             | 38.5/238.0 [00:20<01:29,  2.23seconds/s]
+[2025-12-28T21:10:28.606Z] STDERR:  18%|████████████▉                                                            | 42.0/238.0 [00:22<01:27,  2.25seconds/s]
+[2025-12-28T21:10:30.141Z] STDERR:  19%|█████████████▉                                                           | 45.5/238.0 [00:23<01:25,  2.26seconds/s]
+[2025-12-28T21:10:31.731Z] STDERR:  21%|███████████████                                                          | 49.0/238.0 [00:25<01:24,  2.24seconds/s]
+[2025-12-28T21:10:33.306Z] STDERR:  22%|████████████████                                                         | 52.5/238.0 [00:26<01:22,  2.24seconds/s]
+[2025-12-28T21:10:34.890Z] STDERR:  24%|█████████████████▏                                                       | 56.0/238.0 [00:28<01:21,  2.23seconds/s]
+[2025-12-28T21:10:36.369Z] STDERR:  25%|██████████████████▎                                                      | 59.5/238.0 [00:30<01:18,  2.27seconds/s]
+[2025-12-28T21:10:37.816Z] STDERR:  26%|███████████████████▎                                                     | 63.0/238.0 [00:31<01:15,  2.31seconds/s]
+[2025-12-28T21:10:39.269Z] STDERR:  28%|████████████████████▍                                                    | 66.5/238.0 [00:32<01:13,  2.34seconds/s]
+[2025-12-28T21:10:40.708Z] STDERR:  29%|█████████████████████▍                                                   | 70.0/238.0 [00:34<01:10,  2.37seconds/s]
+[2025-12-28T21:10:42.189Z] STDERR:  31%|██████████████████████▌                                                  | 73.5/238.0 [00:35<01:09,  2.37seconds/s]
+[2025-12-28T21:10:43.631Z] STDERR:  32%|███████████████████████▌                                                 | 77.0/238.0 [00:37<01:07,  2.38seconds/s]
+[2025-12-28T21:10:45.086Z] STDERR:  34%|████████████████████████▋                                                | 80.5/238.0 [00:38<01:05,  2.39seconds/s]
+[2025-12-28T21:10:46.536Z] STDERR:  35%|█████████████████████████▊                                               | 84.0/238.0 [00:40<01:04,  2.40seconds/s]
+[2025-12-28T21:10:47.976Z] STDERR:  37%|██████████████████████████▊                                              | 87.5/238.0 [00:41<01:02,  2.41seconds/s]
+[2025-12-28T21:10:49.492Z] STDERR:  38%|███████████████████████████▉                                             | 91.0/238.0 [00:43<01:01,  2.38seconds/s]
+[2025-12-28T21:10:50.935Z] STDERR:  40%|████████████████████████████▉                                            | 94.5/238.0 [00:44<01:00,  2.39seconds/s]
+[2025-12-28T21:10:52.392Z] STDERR:  41%|██████████████████████████████                                           | 98.0/238.0 [00:46<00:58,  2.39seconds/s]
+[2025-12-28T21:10:53.832Z] STDERR:  43%|██████████████████████████████▋                                         | 101.5/238.0 [00:47<00:56,  2.41seconds/s]
+[2025-12-28T21:10:55.270Z] STDERR:  44%|███████████████████████████████▊                                        | 105.0/238.0 [00:48<00:55,  2.41seconds/s]
+[2025-12-28T21:10:56.772Z] STDERR:  46%|████████████████████████████████▊                                       | 108.5/238.0 [00:50<00:54,  2.39seconds/s]
+[2025-12-28T21:10:58.223Z] STDERR:  47%|█████████████████████████████████▉                                      | 112.0/238.0 [00:51<00:52,  2.40seconds/s]
+[2025-12-28T21:10:59.666Z] STDERR:  49%|██████████████████████████████████▉                                     | 115.5/238.0 [00:53<00:50,  2.40seconds/s]
+[2025-12-28T21:11:01.115Z] STDERR:  50%|████████████████████████████████████                                    | 119.0/238.0 [00:54<00:49,  2.41seconds/s]
+[2025-12-28T21:11:02.614Z] STDERR:  51%|█████████████████████████████████████                                   | 122.5/238.0 [00:56<00:48,  2.39seconds/s]
+[2025-12-28T21:11:04.073Z] STDERR:  53%|██████████████████████████████████████                                  | 126.0/238.0 [00:57<00:46,  2.39seconds/s]
+[2025-12-28T21:11:05.513Z] STDERR:  54%|███████████████████████████████████████▏                                | 129.5/238.0 [00:59<00:45,  2.40seconds/s]
+[2025-12-28T21:11:06.981Z] STDERR:  56%|████████████████████████████████████████▏                               | 133.0/238.0 [01:00<00:43,  2.40seconds/s]
+[2025-12-28T21:11:08.424Z] STDERR:  57%|█████████████████████████████████████████▎                              | 136.5/238.0 [01:02<00:42,  2.41seconds/s]
+[2025-12-28T21:11:09.918Z] STDERR:  59%|██████████████████████████████████████████▎                             | 140.0/238.0 [01:03<00:41,  2.39seconds/s]
+[2025-12-28T21:11:11.359Z] STDERR:  60%|███████████████████████████████████████████▍                            | 143.5/238.0 [01:05<00:39,  2.40seconds/s]
+[2025-12-28T21:11:12.824Z] STDERR:  62%|████████████████████████████████████████████▍                           | 147.0/238.0 [01:06<00:37,  2.40seconds/s]
+[2025-12-28T21:11:14.275Z] STDERR:  63%|█████████████████████████████████████████████▌                          | 150.5/238.0 [01:07<00:36,  2.40seconds/s]
+[2025-12-28T21:11:15.723Z] STDERR:  65%|██████████████████████████████████████████████▌                         | 154.0/238.0 [01:09<00:34,  2.41seconds/s]
+[2025-12-28T21:11:17.211Z] STDERR:  66%|███████████████████████████████████████████████▋                        | 157.5/238.0 [01:10<00:33,  2.39seconds/s]
+[2025-12-28T21:11:18.670Z] STDERR:  68%|████████████████████████████████████████████████▋                       | 161.0/238.0 [01:12<00:32,  2.39seconds/s]
+[2025-12-28T21:11:20.117Z] STDERR:  69%|█████████████████████████████████████████████████▊                      | 164.5/238.0 [01:13<00:30,  2.40seconds/s]
+[2025-12-28T21:11:21.556Z] STDERR:  71%|██████████████████████████████████████████████████▊                     | 168.0/238.0 [01:15<00:29,  2.41seconds/s]
+[2025-12-28T21:11:23.046Z] STDERR:  72%|███████████████████████████████████████████████████▉                    | 171.5/238.0 [01:16<00:27,  2.39seconds/s]
+[2025-12-28T21:11:24.498Z] STDERR:  74%|████████████████████████████████████████████████████▉                   | 175.0/238.0 [01:18<00:26,  2.40seconds/s]
+[2025-12-28T21:11:25.930Z] STDERR:  75%|██████████████████████████████████████████████████████                  | 178.5/238.0 [01:19<00:24,  2.41seconds/s]
+[2025-12-28T21:11:27.393Z] STDERR:  76%|███████████████████████████████████████████████████████                 | 182.0/238.0 [01:21<00:23,  2.41seconds/s]
+[2025-12-28T21:11:28.842Z] STDERR:  78%|████████████████████████████████████████████████████████                | 185.5/238.0 [01:22<00:21,  2.41seconds/s]
+[2025-12-28T21:11:30.326Z] STDERR:  79%|█████████████████████████████████████████████████████████▏              | 189.0/238.0 [01:24<00:20,  2.39seconds/s]
+[2025-12-28T21:11:31.805Z] STDERR:  81%|██████████████████████████████████████████████████████████▏             | 192.5/238.0 [01:25<00:19,  2.39seconds/s]
+[2025-12-28T21:11:33.317Z] STDERR:  82%|███████████████████████████████████████████████████████████▎            | 196.0/238.0 [01:27<00:17,  2.36seconds/s]
+[2025-12-28T21:11:34.986Z] STDERR:  84%|████████████████████████████████████████████████████████████▎           | 199.5/238.0 [01:28<00:16,  2.28seconds/s]
+[2025-12-28T21:11:36.529Z] STDERR:  85%|█████████████████████████████████████████████████████████████▍          | 203.0/238.0 [01:30<00:15,  2.27seconds/s]
+[2025-12-28T21:11:38.154Z] STDERR:  87%|██████████████████████████████████████████████████████████████▍         | 206.5/238.0 [01:31<00:14,  2.24seconds/s]
+[2025-12-28T21:11:39.890Z] STDERR:  88%|███████████████████████████████████████████████████████████████▌        | 210.0/238.0 [01:33<00:12,  2.17seconds/s]
+[2025-12-28T21:11:41.402Z] STDERR:  90%|████████████████████████████████████████████████████████████████▌       | 213.5/238.0 [01:35<00:11,  2.21seconds/s]
+[2025-12-28T21:11:43.048Z] STDERR:  91%|█████████████████████████████████████████████████████████████████▋      | 217.0/238.0 [01:36<00:09,  2.18seconds/s]
+[2025-12-28T21:11:44.504Z] STDERR:  93%|██████████████████████████████████████████████████████████████████▋     | 220.5/238.0 [01:38<00:07,  2.25seconds/s]
+[2025-12-28T21:11:46.053Z] STDERR:  94%|███████████████████████████████████████████████████████████████████▊    | 224.0/238.0 [01:39<00:06,  2.25seconds/s]
+[2025-12-28T21:11:47.552Z] STDERR:  96%|████████████████████████████████████████████████████████████████████▊   | 227.5/238.0 [01:41<00:04,  2.27seconds/s]
+[2025-12-28T21:11:49.078Z] STDERR:  97%|█████████████████████████████████████████████████████████████████████▉  | 231.0/238.0 [01:42<00:03,  2.28seconds/s]
+[2025-12-28T21:11:50.577Z] STDERR:  99%|██████████████████████████████████████████████████████████████████████▉ | 234.5/238.0 [01:44<00:01,  2.30seconds/s]
+[2025-12-28T21:11:52.153Z] STDERR: 100%|████████████████████████████████████████████████████████████████████████| 238.0/238.0 [01:45<00:00,  2.27seconds/s]
+[2025-12-28T21:11:52.154Z] STDERR: 100%|████████████████████████████████████████████████████████████████████████| 238.0/238.0 [01:45<00:00,  2.25seconds/s]
+
+[2025-12-28T21:12:09.402Z] Demucs processing successfully completed. Starting mix generation...
+[2025-12-28T21:12:09.403Z] Running mix generation on: /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs_6s/9_1766956198976_Sal_na_Sal_na_Sinsice_-_Tarkan
+[2025-12-28T21:12:52.670Z] Mixer STDOUT: Loading stems from /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs_6s/9_1766956198976_Sal_na_Sal_na_Sinsice_-_Tarkan...
+Generating mixes...
+Creating no_vocals...
+Creating no_drums...
+Creating no_bass...
+Creating no_guitar...
+Creating no_piano...
+
+[2025-12-28T21:12:52.694Z] Mix generation completed successfully.
+[2025-12-28T21:12:52.695Z] Processing flow finished.

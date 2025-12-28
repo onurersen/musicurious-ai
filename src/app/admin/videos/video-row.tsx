@@ -1,6 +1,6 @@
 "use client";
 
-import { updateVideoApproval, getVideoStatus } from "@/app/actions";
+import { updateVideoApproval, getVideoStatus, cancelProcessing } from "@/app/actions";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, X } from "lucide-react";
@@ -10,6 +10,7 @@ export function VideoRow({ video }: { video: any }) {
     const [loading, setLoading] = useState(false);
     const [showRejectConfirm, setShowRejectConfirm] = useState(false);
     const [showRemoveStemsConfirm, setShowRemoveStemsConfirm] = useState(false);
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [progress, setProgress] = useState(video.processing_progress || 0);
     const [procStatus, setProcStatus] = useState<string>(video.processing_status);
     const router = useRouter();
@@ -154,15 +155,31 @@ export function VideoRow({ video }: { video: any }) {
                             <ProcessingUploadButton videoId={video.id} onUploadStart={() => router.refresh()} />
                         </div>
                     ) : procStatus === 'processing' ? (
-                        <span className="text-xs text-muted-foreground animate-pulse">
-                            Demucs Running...
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground animate-pulse">
+                                Demucs Running...
+                            </span>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    setShowCancelConfirm(true);
+                                }}
+                                className="text-red-500 hover:text-red-400 transition-colors p-1"
+                                title="Cancel (Force Fail)"
+                            >
+                                <X size={14} />
+                            </button>
+                        </div>
                     ) : (
-                        // Only show Start Processing button in Development
-                        process.env.NODE_ENV === 'development' ? (
-                            <ProcessingUploadButton videoId={video.id} onUploadStart={() => router.refresh()} />
+                        // Only show Start Processing if Approved
+                        video.approval_status === 'approved' ? (
+                            process.env.NODE_ENV === 'development' ? (
+                                <ProcessingUploadButton videoId={video.id} onUploadStart={() => router.refresh()} />
+                            ) : (
+                                <span className="text-xs text-muted-foreground/50 italic">Local Dev Only</span>
+                            )
                         ) : (
-                            <span className="text-xs text-muted-foreground/50 italic">Local Dev Only</span>
+                            <span className="text-xs text-muted-foreground/50 italic">Approve to Process</span>
                         )
                     )}
                 </div>
@@ -283,9 +300,63 @@ export function VideoRow({ video }: { video: any }) {
                         </div>,
                         document.body
                     )}
+
+                    {/* Cancel Processing Confirmation Modal */}
+                    {showCancelConfirm && typeof document !== 'undefined' && createPortal(
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                            <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl max-w-sm w-full p-6 relative animate-in zoom-in-95 duration-200 text-left">
+                                <div className="absolute top-4 right-4">
+                                    <button
+                                        onClick={() => setShowCancelConfirm(false)}
+                                        className="text-muted-foreground hover:text-white transition-colors"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                </div>
+
+                                <div className="flex flex-col items-center text-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-500">
+                                        <AlertTriangle size={24} />
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-xl font-bold text-white mb-2">Cancel Processing?</h3>
+                                        <p className="text-muted-foreground text-sm">
+                                            This will force the status to 'Failed' and reset progress to 0. This is useful if the process is stuck. It will NOT stop a running background process if one is active.
+                                        </p>
+                                    </div>
+
+                                    <div className="flex gap-3 w-full mt-2">
+                                        <button
+                                            onClick={() => setShowCancelConfirm(false)}
+                                            className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-colors border border-white/5"
+                                        >
+                                            Go Back
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                setLoading(true);
+                                                try {
+                                                    await cancelProcessing(video.id);
+                                                    setShowCancelConfirm(false);
+                                                } finally {
+                                                    setLoading(false);
+                                                }
+                                            }}
+                                            disabled={loading}
+                                            className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition-colors shadow-lg shadow-red-500/20"
+                                        >
+                                            {loading ? "Canceling..." : "Yes, Cancel"}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>,
+                        document.body
+                    )}
                 </div>
             </td>
-        </tr>
+        </tr >
     );
 }
 

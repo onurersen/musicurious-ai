@@ -556,3 +556,21 @@ export async function removeStems(videoId: number) {
         return { success: false, error: err.message };
     }
 }
+
+export async function cancelProcessing(videoId: number) {
+    const admin = await isAdmin();
+    if (!admin) return { success: false, error: "Forbidden" };
+
+    try {
+        await sql`
+            UPDATE videos 
+            SET processing_status = 'failed', processing_progress = 0 
+            WHERE id = ${videoId}
+        `;
+        revalidatePath('/admin/videos');
+        return { success: true };
+    } catch (err) {
+        console.error("Error canceling processing:", err);
+        return { success: false, error: "Database error" };
+    }
+}
