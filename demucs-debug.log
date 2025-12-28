@@ -1,0 +1,1265 @@
+[2025-12-28T19:26:21.852Z] Worker started. PID: 31268
+[2025-12-28T19:26:21.854Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T19:26:21.856Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766949981380_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T19:26:21.856Z] Updating status to processing...
+[2025-12-28T19:26:22.231Z] Spawning Demucs: python3 -m demucs.separate -o /Users/jf27yc/Development/musicurious-ai/public/stems -n htdemucs /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766949981380_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+[2025-12-28T19:26:33.207Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766949981380_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T19:27:45.221Z] Demucs process exited with code 1
+[2025-12-28T19:27:45.329Z] Processing failed.
+[2025-12-28T19:30:34.708Z] Worker started. PID: 32096
+[2025-12-28T19:30:34.709Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T19:30:34.711Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766950234251_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T19:30:34.712Z] Updating status to processing...
+[2025-12-28T19:30:35.080Z] Spawning Demucs: python3 -m demucs.separate -o /Users/jf27yc/Development/musicurious-ai/public/stems -n htdemucs /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766950234251_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+[2025-12-28T19:30:36.718Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766950234251_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T19:30:36.719Z] STDERR:   0%|                                                                                 | 0.0/239.85 [00:00<?, ?seconds/s]
+[2025-12-28T19:30:38.855Z] STDERR:   2%|█▊                                                                      | 5.85/239.85 [00:02<01:25,  2.74seconds/s]
+[2025-12-28T19:30:40.404Z] STDERR:   5%|███▌                                                                    | 11.7/239.85 [00:03<01:09,  3.27seconds/s]
+[2025-12-28T19:30:41.937Z] STDERR:   7%|████▏                                                     | 17.549999999999997/239.85 [00:05<01:03,  3.50seconds/s]
+[2025-12-28T19:30:43.460Z] STDERR:  10%|███████                                                                 | 23.4/239.85 [00:06<00:59,  3.62seconds/s]
+[2025-12-28T19:30:44.995Z] STDERR:  12%|████████▋                                                              | 29.25/239.85 [00:08<00:57,  3.69seconds/s]
+[2025-12-28T19:30:46.689Z] STDERR:  15%|████████▍                                                 | 35.099999999999994/239.85 [00:09<00:56,  3.61seconds/s]
+[2025-12-28T19:30:48.330Z] STDERR:  17%|█████████▉                                                | 40.949999999999996/239.85 [00:11<00:55,  3.59seconds/s]
+[2025-12-28T19:30:49.900Z] STDERR:  20%|██████████████                                                          | 46.8/239.85 [00:13<00:53,  3.63seconds/s]
+[2025-12-28T19:30:51.478Z] STDERR:  22%|███████████████▌                                                       | 52.65/239.85 [00:14<00:51,  3.66seconds/s]
+[2025-12-28T19:30:53.081Z] STDERR:  24%|█████████████████▌                                                      | 58.5/239.85 [00:16<00:49,  3.65seconds/s]
+[2025-12-28T19:30:54.679Z] STDERR:  27%|███████████████████                                                    | 64.35/239.85 [00:17<00:47,  3.66seconds/s]
+[2025-12-28T19:30:56.265Z] STDERR:  29%|█████████████████▎                                         | 70.19999999999999/239.85 [00:19<00:46,  3.67seconds/s]
+[2025-12-28T19:30:57.925Z] STDERR:  32%|██████████████████████▌                                                | 76.05/239.85 [00:21<00:45,  3.62seconds/s]
+[2025-12-28T19:30:59.506Z] STDERR:  34%|████████████████████▏                                      | 81.89999999999999/239.85 [00:22<00:43,  3.65seconds/s]
+[2025-12-28T19:31:01.105Z] STDERR:  37%|█████████████████████████▉                                             | 87.75/239.85 [00:24<00:41,  3.65seconds/s]
+[2025-12-28T19:31:02.721Z] STDERR:  39%|████████████████████████████                                            | 93.6/239.85 [00:26<00:40,  3.64seconds/s]
+[2025-12-28T19:31:04.293Z] STDERR:  41%|████████████████████████▍                                  | 99.44999999999999/239.85 [00:27<00:38,  3.66seconds/s]
+[2025-12-28T19:31:05.915Z] STDERR:  44%|███████████████████████████████▏                                       | 105.3/239.85 [00:29<00:36,  3.65seconds/s]
+[2025-12-28T19:31:07.533Z] STDERR:  46%|██████████████████████████▉                               | 111.14999999999999/239.85 [00:30<00:35,  3.64seconds/s]
+[2025-12-28T19:31:09.151Z] STDERR:  49%|██████████████████████████████████▋                                    | 117.0/239.85 [00:32<00:33,  3.63seconds/s]
+[2025-12-28T19:31:10.765Z] STDERR:  51%|███████████████████████████████████▊                                  | 122.85/239.85 [00:34<00:32,  3.63seconds/s]
+[2025-12-28T19:31:12.320Z] STDERR:  54%|██████████████████████████████████████                                 | 128.7/239.85 [00:35<00:30,  3.67seconds/s]
+[2025-12-28T19:31:13.881Z] STDERR:  56%|████████████████████████████████▌                         | 134.54999999999998/239.85 [00:37<00:28,  3.69seconds/s]
+[2025-12-28T19:31:15.414Z] STDERR:  59%|█████████████████████████████████▉                        | 140.39999999999998/239.85 [00:38<00:26,  3.73seconds/s]
+[2025-12-28T19:31:17.046Z] STDERR:  61%|██████████████████████████████████████████▋                           | 146.25/239.85 [00:40<00:25,  3.68seconds/s]
+[2025-12-28T19:31:18.595Z] STDERR:  63%|█████████████████████████████████████████████                          | 152.1/239.85 [00:41<00:23,  3.71seconds/s]
+[2025-12-28T19:31:20.168Z] STDERR:  66%|██████████████████████████████████████████████                        | 157.95/239.85 [00:43<00:22,  3.71seconds/s]
+[2025-12-28T19:31:21.773Z] STDERR:  68%|███████████████████████████████████████▌                  | 163.79999999999998/239.85 [00:45<00:20,  3.69seconds/s]
+[2025-12-28T19:31:23.527Z] STDERR:  71%|█████████████████████████████████████████                 | 169.64999999999998/239.85 [00:46<00:19,  3.58seconds/s]
+[2025-12-28T19:31:25.088Z] STDERR:  73%|███████████████████████████████████████████████████▉                   | 175.5/239.85 [00:48<00:17,  3.63seconds/s]
+[2025-12-28T19:31:26.625Z] STDERR:  76%|████████████████████████████████████████████████████▉                 | 181.35/239.85 [00:49<00:15,  3.68seconds/s]
+[2025-12-28T19:31:28.209Z] STDERR:  78%|███████████████████████████████████████████████████████▍               | 187.2/239.85 [00:51<00:14,  3.68seconds/s]
+[2025-12-28T19:31:29.798Z] STDERR:  80%|██████████████████████████████████████████████▋           | 193.04999999999998/239.85 [00:53<00:12,  3.68seconds/s]
+[2025-12-28T19:31:31.371Z] STDERR:  83%|████████████████████████████████████████████████          | 198.89999999999998/239.85 [00:54<00:11,  3.69seconds/s]
+[2025-12-28T19:31:32.999Z] STDERR:  85%|███████████████████████████████████████████████████████████▊          | 204.75/239.85 [00:56<00:09,  3.66seconds/s]
+[2025-12-28T19:31:34.544Z] STDERR:  88%|██████████████████████████████████████████████████████████████▎        | 210.6/239.85 [00:57<00:07,  3.70seconds/s]
+[2025-12-28T19:31:36.233Z] STDERR:  90%|███████████████████████████████████████████████████████████████▏      | 216.45/239.85 [00:59<00:06,  3.63seconds/s]
+[2025-12-28T19:31:37.860Z] STDERR:  93%|█████████████████████████████████████████████████████▊    | 222.29999999999998/239.85 [01:01<00:04,  3.62seconds/s]
+[2025-12-28T19:31:39.563Z] STDERR:  95%|███████████████████████████████████████████████████████▏  | 228.14999999999998/239.85 [01:02<00:03,  3.56seconds/s]
+[2025-12-28T19:31:41.109Z] STDERR:  98%|█████████████████████████████████████████████████████████████████████▎ | 234.0/239.85 [01:04<00:01,  3.62seconds/s]
+[2025-12-28T19:31:42.669Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:05<00:00,  3.66seconds/s]
+[2025-12-28T19:31:42.670Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:05<00:00,  3.64seconds/s]
+
+[2025-12-28T19:31:42.783Z] STDERR: Traceback (most recent call last):
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/_torchcodec.py", line 246, in save_with_torchcodec
+    from torchcodec.encoders import AudioEncoder
+ModuleNotFoundError: No module named 'torchcodec'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+
+[2025-12-28T19:31:42.783Z] STDERR:   File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/separate.py", line 219, in <module>
+    main()
+    ~~~~^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/separate.py", line 199, in main
+    save_audio(source, str(stem), **kwargs)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/audio.py", line 260, in save_audio
+    ta.save(str(path), wav, sample_rate=samplerate,
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            encoding=encoding, bits_per_sample=bits_per_sample)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/__init__.py", line 178, in save
+    return save_with_torchcodec(
+        uri,
+    ...<8 lines>...
+        compression=compression,
+    )
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/_torchcodec.py", line 248, in save_with_torchcodec
+    raise ImportError(
+        "TorchCodec is required for save_with_torchcodec. " "Please install torchcodec to use this function."
+    ) from e
+ImportError: TorchCodec is required for save_with_torchcodec. Please install torchcodec to use this function.
+
+[2025-12-28T19:31:43.127Z] Demucs process exited with code 1
+[2025-12-28T19:31:43.239Z] Processing failed.
+[2025-12-28T19:33:41.715Z] Worker started. PID: 32413
+[2025-12-28T19:33:41.716Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T19:33:41.718Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766950421253_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T19:33:41.719Z] Updating status to processing...
+[2025-12-28T19:33:42.115Z] Spawning Demucs: python3 -m demucs.separate -o /Users/jf27yc/Development/musicurious-ai/public/stems -n htdemucs /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766950421253_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+[2025-12-28T19:33:43.817Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766950421253_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T19:33:43.817Z] STDERR:   0%|                                                                                 | 0.0/239.85 [00:00<?, ?seconds/s]
+[2025-12-28T19:33:46.208Z] STDERR:   2%|█▊                                                                      | 5.85/239.85 [00:02<01:35,  2.45seconds/s]
+[2025-12-28T19:33:47.790Z] STDERR:   5%|███▌                                                                    | 11.7/239.85 [00:03<01:14,  3.06seconds/s]
+[2025-12-28T19:33:49.397Z] STDERR:   7%|████▏                                                     | 17.549999999999997/239.85 [00:05<01:07,  3.30seconds/s]
+[2025-12-28T19:33:50.938Z] STDERR:  10%|███████                                                                 | 23.4/239.85 [00:07<01:02,  3.48seconds/s]
+[2025-12-28T19:33:52.667Z] STDERR:  12%|████████▋                                                              | 29.25/239.85 [00:08<01:01,  3.44seconds/s]
+[2025-12-28T19:33:54.275Z] STDERR:  15%|████████▍                                                 | 35.099999999999994/239.85 [00:10<00:58,  3.51seconds/s]
+[2025-12-28T19:33:55.785Z] STDERR:  17%|█████████▉                                                | 40.949999999999996/239.85 [00:11<00:54,  3.62seconds/s]
+[2025-12-28T19:33:57.295Z] STDERR:  20%|██████████████                                                          | 46.8/239.85 [00:13<00:52,  3.70seconds/s]
+[2025-12-28T19:33:58.892Z] STDERR:  22%|███████████████▌                                                       | 52.65/239.85 [00:15<00:50,  3.69seconds/s]
+[2025-12-28T19:34:00.424Z] STDERR:  24%|█████████████████▌                                                      | 58.5/239.85 [00:16<00:48,  3.73seconds/s]
+[2025-12-28T19:34:01.931Z] STDERR:  27%|███████████████████                                                    | 64.35/239.85 [00:18<00:46,  3.77seconds/s]
+[2025-12-28T19:34:03.492Z] STDERR:  29%|█████████████████▎                                         | 70.19999999999999/239.85 [00:19<00:45,  3.77seconds/s]
+[2025-12-28T19:34:05.047Z] STDERR:  32%|██████████████████████▌                                                | 76.05/239.85 [00:21<00:43,  3.76seconds/s]
+[2025-12-28T19:34:06.567Z] STDERR:  34%|████████████████████▏                                      | 81.89999999999999/239.85 [00:22<00:41,  3.79seconds/s]
+[2025-12-28T19:34:08.100Z] STDERR:  37%|█████████████████████████▉                                             | 87.75/239.85 [00:24<00:40,  3.80seconds/s]
+[2025-12-28T19:34:09.648Z] STDERR:  39%|████████████████████████████                                            | 93.6/239.85 [00:25<00:38,  3.79seconds/s]
+[2025-12-28T19:34:11.163Z] STDERR:  41%|████████████████████████▍                                  | 99.44999999999999/239.85 [00:27<00:36,  3.81seconds/s]
+[2025-12-28T19:34:12.689Z] STDERR:  44%|███████████████████████████████▏                                       | 105.3/239.85 [00:28<00:35,  3.82seconds/s]
+[2025-12-28T19:34:14.214Z] STDERR:  46%|██████████████████████████▉                               | 111.14999999999999/239.85 [00:30<00:33,  3.82seconds/s]
+[2025-12-28T19:34:15.738Z] STDERR:  49%|██████████████████████████████████▋                                    | 117.0/239.85 [00:31<00:32,  3.83seconds/s]
+[2025-12-28T19:34:17.253Z] STDERR:  51%|███████████████████████████████████▊                                  | 122.85/239.85 [00:33<00:30,  3.84seconds/s]
+[2025-12-28T19:34:18.859Z] STDERR:  54%|██████████████████████████████████████                                 | 128.7/239.85 [00:35<00:29,  3.78seconds/s]
+[2025-12-28T19:34:20.435Z] STDERR:  56%|████████████████████████████████▌                         | 134.54999999999998/239.85 [00:36<00:28,  3.76seconds/s]
+[2025-12-28T19:34:21.972Z] STDERR:  59%|█████████████████████████████████▉                        | 140.39999999999998/239.85 [00:38<00:26,  3.77seconds/s]
+[2025-12-28T19:34:23.493Z] STDERR:  61%|██████████████████████████████████████████▋                           | 146.25/239.85 [00:39<00:24,  3.79seconds/s]
+[2025-12-28T19:34:25.060Z] STDERR:  63%|█████████████████████████████████████████████                          | 152.1/239.85 [00:41<00:23,  3.78seconds/s]
+[2025-12-28T19:34:26.574Z] STDERR:  66%|██████████████████████████████████████████████                        | 157.95/239.85 [00:42<00:21,  3.80seconds/s]
+[2025-12-28T19:34:28.090Z] STDERR:  68%|███████████████████████████████████████▌                  | 163.79999999999998/239.85 [00:44<00:19,  3.82seconds/s]
+[2025-12-28T19:34:29.635Z] STDERR:  71%|█████████████████████████████████████████                 | 169.64999999999998/239.85 [00:45<00:18,  3.81seconds/s]
+[2025-12-28T19:34:31.164Z] STDERR:  73%|███████████████████████████████████████████████████▉                   | 175.5/239.85 [00:47<00:16,  3.81seconds/s]
+[2025-12-28T19:34:32.684Z] STDERR:  76%|████████████████████████████████████████████████████▉                 | 181.35/239.85 [00:48<00:15,  3.82seconds/s]
+[2025-12-28T19:34:34.201Z] STDERR:  78%|███████████████████████████████████████████████████████▍               | 187.2/239.85 [00:50<00:13,  3.83seconds/s]
+[2025-12-28T19:34:35.735Z] STDERR:  80%|██████████████████████████████████████████████▋           | 193.04999999999998/239.85 [00:51<00:12,  3.83seconds/s]
+[2025-12-28T19:34:37.243Z] STDERR:  83%|████████████████████████████████████████████████          | 198.89999999999998/239.85 [00:53<00:10,  3.84seconds/s]
+[2025-12-28T19:34:38.776Z] STDERR:  85%|███████████████████████████████████████████████████████████▊          | 204.75/239.85 [00:54<00:09,  3.83seconds/s]
+[2025-12-28T19:34:40.315Z] STDERR:  88%|██████████████████████████████████████████████████████████████▎        | 210.6/239.85 [00:56<00:07,  3.83seconds/s]
+[2025-12-28T19:34:41.836Z] STDERR:  90%|███████████████████████████████████████████████████████████████▏      | 216.45/239.85 [00:58<00:06,  3.83seconds/s]
+[2025-12-28T19:34:43.344Z] STDERR:  93%|█████████████████████████████████████████████████████▊    | 222.29999999999998/239.85 [00:59<00:04,  3.85seconds/s]
+[2025-12-28T19:34:44.878Z] STDERR:  95%|███████████████████████████████████████████████████████▏  | 228.14999999999998/239.85 [01:01<00:03,  3.84seconds/s]
+[2025-12-28T19:34:46.400Z] STDERR:  98%|█████████████████████████████████████████████████████████████████████▎ | 234.0/239.85 [01:02<00:01,  3.84seconds/s]
+[2025-12-28T19:34:47.943Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:04<00:00,  3.82seconds/s]
+[2025-12-28T19:34:47.945Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:04<00:00,  3.74seconds/s]
+
+[2025-12-28T19:34:48.029Z] STDERR: Traceback (most recent call last):
+
+[2025-12-28T19:34:48.030Z] STDERR:   File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/_torchcodec.py", line 246, in save_with_torchcodec
+    from torchcodec.encoders import AudioEncoder
+ModuleNotFoundError: No module named 'torchcodec'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/separate.py", line 219, in <module>
+    main()
+    ~~~~^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/separate.py", line 199, in main
+    save_audio(source, str(stem), **kwargs)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/audio.py", line 260, in save_audio
+    ta.save(str(path), wav, sample_rate=samplerate,
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            encoding=encoding, bits_per_sample=bits_per_sample)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/__init__.py", line 178, in save
+    return save_with_torchcodec(
+        uri,
+    ...<8 lines>...
+        compression=compression,
+    )
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/_torchcodec.py", line 248, in save_with_torchcodec
+    raise ImportError(
+        "TorchCodec is required for save_with_torchcodec. " "Please install torchcodec to use this function."
+    ) from e
+ImportError: TorchCodec is required for save_with_torchcodec. Please install torchcodec to use this function.
+
+[2025-12-28T19:34:48.347Z] Demucs process exited with code 1
+[2025-12-28T19:34:48.459Z] Processing failed.
+[2025-12-28T19:40:13.717Z] Worker started. PID: 33410
+[2025-12-28T19:40:13.718Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T19:40:13.720Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766950813283_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T19:40:13.720Z] Updating status to processing...
+[2025-12-28T19:40:14.109Z] Spawning Demucs: python3 -m demucs.separate -o /Users/jf27yc/Development/musicurious-ai/public/stems -n htdemucs /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766950813283_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+[2025-12-28T19:40:15.816Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766950813283_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T19:40:15.817Z] STDERR:   0%|                                                                                 | 0.0/239.85 [00:00<?, ?seconds/s]
+[2025-12-28T19:40:17.950Z] STDERR:   2%|█▊                                                                      | 5.85/239.85 [00:02<01:25,  2.74seconds/s]
+[2025-12-28T19:40:19.463Z] STDERR:   5%|███▌                                                                    | 11.7/239.85 [00:03<01:08,  3.31seconds/s]
+[2025-12-28T19:40:21.142Z] STDERR:   7%|████▏                                                     | 17.549999999999997/239.85 [00:05<01:05,  3.39seconds/s]
+[2025-12-28T19:40:22.976Z] STDERR:  10%|███████                                                                 | 23.4/239.85 [00:07<01:05,  3.31seconds/s]
+[2025-12-28T19:40:24.635Z] STDERR:  12%|████████▋                                                              | 29.25/239.85 [00:08<01:02,  3.38seconds/s]
+[2025-12-28T19:40:26.197Z] STDERR:  15%|████████▍                                                 | 35.099999999999994/239.85 [00:10<00:58,  3.50seconds/s]
+[2025-12-28T19:40:27.726Z] STDERR:  17%|█████████▉                                                | 40.949999999999996/239.85 [00:11<00:55,  3.60seconds/s]
+[2025-12-28T19:40:29.385Z] STDERR:  20%|██████████████                                                          | 46.8/239.85 [00:13<00:54,  3.57seconds/s]
+[2025-12-28T19:40:31.133Z] STDERR:  22%|███████████████▌                                                       | 52.65/239.85 [00:15<00:53,  3.50seconds/s]
+[2025-12-28T19:40:32.859Z] STDERR:  24%|█████████████████▌                                                      | 58.5/239.85 [00:17<00:52,  3.47seconds/s]
+[2025-12-28T19:40:34.545Z] STDERR:  27%|███████████████████                                                    | 64.35/239.85 [00:18<00:50,  3.47seconds/s]
+[2025-12-28T19:40:36.118Z] STDERR:  29%|█████████████████▎                                         | 70.19999999999999/239.85 [00:20<00:47,  3.54seconds/s]
+[2025-12-28T19:40:37.669Z] STDERR:  32%|██████████████████████▌                                                | 76.05/239.85 [00:21<00:45,  3.61seconds/s]
+[2025-12-28T19:40:39.197Z] STDERR:  34%|████████████████████▏                                      | 81.89999999999999/239.85 [00:23<00:43,  3.67seconds/s]
+[2025-12-28T19:40:40.800Z] STDERR:  37%|█████████████████████████▉                                             | 87.75/239.85 [00:24<00:41,  3.66seconds/s]
+[2025-12-28T19:40:42.357Z] STDERR:  39%|████████████████████████████                                            | 93.6/239.85 [00:26<00:39,  3.69seconds/s]
+[2025-12-28T19:40:43.840Z] STDERR:  41%|████████████████████████▍                                  | 99.44999999999999/239.85 [00:28<00:37,  3.76seconds/s]
+[2025-12-28T19:40:45.318Z] STDERR:  44%|███████████████████████████████▏                                       | 105.3/239.85 [00:29<00:35,  3.82seconds/s]
+[2025-12-28T19:40:46.834Z] STDERR:  46%|██████████████████████████▉                               | 111.14999999999999/239.85 [00:31<00:33,  3.83seconds/s]
+[2025-12-28T19:40:48.309Z] STDERR:  49%|██████████████████████████████████▋                                    | 117.0/239.85 [00:32<00:31,  3.87seconds/s]
+[2025-12-28T19:40:49.796Z] STDERR:  51%|███████████████████████████████████▊                                  | 122.85/239.85 [00:33<00:30,  3.89seconds/s]
+[2025-12-28T19:40:51.319Z] STDERR:  54%|██████████████████████████████████████                                 | 128.7/239.85 [00:35<00:28,  3.88seconds/s]
+[2025-12-28T19:40:52.797Z] STDERR:  56%|████████████████████████████████▌                         | 134.54999999999998/239.85 [00:36<00:27,  3.90seconds/s]
+[2025-12-28T19:40:54.266Z] STDERR:  59%|█████████████████████████████████▉                        | 140.39999999999998/239.85 [00:38<00:25,  3.92seconds/s]
+[2025-12-28T19:40:55.759Z] STDERR:  61%|██████████████████████████████████████████▋                           | 146.25/239.85 [00:39<00:23,  3.92seconds/s]
+[2025-12-28T19:40:57.265Z] STDERR:  63%|█████████████████████████████████████████████                          | 152.1/239.85 [00:41<00:22,  3.91seconds/s]
+[2025-12-28T19:40:58.743Z] STDERR:  66%|██████████████████████████████████████████████                        | 157.95/239.85 [00:42<00:20,  3.93seconds/s]
+[2025-12-28T19:41:00.227Z] STDERR:  68%|███████████████████████████████████████▌                  | 163.79999999999998/239.85 [00:44<00:19,  3.93seconds/s]
+[2025-12-28T19:41:01.756Z] STDERR:  71%|█████████████████████████████████████████                 | 169.64999999999998/239.85 [00:45<00:18,  3.90seconds/s]
+[2025-12-28T19:41:03.240Z] STDERR:  73%|███████████████████████████████████████████████████▉                   | 175.5/239.85 [00:47<00:16,  3.91seconds/s]
+[2025-12-28T19:41:04.723Z] STDERR:  76%|████████████████████████████████████████████████████▉                 | 181.35/239.85 [00:48<00:14,  3.92seconds/s]
+[2025-12-28T19:41:06.193Z] STDERR:  78%|███████████████████████████████████████████████████████▍               | 187.2/239.85 [00:50<00:13,  3.94seconds/s]
+[2025-12-28T19:41:07.711Z] STDERR:  80%|██████████████████████████████████████████████▋           | 193.04999999999998/239.85 [00:51<00:11,  3.91seconds/s]
+[2025-12-28T19:41:09.237Z] STDERR:  83%|████████████████████████████████████████████████          | 198.89999999999998/239.85 [00:53<00:10,  3.89seconds/s]
+[2025-12-28T19:41:10.727Z] STDERR:  85%|███████████████████████████████████████████████████████████▊          | 204.75/239.85 [00:54<00:09,  3.90seconds/s]
+[2025-12-28T19:41:12.284Z] STDERR:  88%|██████████████████████████████████████████████████████████████▎        | 210.6/239.85 [00:56<00:07,  3.86seconds/s]
+[2025-12-28T19:41:13.781Z] STDERR:  90%|███████████████████████████████████████████████████████████████▏      | 216.45/239.85 [00:57<00:06,  3.87seconds/s]
+[2025-12-28T19:41:15.282Z] STDERR:  93%|█████████████████████████████████████████████████████▊    | 222.29999999999998/239.85 [00:59<00:04,  3.88seconds/s]
+[2025-12-28T19:41:16.785Z] STDERR:  95%|███████████████████████████████████████████████████████▏  | 228.14999999999998/239.85 [01:00<00:03,  3.88seconds/s]
+[2025-12-28T19:41:18.275Z] STDERR:  98%|█████████████████████████████████████████████████████████████████████▎ | 234.0/239.85 [01:02<00:01,  3.90seconds/s]
+[2025-12-28T19:41:19.748Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:03<00:00,  3.92seconds/s]
+[2025-12-28T19:41:19.750Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:03<00:00,  3.75seconds/s]
+
+[2025-12-28T19:41:21.567Z] STDERR: Traceback (most recent call last):
+
+[2025-12-28T19:41:21.569Z] STDERR:   File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/separate.py", line 219, in <module>
+    main()
+    ~~~~^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/separate.py", line 199, in main
+    save_audio(source, str(stem), **kwargs)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/audio.py", line 260, in save_audio
+    ta.save(str(path), wav, sample_rate=samplerate,
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            encoding=encoding, bits_per_sample=bits_per_sample)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/__init__.py", line 178, in save
+    return save_with_torchcodec(
+        uri,
+    ...<8 lines>...
+        compression=compression,
+    )
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/_torchcodec.py", line 246, in save_with_torchcodec
+    from torchcodec.encoders import AudioEncoder
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/__init__.py", line 12, in <module>
+    from . import decoders, encoders, samplers  # noqa
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/decoders/__init__.py", line 7, in <module>
+    from .._core import AudioStreamMetadata, VideoStreamMetadata
+
+[2025-12-28T19:41:21.570Z] STDERR:   File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/_core/__init__.py", line 8, in <module>
+    from ._metadata import (
+    ...<5 lines>...
+    )
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/_core/_metadata.py", line 16, in <module>
+    from torchcodec._core.ops import (
+    ...<3 lines>...
+    )
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/_core/ops.py", line 104, in <module>
+    ffmpeg_major_version, core_library_path = load_torchcodec_shared_libraries()
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/_core/ops.py", line 75, in load_torchcodec_shared_libraries
+    raise RuntimeError(
+    ...<12 lines>...
+    )
+RuntimeError: Could not load libtorchcodec. Likely causes:
+          1. FFmpeg is not properly installed in your environment. We support
+             versions 4, 5, 6, 7, and 8. On Windows, ensure you've installed
+             the "full-shared" version which ships DLLs.
+          2. The PyTorch version (2.9.1) is not compatible with
+             this version of TorchCodec. Refer to the version compatibility
+             table:
+             https://github.com/pytorch/torchcodec?tab=readme-ov-file#installing-torchcodec.
+          3. Another runtime dependency; see exceptions below.
+        The following exceptions were raised as we tried to load libtorchcodec:
+        
+[start of libtorchcodec loading traceback]
+FFmpeg version 8: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core8.dylib
+FFmpeg version 7: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core7.dylib
+FFmpeg version 6: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core6.dylib
+FFmpeg version 5: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core5.dylib
+FFmpeg version 4: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core4.dylib
+[end of libtorchcodec loading traceback].
+
+[2025-12-28T19:41:22.016Z] Demucs process exited with code 1
+[2025-12-28T19:41:22.129Z] Processing failed.
+[2025-12-28T19:43:30.025Z] Worker started. PID: 34040
+[2025-12-28T19:43:30.026Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T19:43:30.028Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951009587_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T19:43:30.029Z] Updating status to processing...
+[2025-12-28T19:43:30.400Z] Spawning Demucs: python3 -m demucs.separate -o /Users/jf27yc/Development/musicurious-ai/public/stems -n htdemucs /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951009587_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+[2025-12-28T19:43:32.331Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951009587_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T19:43:32.331Z] STDERR:   0%|                                                                                 | 0.0/239.85 [00:00<?, ?seconds/s]
+[2025-12-28T19:43:34.934Z] STDERR:   2%|█▊                                                                      | 5.85/239.85 [00:02<01:44,  2.25seconds/s]
+[2025-12-28T19:43:36.514Z] STDERR:   5%|███▌                                                                    | 11.7/239.85 [00:04<01:18,  2.92seconds/s]
+[2025-12-28T19:43:38.225Z] STDERR:   7%|████▏                                                     | 17.549999999999997/239.85 [00:05<01:11,  3.13seconds/s]
+[2025-12-28T19:43:39.729Z] STDERR:  10%|███████                                                                 | 23.4/239.85 [00:07<01:03,  3.39seconds/s]
+[2025-12-28T19:43:41.296Z] STDERR:  12%|████████▋                                                              | 29.25/239.85 [00:08<01:00,  3.51seconds/s]
+[2025-12-28T19:43:42.866Z] STDERR:  15%|████████▍                                                 | 35.099999999999994/239.85 [00:10<00:57,  3.58seconds/s]
+[2025-12-28T19:43:44.523Z] STDERR:  17%|█████████▉                                                | 40.949999999999996/239.85 [00:12<00:55,  3.56seconds/s]
+[2025-12-28T19:43:46.233Z] STDERR:  20%|██████████████                                                          | 46.8/239.85 [00:13<00:54,  3.52seconds/s]
+[2025-12-28T19:43:48.747Z] STDERR:  22%|███████████████▌                                                       | 52.65/239.85 [00:16<01:01,  3.03seconds/s]
+[2025-12-28T19:43:50.582Z] STDERR:  24%|█████████████████▌                                                      | 58.5/239.85 [00:18<00:58,  3.08seconds/s]
+[2025-12-28T19:43:52.345Z] STDERR:  27%|███████████████████                                                    | 64.35/239.85 [00:20<00:55,  3.15seconds/s]
+[2025-12-28T19:43:53.982Z] STDERR:  29%|█████████████████▎                                         | 70.19999999999999/239.85 [00:21<00:51,  3.27seconds/s]
+[2025-12-28T19:43:55.567Z] STDERR:  32%|██████████████████████▌                                                | 76.05/239.85 [00:23<00:48,  3.38seconds/s]
+[2025-12-28T19:43:57.125Z] STDERR:  34%|████████████████████▏                                      | 81.89999999999999/239.85 [00:24<00:45,  3.49seconds/s]
+[2025-12-28T19:43:58.617Z] STDERR:  37%|█████████████████████████▉                                             | 87.75/239.85 [00:26<00:42,  3.61seconds/s]
+[2025-12-28T19:44:00.105Z] STDERR:  39%|████████████████████████████                                            | 93.6/239.85 [00:27<00:39,  3.70seconds/s]
+[2025-12-28T19:44:01.604Z] STDERR:  41%|████████████████████████▍                                  | 99.44999999999999/239.85 [00:29<00:37,  3.76seconds/s]
+[2025-12-28T19:44:03.524Z] STDERR:  44%|███████████████████████████████▏                                       | 105.3/239.85 [00:31<00:38,  3.51seconds/s]
+[2025-12-28T19:44:05.826Z] STDERR:  46%|██████████████████████████▉                               | 111.14999999999999/239.85 [00:33<00:40,  3.15seconds/s]
+[2025-12-28T19:44:07.407Z] STDERR:  49%|██████████████████████████████████▋                                    | 117.0/239.85 [00:35<00:37,  3.30seconds/s]
+[2025-12-28T19:44:08.906Z] STDERR:  51%|███████████████████████████████████▊                                  | 122.85/239.85 [00:36<00:33,  3.46seconds/s]
+[2025-12-28T19:44:10.451Z] STDERR:  54%|██████████████████████████████████████                                 | 128.7/239.85 [00:38<00:31,  3.55seconds/s]
+[2025-12-28T19:44:11.961Z] STDERR:  56%|████████████████████████████████▌                         | 134.54999999999998/239.85 [00:39<00:28,  3.64seconds/s]
+[2025-12-28T19:44:13.618Z] STDERR:  59%|█████████████████████████████████▉                        | 140.39999999999998/239.85 [00:41<00:27,  3.61seconds/s]
+[2025-12-28T19:44:15.110Z] STDERR:  61%|██████████████████████████████████████████▋                           | 146.25/239.85 [00:42<00:25,  3.70seconds/s]
+[2025-12-28T19:44:16.797Z] STDERR:  63%|█████████████████████████████████████████████                          | 152.1/239.85 [00:44<00:24,  3.62seconds/s]
+[2025-12-28T19:44:18.473Z] STDERR:  66%|██████████████████████████████████████████████                        | 157.95/239.85 [00:46<00:22,  3.58seconds/s]
+[2025-12-28T19:44:20.122Z] STDERR:  68%|███████████████████████████████████████▌                  | 163.79999999999998/239.85 [00:47<00:21,  3.57seconds/s]
+[2025-12-28T19:44:21.725Z] STDERR:  71%|█████████████████████████████████████████                 | 169.64999999999998/239.85 [00:49<00:19,  3.60seconds/s]
+[2025-12-28T19:44:23.287Z] STDERR:  73%|███████████████████████████████████████████████████▉                   | 175.5/239.85 [00:50<00:17,  3.64seconds/s]
+[2025-12-28T19:44:24.880Z] STDERR:  76%|████████████████████████████████████████████████████▉                 | 181.35/239.85 [00:52<00:16,  3.65seconds/s]
+[2025-12-28T19:44:26.418Z] STDERR:  78%|███████████████████████████████████████████████████████▍               | 187.2/239.85 [00:54<00:14,  3.69seconds/s]
+[2025-12-28T19:44:27.931Z] STDERR:  80%|██████████████████████████████████████████████▋           | 193.04999999999998/239.85 [00:55<00:12,  3.74seconds/s]
+[2025-12-28T19:44:29.413Z] STDERR:  83%|████████████████████████████████████████████████          | 198.89999999999998/239.85 [00:57<00:10,  3.80seconds/s]
+[2025-12-28T19:44:30.899Z] STDERR:  85%|███████████████████████████████████████████████████████████▊          | 204.75/239.85 [00:58<00:09,  3.84seconds/s]
+[2025-12-28T19:44:32.464Z] STDERR:  88%|██████████████████████████████████████████████████████████████▎        | 210.6/239.85 [01:00<00:07,  3.81seconds/s]
+[2025-12-28T19:44:34.050Z] STDERR:  90%|███████████████████████████████████████████████████████████████▏      | 216.45/239.85 [01:01<00:06,  3.77seconds/s]
+[2025-12-28T19:44:35.556Z] STDERR:  93%|█████████████████████████████████████████████████████▊    | 222.29999999999998/239.85 [01:03<00:04,  3.81seconds/s]
+[2025-12-28T19:44:37.056Z] STDERR:  95%|███████████████████████████████████████████████████████▏  | 228.14999999999998/239.85 [01:04<00:03,  3.83seconds/s]
+[2025-12-28T19:44:38.546Z] STDERR:  98%|█████████████████████████████████████████████████████████████████████▎ | 234.0/239.85 [01:06<00:01,  3.86seconds/s]
+[2025-12-28T19:44:40.316Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:07<00:00,  3.68seconds/s]
+[2025-12-28T19:44:40.318Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:07<00:00,  3.53seconds/s]
+
+[2025-12-28T19:44:40.417Z] STDERR: Traceback (most recent call last):
+
+[2025-12-28T19:44:40.418Z] STDERR:   File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+
+[2025-12-28T19:44:40.418Z] STDERR:   File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/separate.py", line 219, in <module>
+    main()
+    ~~~~^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/separate.py", line 199, in main
+    save_audio(source, str(stem), **kwargs)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/audio.py", line 260, in save_audio
+    ta.save(str(path), wav, sample_rate=samplerate,
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            encoding=encoding, bits_per_sample=bits_per_sample)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/__init__.py", line 178, in save
+    return save_with_torchcodec(
+        uri,
+    ...<8 lines>...
+        compression=compression,
+    )
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/_torchcodec.py", line 246, in save_with_torchcodec
+    from torchcodec.encoders import AudioEncoder
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/__init__.py", line 12, in <module>
+    from . import decoders, encoders, samplers  # noqa
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/decoders/__init__.py", line 7, in <module>
+    from .._core import AudioStreamMetadata, VideoStreamMetadata
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/_core/__init__.py", line 8, in <module>
+    from ._metadata import (
+    ...<5 lines>...
+    )
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/_core/_metadata.py", line 16, in <module>
+    from torchcodec._core.ops import (
+    ...<3 lines>...
+    )
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/_core/ops.py", line 104, in <module>
+    ffmpeg_major_version, core_library_path = load_torchcodec_shared_libraries()
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/_core/ops.py", line 75, in load_torchcodec_shared_libraries
+    raise RuntimeError(
+    ...<12 lines>...
+    )
+RuntimeError: Could not load libtorchcodec. Likely causes:
+          1. FFmpeg is not properly installed in your environment. We support
+             versions 4, 5, 6, 7, and 8. On Windows, ensure you've installed
+             the "full-shared" version which ships DLLs.
+          2. The PyTorch version (2.9.1) is not compatible with
+             this version of TorchCodec. Refer to the version compatibility
+             table:
+             https://github.com/pytorch/torchcodec?tab=readme-ov-file#installing-torchcodec.
+          3. Another runtime dependency; see exceptions below.
+        The following exceptions were raised as we tried to load libtorchcodec:
+        
+[start of libtorchcodec loading traceback]
+FFmpeg version 8: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core8.dylib
+FFmpeg version 7: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core7.dylib
+FFmpeg version 6: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core6.dylib
+FFmpeg version 5: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core5.dylib
+FFmpeg version 4: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core4.dylib
+[end of libtorchcodec loading traceback].
+
+[2025-12-28T19:44:40.775Z] Demucs process exited with code 1
+[2025-12-28T19:44:40.883Z] Processing failed.
+[2025-12-28T19:45:48.569Z] Worker started. PID: 34599
+[2025-12-28T19:45:48.570Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T19:45:48.572Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951148113_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T19:45:48.572Z] Updating status to processing...
+[2025-12-28T19:45:48.973Z] Spawning Demucs: python3 -m demucs.separate -o /Users/jf27yc/Development/musicurious-ai/public/stems -n htdemucs /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951148113_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+[2025-12-28T19:45:55.349Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951148113_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T19:45:55.350Z] STDERR:   0%|                                                                                 | 0.0/239.85 [00:00<?, ?seconds/s]
+[2025-12-28T19:45:57.710Z] STDERR:   2%|█▊                                                                      | 5.85/239.85 [00:02<01:34,  2.48seconds/s]
+[2025-12-28T19:45:59.374Z] STDERR:   5%|███▌                                                                    | 11.7/239.85 [00:04<01:16,  3.00seconds/s]
+[2025-12-28T19:46:01.003Z] STDERR:   7%|████▏                                                     | 17.549999999999997/239.85 [00:05<01:08,  3.24seconds/s]
+[2025-12-28T19:46:02.708Z] STDERR:  10%|███████                                                                 | 23.4/239.85 [00:07<01:05,  3.32seconds/s]
+[2025-12-28T19:46:04.363Z] STDERR:  12%|████████▋                                                              | 29.25/239.85 [00:09<01:02,  3.39seconds/s]
+[2025-12-28T19:46:06.078Z] STDERR:  15%|████████▍                                                 | 35.099999999999994/239.85 [00:10<01:00,  3.40seconds/s]
+[2025-12-28T19:46:07.802Z] STDERR:  17%|█████████▉                                                | 40.949999999999996/239.85 [00:12<00:58,  3.40seconds/s]
+[2025-12-28T19:46:09.574Z] STDERR:  20%|██████████████                                                          | 46.8/239.85 [00:14<00:57,  3.37seconds/s]
+[2025-12-28T19:46:11.360Z] STDERR:  22%|███████████████▌                                                       | 52.65/239.85 [00:16<00:56,  3.34seconds/s]
+[2025-12-28T19:46:13.097Z] STDERR:  24%|█████████████████▌                                                      | 58.5/239.85 [00:17<00:54,  3.35seconds/s]
+[2025-12-28T19:46:14.661Z] STDERR:  27%|███████████████████                                                    | 64.35/239.85 [00:19<00:50,  3.46seconds/s]
+[2025-12-28T19:46:16.140Z] STDERR:  29%|█████████████████▎                                         | 70.19999999999999/239.85 [00:20<00:47,  3.60seconds/s]
+[2025-12-28T19:46:17.600Z] STDERR:  32%|██████████████████████▌                                                | 76.05/239.85 [00:22<00:44,  3.71seconds/s]
+[2025-12-28T19:46:19.087Z] STDERR:  34%|████████████████████▏                                      | 81.89999999999999/239.85 [00:23<00:41,  3.78seconds/s]
+[2025-12-28T19:46:20.581Z] STDERR:  37%|█████████████████████████▉                                             | 87.75/239.85 [00:25<00:39,  3.82seconds/s]
+[2025-12-28T19:46:22.062Z] STDERR:  39%|████████████████████████████                                            | 93.6/239.85 [00:26<00:37,  3.86seconds/s]
+[2025-12-28T19:46:23.535Z] STDERR:  41%|████████████████████████▍                                  | 99.44999999999999/239.85 [00:28<00:36,  3.89seconds/s]
+[2025-12-28T19:46:25.005Z] STDERR:  44%|███████████████████████████████▏                                       | 105.3/239.85 [00:29<00:34,  3.92seconds/s]
+[2025-12-28T19:46:27.046Z] STDERR:  46%|██████████████████████████▉                               | 111.14999999999999/239.85 [00:31<00:36,  3.53seconds/s]
+[2025-12-28T19:46:28.983Z] STDERR:  49%|██████████████████████████████████▋                                    | 117.0/239.85 [00:33<00:36,  3.36seconds/s]
+[2025-12-28T19:46:30.512Z] STDERR:  51%|███████████████████████████████████▊                                  | 122.85/239.85 [00:35<00:33,  3.49seconds/s]
+[2025-12-28T19:46:32.077Z] STDERR:  54%|██████████████████████████████████████                                 | 128.7/239.85 [00:36<00:31,  3.56seconds/s]
+[2025-12-28T19:46:33.618Z] STDERR:  56%|████████████████████████████████▌                         | 134.54999999999998/239.85 [00:38<00:29,  3.63seconds/s]
+[2025-12-28T19:46:35.120Z] STDERR:  59%|█████████████████████████████████▉                        | 140.39999999999998/239.85 [00:39<00:26,  3.70seconds/s]
+[2025-12-28T19:46:36.627Z] STDERR:  61%|██████████████████████████████████████████▋                           | 146.25/239.85 [00:41<00:24,  3.76seconds/s]
+[2025-12-28T19:46:38.105Z] STDERR:  63%|█████████████████████████████████████████████                          | 152.1/239.85 [00:42<00:23,  3.81seconds/s]
+[2025-12-28T19:46:39.618Z] STDERR:  66%|██████████████████████████████████████████████                        | 157.95/239.85 [00:44<00:21,  3.83seconds/s]
+[2025-12-28T19:46:41.094Z] STDERR:  68%|███████████████████████████████████████▌                  | 163.79999999999998/239.85 [00:45<00:19,  3.87seconds/s]
+[2025-12-28T19:46:42.666Z] STDERR:  71%|█████████████████████████████████████████                 | 169.64999999999998/239.85 [00:47<00:18,  3.82seconds/s]
+[2025-12-28T19:46:44.157Z] STDERR:  73%|███████████████████████████████████████████████████▉                   | 175.5/239.85 [00:48<00:16,  3.85seconds/s]
+[2025-12-28T19:46:45.640Z] STDERR:  76%|████████████████████████████████████████████████████▉                 | 181.35/239.85 [00:50<00:15,  3.88seconds/s]
+[2025-12-28T19:46:47.161Z] STDERR:  78%|███████████████████████████████████████████████████████▍               | 187.2/239.85 [00:51<00:13,  3.87seconds/s]
+[2025-12-28T19:46:49.214Z] STDERR:  80%|██████████████████████████████████████████████▋           | 193.04999999999998/239.85 [00:53<00:13,  3.49seconds/s]
+[2025-12-28T19:46:51.270Z] STDERR:  83%|████████████████████████████████████████████████          | 198.89999999999998/239.85 [00:55<00:12,  3.27seconds/s]
+[2025-12-28T19:46:53.309Z] STDERR:  85%|███████████████████████████████████████████████████████████▊          | 204.75/239.85 [00:57<00:11,  3.14seconds/s]
+[2025-12-28T19:46:55.090Z] STDERR:  88%|██████████████████████████████████████████████████████████████▎        | 210.6/239.85 [00:59<00:09,  3.18seconds/s]
+[2025-12-28T19:46:57.171Z] STDERR:  90%|███████████████████████████████████████████████████████████████▏      | 216.45/239.85 [01:01<00:07,  3.06seconds/s]
+[2025-12-28T19:46:58.990Z] STDERR:  93%|█████████████████████████████████████████████████████▊    | 222.29999999999998/239.85 [01:03<00:05,  3.11seconds/s]
+[2025-12-28T19:47:00.497Z] STDERR:  95%|███████████████████████████████████████████████████████▏  | 228.14999999999998/239.85 [01:05<00:03,  3.30seconds/s]
+[2025-12-28T19:47:02.165Z] STDERR:  98%|█████████████████████████████████████████████████████████████████████▎ | 234.0/239.85 [01:06<00:01,  3.36seconds/s]
+[2025-12-28T19:47:03.916Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:08<00:00,  3.36seconds/s]
+[2025-12-28T19:47:03.918Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:08<00:00,  3.50seconds/s]
+
+[2025-12-28T19:47:04.012Z] STDERR: Traceback (most recent call last):
+
+[2025-12-28T19:47:04.013Z] STDERR:   File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+
+[2025-12-28T19:47:04.013Z] STDERR:   File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/separate.py", line 219, in <module>
+    main()
+    ~~~~^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/separate.py", line 199, in main
+    save_audio(source, str(stem), **kwargs)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/audio.py", line 260, in save_audio
+    ta.save(str(path), wav, sample_rate=samplerate,
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            encoding=encoding, bits_per_sample=bits_per_sample)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/__init__.py", line 178, in save
+    return save_with_torchcodec(
+        uri,
+    ...<8 lines>...
+        compression=compression,
+    )
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/_torchcodec.py", line 246, in save_with_torchcodec
+    from torchcodec.encoders import AudioEncoder
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/__init__.py", line 12, in <module>
+    from . import decoders, encoders, samplers  # noqa
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/decoders/__init__.py", line 7, in <module>
+    from .._core import AudioStreamMetadata, VideoStreamMetadata
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/_core/__init__.py", line 8, in <module>
+    from ._metadata import (
+    ...<5 lines>...
+    )
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/_core/_metadata.py", line 16, in <module>
+    from torchcodec._core.ops import (
+    ...<3 lines>...
+    )
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/_core/ops.py", line 104, in <module>
+    ffmpeg_major_version, core_library_path = load_torchcodec_shared_libraries()
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/_core/ops.py", line 75, in load_torchcodec_shared_libraries
+    raise RuntimeError(
+    ...<12 lines>...
+    )
+RuntimeError: Could not load libtorchcodec. Likely causes:
+          1. FFmpeg is not properly installed in your environment. We support
+             versions 4, 5, 6, 7, and 8. On Windows, ensure you've installed
+             the "full-shared" version which ships DLLs.
+          2. The PyTorch version (2.9.1) is not compatible with
+             this version of TorchCodec. Refer to the version compatibility
+             table:
+             https://github.com/pytorch/torchcodec?tab=readme-ov-file#installing-torchcodec.
+          3. Another runtime dependency; see exceptions below.
+        The following exceptions were raised as we tried to load libtorchcodec:
+        
+[start of libtorchcodec loading traceback]
+FFmpeg version 8: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core8.dylib
+FFmpeg version 7: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core7.dylib
+FFmpeg version 6: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core6.dylib
+FFmpeg version 5: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core5.dylib
+FFmpeg version 4: Could not load this library: /Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchcodec/libtorchcodec_core4.dylib
+[end of libtorchcodec loading traceback].
+
+[2025-12-28T19:47:04.313Z] Demucs process exited with code 1
+[2025-12-28T19:47:04.425Z] Processing failed.
+[2025-12-28T19:49:57.905Z] Worker started. PID: 35975
+[2025-12-28T19:49:57.906Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T19:49:57.908Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951397470_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T19:49:57.909Z] Updating status to processing...
+[2025-12-28T19:49:58.296Z] Spawning Demucs: python3 -m demucs.separate -o /Users/jf27yc/Development/musicurious-ai/public/stems -n htdemucs /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951397470_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+[2025-12-28T19:50:00.027Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951397470_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T19:50:00.027Z] STDERR:   0%|                                                                                 | 0.0/239.85 [00:00<?, ?seconds/s]
+[2025-12-28T19:50:02.812Z] STDERR:   2%|█▊                                                                      | 5.85/239.85 [00:02<01:51,  2.10seconds/s]
+[2025-12-28T19:50:04.340Z] STDERR:   5%|███▌                                                                    | 11.7/239.85 [00:04<01:19,  2.86seconds/s]
+[2025-12-28T19:50:06.045Z] STDERR:   7%|████▏                                                     | 17.549999999999997/239.85 [00:06<01:11,  3.10seconds/s]
+[2025-12-28T19:50:07.735Z] STDERR:  10%|███████                                                                 | 23.4/239.85 [00:07<01:07,  3.23seconds/s]
+[2025-12-28T19:50:09.235Z] STDERR:  12%|████████▋                                                              | 29.25/239.85 [00:09<01:01,  3.44seconds/s]
+[2025-12-28T19:50:11.010Z] STDERR:  15%|████████▍                                                 | 35.099999999999994/239.85 [00:10<01:00,  3.39seconds/s]
+[2025-12-28T19:50:12.660Z] STDERR:  17%|█████████▉                                                | 40.949999999999996/239.85 [00:12<00:57,  3.44seconds/s]
+[2025-12-28T19:50:14.349Z] STDERR:  20%|██████████████                                                          | 46.8/239.85 [00:14<00:55,  3.45seconds/s]
+[2025-12-28T19:50:15.917Z] STDERR:  22%|███████████████▌                                                       | 52.65/239.85 [00:15<00:53,  3.53seconds/s]
+[2025-12-28T19:50:17.385Z] STDERR:  24%|█████████████████▌                                                      | 58.5/239.85 [00:17<00:49,  3.66seconds/s]
+[2025-12-28T19:50:18.867Z] STDERR:  27%|███████████████████                                                    | 64.35/239.85 [00:18<00:46,  3.74seconds/s]
+[2025-12-28T19:50:20.342Z] STDERR:  29%|█████████████████▎                                         | 70.19999999999999/239.85 [00:20<00:44,  3.81seconds/s]
+[2025-12-28T19:50:21.825Z] STDERR:  32%|██████████████████████▌                                                | 76.05/239.85 [00:21<00:42,  3.85seconds/s]
+[2025-12-28T19:50:23.342Z] STDERR:  34%|████████████████████▏                                      | 81.89999999999999/239.85 [00:23<00:41,  3.85seconds/s]
+[2025-12-28T19:50:24.854Z] STDERR:  37%|█████████████████████████▉                                             | 87.75/239.85 [00:24<00:39,  3.86seconds/s]
+[2025-12-28T19:50:26.327Z] STDERR:  39%|████████████████████████████                                            | 93.6/239.85 [00:26<00:37,  3.89seconds/s]
+[2025-12-28T19:50:27.804Z] STDERR:  41%|████████████████████████▍                                  | 99.44999999999999/239.85 [00:27<00:35,  3.91seconds/s]
+[2025-12-28T19:50:29.313Z] STDERR:  44%|███████████████████████████████▏                                       | 105.3/239.85 [00:29<00:34,  3.90seconds/s]
+[2025-12-28T19:50:30.822Z] STDERR:  46%|██████████████████████████▉                               | 111.14999999999999/239.85 [00:30<00:33,  3.89seconds/s]
+[2025-12-28T19:50:32.301Z] STDERR:  49%|██████████████████████████████████▋                                    | 117.0/239.85 [00:32<00:31,  3.91seconds/s]
+[2025-12-28T19:50:33.796Z] STDERR:  51%|███████████████████████████████████▊                                  | 122.85/239.85 [00:33<00:29,  3.91seconds/s]
+[2025-12-28T19:50:35.330Z] STDERR:  54%|██████████████████████████████████████                                 | 128.7/239.85 [00:35<00:28,  3.88seconds/s]
+[2025-12-28T19:50:36.839Z] STDERR:  56%|████████████████████████████████▌                         | 134.54999999999998/239.85 [00:36<00:27,  3.88seconds/s]
+[2025-12-28T19:50:38.328Z] STDERR:  59%|█████████████████████████████████▉                        | 140.39999999999998/239.85 [00:38<00:25,  3.89seconds/s]
+[2025-12-28T19:50:39.826Z] STDERR:  61%|██████████████████████████████████████████▋                           | 146.25/239.85 [00:39<00:24,  3.90seconds/s]
+[2025-12-28T19:50:41.323Z] STDERR:  63%|█████████████████████████████████████████████                          | 152.1/239.85 [00:41<00:22,  3.90seconds/s]
+[2025-12-28T19:50:42.894Z] STDERR:  66%|██████████████████████████████████████████████                        | 157.95/239.85 [00:42<00:21,  3.85seconds/s]
+[2025-12-28T19:50:44.382Z] STDERR:  68%|███████████████████████████████████████▌                  | 163.79999999999998/239.85 [00:44<00:19,  3.87seconds/s]
+[2025-12-28T19:50:45.892Z] STDERR:  71%|█████████████████████████████████████████                 | 169.64999999999998/239.85 [00:45<00:18,  3.87seconds/s]
+[2025-12-28T19:50:47.393Z] STDERR:  73%|███████████████████████████████████████████████████▉                   | 175.5/239.85 [00:47<00:16,  3.88seconds/s]
+[2025-12-28T19:50:48.893Z] STDERR:  76%|████████████████████████████████████████████████████▉                 | 181.35/239.85 [00:48<00:15,  3.89seconds/s]
+[2025-12-28T19:50:50.413Z] STDERR:  78%|███████████████████████████████████████████████████████▍               | 187.2/239.85 [00:50<00:13,  3.87seconds/s]
+[2025-12-28T19:50:51.950Z] STDERR:  80%|██████████████████████████████████████████████▋           | 193.04999999999998/239.85 [00:51<00:12,  3.85seconds/s]
+[2025-12-28T19:50:53.438Z] STDERR:  83%|████████████████████████████████████████████████          | 198.89999999999998/239.85 [00:53<00:10,  3.88seconds/s]
+[2025-12-28T19:50:54.940Z] STDERR:  85%|███████████████████████████████████████████████████████████▊          | 204.75/239.85 [00:54<00:09,  3.88seconds/s]
+[2025-12-28T19:50:56.434Z] STDERR:  88%|██████████████████████████████████████████████████████████████▎        | 210.6/239.85 [00:56<00:07,  3.89seconds/s]
+[2025-12-28T19:50:57.940Z] STDERR:  90%|███████████████████████████████████████████████████████████████▏      | 216.45/239.85 [00:57<00:06,  3.89seconds/s]
+[2025-12-28T19:50:59.441Z] STDERR:  93%|█████████████████████████████████████████████████████▊    | 222.29999999999998/239.85 [00:59<00:04,  3.89seconds/s]
+[2025-12-28T19:51:00.950Z] STDERR:  95%|███████████████████████████████████████████████████████▏  | 228.14999999999998/239.85 [01:00<00:03,  3.89seconds/s]
+[2025-12-28T19:51:02.453Z] STDERR:  98%|█████████████████████████████████████████████████████████████████████▎ | 234.0/239.85 [01:02<00:01,  3.89seconds/s]
+[2025-12-28T19:51:03.970Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:03<00:00,  3.88seconds/s]
+[2025-12-28T19:51:03.971Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:03<00:00,  3.75seconds/s]
+
+[2025-12-28T19:51:04.058Z] STDERR: Traceback (most recent call last):
+
+[2025-12-28T19:51:04.059Z] STDERR:   File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/_torchcodec.py", line 246, in save_with_torchcodec
+    from torchcodec.encoders import AudioEncoder
+ModuleNotFoundError: No module named 'torchcodec'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+
+[2025-12-28T19:51:04.059Z] STDERR:   File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/separate.py", line 219, in <module>
+    main()
+    ~~~~^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/separate.py", line 199, in main
+    save_audio(source, str(stem), **kwargs)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/audio.py", line 260, in save_audio
+    ta.save(str(path), wav, sample_rate=samplerate,
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            encoding=encoding, bits_per_sample=bits_per_sample)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/__init__.py", line 178, in save
+    return save_with_torchcodec(
+        uri,
+    ...<8 lines>...
+        compression=compression,
+    )
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torchaudio/_torchcodec.py", line 248, in save_with_torchcodec
+    raise ImportError(
+        "TorchCodec is required for save_with_torchcodec. " "Please install torchcodec to use this function."
+    ) from e
+ImportError: TorchCodec is required for save_with_torchcodec. Please install torchcodec to use this function.
+
+[2025-12-28T19:51:04.396Z] Demucs process exited with code 1
+[2025-12-28T19:51:04.511Z] Processing failed.
+[2025-12-28T19:52:32.647Z] Worker started. PID: 36801
+[2025-12-28T19:52:32.648Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T19:52:32.650Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951552236_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T19:52:32.650Z] Updating status to processing...
+[2025-12-28T19:52:33.039Z] Spawning Demucs Wrapper: python3 /Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py -m demucs.separate ...
+[2025-12-28T19:52:34.230Z] STDERR: Applying torchaudio.save monkeypatch...
+Running Demucs with args: ['-m', 'demucs.separate', '-o', '/Users/jf27yc/Development/musicurious-ai/public/stems', '-n', 'htdemucs', '/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951552236_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3']
+
+[2025-12-28T19:52:34.230Z] STDERR: usage: demucs.separate [-h] [-s SIG | -n NAME] [--repo REPO] [-v] [-o OUT]
+                       [--filename FILENAME] [-d DEVICE] [--shifts SHIFTS]
+                       [--overlap OVERLAP] [--no-split | --segment SEGMENT]
+                       [--two-stems STEM] [--int24 | --float32]
+                       [--clip-mode {rescale,clamp}] [--flac | --mp3]
+                       [--mp3-bitrate MP3_BITRATE]
+                       [--mp3-preset {2,3,4,5,6,7}] [-j JOBS]
+                       tracks [tracks ...]
+
+[2025-12-28T19:52:34.231Z] STDERR: demucs.separate: error: unrecognized arguments: -m /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951552236_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T19:52:34.402Z] Demucs process exited with code 2
+[2025-12-28T19:52:34.525Z] Processing failed.
+[2025-12-28T19:52:56.434Z] Worker started. PID: 36872
+[2025-12-28T19:52:56.435Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T19:52:56.437Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951576015_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T19:52:56.437Z] Updating status to processing...
+[2025-12-28T19:52:56.808Z] Spawning Demucs Wrapper: python3 /Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py -m demucs.separate ...
+[2025-12-28T19:53:01.555Z] STDERR: Applying torchaudio.save monkeypatch...
+Running Demucs with args: ['-m', 'demucs.separate', '-o', '/Users/jf27yc/Development/musicurious-ai/public/stems', '-n', 'htdemucs', '/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951576015_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3']
+
+[2025-12-28T19:53:01.557Z] STDERR: usage: demucs.separate [-h] [-s SIG | -n NAME] [--repo REPO] [-v] [-o OUT]
+                       [--filename FILENAME] [-d DEVICE] [--shifts SHIFTS]
+                       [--overlap OVERLAP] [--no-split | --segment SEGMENT]
+                       [--two-stems STEM] [--int24 | --float32]
+                       [--clip-mode {rescale,clamp}] [--flac | --mp3]
+                       [--mp3-bitrate MP3_BITRATE]
+                       [--mp3-preset {2,3,4,5,6,7}] [-j JOBS]
+                       tracks [tracks ...]
+
+[2025-12-28T19:53:01.558Z] STDERR: demucs.separate: error: unrecognized arguments: -m /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951576015_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T19:53:01.833Z] Demucs process exited with code 2
+[2025-12-28T19:53:02.202Z] Processing failed.
+[2025-12-28T19:54:21.157Z] Worker started. PID: 37297
+[2025-12-28T19:54:21.159Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T19:54:21.160Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951660716_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T19:54:21.161Z] Updating status to processing...
+[2025-12-28T19:54:21.536Z] Spawning Demucs Wrapper: python3 /Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py -m demucs.separate ...
+[2025-12-28T19:54:22.481Z] STDERR: Applying torchaudio.save monkeypatch...
+Running Demucs with args: ['-o', '/Users/jf27yc/Development/musicurious-ai/public/stems', '-n', 'htdemucs', '/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951660716_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3']
+
+[2025-12-28T19:54:23.159Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766951660716_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T19:54:23.160Z] STDERR:   0%|                                                                                 | 0.0/239.85 [00:00<?, ?seconds/s]
+[2025-12-28T19:54:29.265Z] STDERR:   2%|█▊                                                                      | 5.85/239.85 [00:06<04:04,  1.04s/seconds]
+[2025-12-28T19:54:30.745Z] STDERR:   5%|███▌                                                                    | 11.7/239.85 [00:07<02:11,  1.73seconds/s]
+[2025-12-28T19:54:32.196Z] STDERR:   7%|████▏                                                     | 17.549999999999997/239.85 [00:09<01:35,  2.34seconds/s]
+[2025-12-28T19:54:33.651Z] STDERR:  10%|███████                                                                 | 23.4/239.85 [00:10<01:17,  2.80seconds/s]
+[2025-12-28T19:54:35.141Z] STDERR:  12%|████████▋                                                              | 29.25/239.85 [00:11<01:07,  3.12seconds/s]
+[2025-12-28T19:54:36.652Z] STDERR:  15%|████████▍                                                 | 35.099999999999994/239.85 [00:13<01:01,  3.34seconds/s]
+[2025-12-28T19:54:38.136Z] STDERR:  17%|█████████▉                                                | 40.949999999999996/239.85 [00:14<00:56,  3.52seconds/s]
+[2025-12-28T19:54:39.591Z] STDERR:  20%|██████████████                                                          | 46.8/239.85 [00:16<00:52,  3.66seconds/s]
+[2025-12-28T19:54:41.070Z] STDERR:  22%|███████████████▌                                                       | 52.65/239.85 [00:17<00:49,  3.75seconds/s]
+[2025-12-28T19:54:42.555Z] STDERR:  24%|█████████████████▌                                                      | 58.5/239.85 [00:19<00:47,  3.81seconds/s]
+[2025-12-28T19:54:44.023Z] STDERR:  27%|███████████████████                                                    | 64.35/239.85 [00:20<00:45,  3.86seconds/s]
+[2025-12-28T19:54:45.491Z] STDERR:  29%|█████████████████▎                                         | 70.19999999999999/239.85 [00:22<00:43,  3.90seconds/s]
+[2025-12-28T19:54:46.977Z] STDERR:  32%|██████████████████████▌                                                | 76.05/239.85 [00:23<00:41,  3.91seconds/s]
+[2025-12-28T19:54:48.445Z] STDERR:  34%|████████████████████▏                                      | 81.89999999999999/239.85 [00:25<00:40,  3.93seconds/s]
+[2025-12-28T19:54:50.020Z] STDERR:  37%|█████████████████████████▉                                             | 87.75/239.85 [00:26<00:39,  3.86seconds/s]
+[2025-12-28T19:54:51.564Z] STDERR:  39%|████████████████████████████                                            | 93.6/239.85 [00:28<00:38,  3.84seconds/s]
+[2025-12-28T19:54:53.044Z] STDERR:  41%|████████████████████████▍                                  | 99.44999999999999/239.85 [00:29<00:36,  3.87seconds/s]
+[2025-12-28T19:54:54.595Z] STDERR:  44%|███████████████████████████████▏                                       | 105.3/239.85 [00:31<00:35,  3.84seconds/s]
+[2025-12-28T19:54:56.273Z] STDERR:  46%|██████████████████████████▉                               | 111.14999999999999/239.85 [00:33<00:34,  3.73seconds/s]
+[2025-12-28T19:54:57.791Z] STDERR:  49%|██████████████████████████████████▋                                    | 117.0/239.85 [00:34<00:32,  3.76seconds/s]
+[2025-12-28T19:54:59.282Z] STDERR:  51%|███████████████████████████████████▊                                  | 122.85/239.85 [00:36<00:30,  3.81seconds/s]
+[2025-12-28T19:55:00.756Z] STDERR:  54%|██████████████████████████████████████                                 | 128.7/239.85 [00:37<00:28,  3.86seconds/s]
+[2025-12-28T19:55:02.223Z] STDERR:  56%|████████████████████████████████▌                         | 134.54999999999998/239.85 [00:39<00:27,  3.90seconds/s]
+[2025-12-28T19:55:03.686Z] STDERR:  59%|█████████████████████████████████▉                        | 140.39999999999998/239.85 [00:40<00:25,  3.93seconds/s]
+[2025-12-28T19:55:05.165Z] STDERR:  61%|██████████████████████████████████████████▋                           | 146.25/239.85 [00:42<00:23,  3.93seconds/s]
+[2025-12-28T19:55:06.665Z] STDERR:  63%|█████████████████████████████████████████████                          | 152.1/239.85 [00:43<00:22,  3.92seconds/s]
+[2025-12-28T19:55:08.162Z] STDERR:  66%|██████████████████████████████████████████████                        | 157.95/239.85 [00:45<00:20,  3.92seconds/s]
+[2025-12-28T19:55:09.631Z] STDERR:  68%|███████████████████████████████████████▌                  | 163.79999999999998/239.85 [00:46<00:19,  3.94seconds/s]
+[2025-12-28T19:55:11.127Z] STDERR:  71%|█████████████████████████████████████████                 | 169.64999999999998/239.85 [00:47<00:17,  3.93seconds/s]
+[2025-12-28T19:55:12.667Z] STDERR:  73%|███████████████████████████████████████████████████▉                   | 175.5/239.85 [00:49<00:16,  3.89seconds/s]
+[2025-12-28T19:55:14.201Z] STDERR:  76%|████████████████████████████████████████████████████▉                 | 181.35/239.85 [00:51<00:15,  3.87seconds/s]
+[2025-12-28T19:55:15.748Z] STDERR:  78%|███████████████████████████████████████████████████████▍               | 187.2/239.85 [00:52<00:13,  3.84seconds/s]
+[2025-12-28T19:55:17.283Z] STDERR:  80%|██████████████████████████████████████████████▋           | 193.04999999999998/239.85 [00:54<00:12,  3.83seconds/s]
+[2025-12-28T19:55:18.763Z] STDERR:  83%|████████████████████████████████████████████████          | 198.89999999999998/239.85 [00:55<00:10,  3.87seconds/s]
+[2025-12-28T19:55:20.221Z] STDERR:  85%|███████████████████████████████████████████████████████████▊          | 204.75/239.85 [00:57<00:08,  3.91seconds/s]
+[2025-12-28T19:55:21.699Z] STDERR:  88%|██████████████████████████████████████████████████████████████▎        | 210.6/239.85 [00:58<00:07,  3.92seconds/s]
+[2025-12-28T19:55:23.194Z] STDERR:  90%|███████████████████████████████████████████████████████████████▏      | 216.45/239.85 [01:00<00:05,  3.92seconds/s]
+[2025-12-28T19:55:24.716Z] STDERR:  93%|█████████████████████████████████████████████████████▊    | 222.29999999999998/239.85 [01:01<00:04,  3.90seconds/s]
+[2025-12-28T19:55:26.203Z] STDERR:  95%|███████████████████████████████████████████████████████▏  | 228.14999999999998/239.85 [01:03<00:02,  3.91seconds/s]
+[2025-12-28T19:55:27.786Z] STDERR:  98%|█████████████████████████████████████████████████████████████████████▎ | 234.0/239.85 [01:04<00:01,  3.84seconds/s]
+[2025-12-28T19:55:29.327Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:06<00:00,  3.83seconds/s]
+[2025-12-28T19:55:29.329Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:06<00:00,  3.62seconds/s]
+
+[2025-12-28T19:55:30.245Z] Demucs process exited with code 0
+[2025-12-28T19:55:30.360Z] Processing completed successfully.
+[2025-12-28T20:05:47.048Z] Worker started. PID: 38349
+[2025-12-28T20:05:47.049Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T20:05:47.051Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766952346587_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T20:05:47.051Z] Updating status to processing...
+[2025-12-28T20:05:47.427Z] Spawning Demucs Wrapper: python3 /Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py -m demucs.separate ...
+[2025-12-28T20:05:48.498Z] STDERR: Applying torchaudio.save monkeypatch...
+Running Demucs with args: ['-o', '/Users/jf27yc/Development/musicurious-ai/public/stems', '-n', 'htdemucs', '/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766952346587_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3']
+
+[2025-12-28T20:05:49.728Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766952346587_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T20:05:49.730Z] STDERR:   0%|                                                                                 | 0.0/239.85 [00:00<?, ?seconds/s]
+[2025-12-28T20:05:52.024Z] STDERR:   2%|█▊                                                                      | 5.85/239.85 [00:02<01:31,  2.55seconds/s]
+[2025-12-28T20:05:53.492Z] STDERR:   5%|███▌                                                                    | 11.7/239.85 [00:03<01:10,  3.23seconds/s]
+[2025-12-28T20:05:54.953Z] STDERR:   7%|████▏                                                     | 17.549999999999997/239.85 [00:05<01:02,  3.55seconds/s]
+[2025-12-28T20:05:56.396Z] STDERR:  10%|███████                                                                 | 23.4/239.85 [00:06<00:58,  3.73seconds/s]
+[2025-12-28T20:05:57.846Z] STDERR:  12%|████████▋                                                              | 29.25/239.85 [00:08<00:54,  3.83seconds/s]
+[2025-12-28T20:05:59.314Z] STDERR:  15%|████████▍                                                 | 35.099999999999994/239.85 [00:09<00:52,  3.88seconds/s]
+[2025-12-28T20:06:00.771Z] STDERR:  17%|█████████▉                                                | 40.949999999999996/239.85 [00:11<00:50,  3.93seconds/s]
+[2025-12-28T20:06:02.219Z] STDERR:  20%|██████████████                                                          | 46.8/239.85 [00:12<00:48,  3.96seconds/s]
+[2025-12-28T20:06:03.676Z] STDERR:  22%|███████████████▌                                                       | 52.65/239.85 [00:13<00:47,  3.98seconds/s]
+[2025-12-28T20:06:05.159Z] STDERR:  24%|█████████████████▌                                                      | 58.5/239.85 [00:15<00:45,  3.97seconds/s]
+[2025-12-28T20:06:06.629Z] STDERR:  27%|███████████████████                                                    | 64.35/239.85 [00:16<00:44,  3.97seconds/s]
+[2025-12-28T20:06:08.185Z] STDERR:  29%|█████████████████▎                                         | 70.19999999999999/239.85 [00:18<00:43,  3.90seconds/s]
+[2025-12-28T20:06:09.649Z] STDERR:  32%|██████████████████████▌                                                | 76.05/239.85 [00:19<00:41,  3.93seconds/s]
+[2025-12-28T20:06:11.103Z] STDERR:  34%|████████████████████▏                                      | 81.89999999999999/239.85 [00:21<00:39,  3.96seconds/s]
+[2025-12-28T20:06:12.571Z] STDERR:  37%|█████████████████████████▉                                             | 87.75/239.85 [00:22<00:38,  3.97seconds/s]
+[2025-12-28T20:06:14.052Z] STDERR:  39%|████████████████████████████                                            | 93.6/239.85 [00:24<00:36,  3.96seconds/s]
+[2025-12-28T20:06:15.513Z] STDERR:  41%|████████████████████████▍                                  | 99.44999999999999/239.85 [00:25<00:35,  3.97seconds/s]
+[2025-12-28T20:06:16.971Z] STDERR:  44%|███████████████████████████████▏                                       | 105.3/239.85 [00:27<00:33,  3.99seconds/s]
+[2025-12-28T20:06:18.447Z] STDERR:  46%|██████████████████████████▉                               | 111.14999999999999/239.85 [00:28<00:32,  3.98seconds/s]
+[2025-12-28T20:06:19.933Z] STDERR:  49%|██████████████████████████████████▋                                    | 117.0/239.85 [00:30<00:30,  3.97seconds/s]
+[2025-12-28T20:06:21.387Z] STDERR:  51%|███████████████████████████████████▊                                  | 122.85/239.85 [00:31<00:29,  3.98seconds/s]
+[2025-12-28T20:06:22.856Z] STDERR:  54%|██████████████████████████████████████                                 | 128.7/239.85 [00:33<00:27,  3.98seconds/s]
+[2025-12-28T20:06:24.358Z] STDERR:  56%|████████████████████████████████▌                         | 134.54999999999998/239.85 [00:34<00:26,  3.96seconds/s]
+[2025-12-28T20:06:25.832Z] STDERR:  59%|█████████████████████████████████▉                        | 140.39999999999998/239.85 [00:36<00:25,  3.96seconds/s]
+[2025-12-28T20:06:27.308Z] STDERR:  61%|██████████████████████████████████████████▋                           | 146.25/239.85 [00:37<00:23,  3.96seconds/s]
+[2025-12-28T20:06:28.775Z] STDERR:  63%|█████████████████████████████████████████████                          | 152.1/239.85 [00:39<00:22,  3.97seconds/s]
+[2025-12-28T20:06:30.268Z] STDERR:  66%|██████████████████████████████████████████████                        | 157.95/239.85 [00:40<00:20,  3.95seconds/s]
+[2025-12-28T20:06:31.720Z] STDERR:  68%|███████████████████████████████████████▌                  | 163.79999999999998/239.85 [00:41<00:19,  3.98seconds/s]
+[2025-12-28T20:06:33.211Z] STDERR:  71%|█████████████████████████████████████████                 | 169.64999999999998/239.85 [00:43<00:17,  3.96seconds/s]
+[2025-12-28T20:06:34.691Z] STDERR:  73%|███████████████████████████████████████████████████▉                   | 175.5/239.85 [00:44<00:16,  3.96seconds/s]
+[2025-12-28T20:06:36.156Z] STDERR:  76%|████████████████████████████████████████████████████▉                 | 181.35/239.85 [00:46<00:14,  3.97seconds/s]
+[2025-12-28T20:06:37.635Z] STDERR:  78%|███████████████████████████████████████████████████████▍               | 187.2/239.85 [00:47<00:13,  3.96seconds/s]
+[2025-12-28T20:06:39.122Z] STDERR:  80%|██████████████████████████████████████████████▋           | 193.04999999999998/239.85 [00:49<00:11,  3.96seconds/s]
+[2025-12-28T20:06:40.622Z] STDERR:  83%|████████████████████████████████████████████████          | 198.89999999999998/239.85 [00:50<00:10,  3.94seconds/s]
+[2025-12-28T20:06:42.128Z] STDERR:  85%|███████████████████████████████████████████████████████████▊          | 204.75/239.85 [00:52<00:08,  3.92seconds/s]
+[2025-12-28T20:06:43.607Z] STDERR:  88%|██████████████████████████████████████████████████████████████▎        | 210.6/239.85 [00:53<00:07,  3.93seconds/s]
+[2025-12-28T20:06:45.092Z] STDERR:  90%|███████████████████████████████████████████████████████████████▏      | 216.45/239.85 [00:55<00:05,  3.93seconds/s]
+[2025-12-28T20:06:46.571Z] STDERR:  93%|█████████████████████████████████████████████████████▊    | 222.29999999999998/239.85 [00:56<00:04,  3.94seconds/s]
+[2025-12-28T20:06:48.041Z] STDERR:  95%|███████████████████████████████████████████████████████▏  | 228.14999999999998/239.85 [00:58<00:02,  3.95seconds/s]
+[2025-12-28T20:06:49.525Z] STDERR:  98%|█████████████████████████████████████████████████████████████████████▎ | 234.0/239.85 [00:59<00:01,  3.95seconds/s]
+[2025-12-28T20:06:51.002Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:01<00:00,  3.95seconds/s]
+[2025-12-28T20:06:51.004Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:01<00:00,  3.91seconds/s]
+
+[2025-12-28T20:06:51.892Z] Demucs process exited with code 0
+[2025-12-28T20:06:52.004Z] Processing completed successfully.
+[2025-12-28T20:11:47.578Z] Worker started. PID: 38878
+[2025-12-28T20:11:47.579Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T20:11:47.580Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766952707091_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T20:11:47.581Z] Updating status to processing...
+[2025-12-28T20:11:47.954Z] Spawning Demucs Wrapper: python3 /Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py -m demucs.separate ...
+[2025-12-28T20:11:52.980Z] STDERR: Applying torchaudio.save monkeypatch...
+Running Demucs with args: ['-o', '/Users/jf27yc/Development/musicurious-ai/public/stems', '-n', 'htdemucs_6s', '/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766952707091_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3']
+
+[2025-12-28T20:11:53.121Z] STDOUT: Downloading: "https://dl.fbaipublicfiles.com/demucs/hybrid_transformer/5c90dfd2-34c22ccb.th" to /Users/jf27yc/.cache/torch/hub/checkpoints/5c90dfd2-34c22ccb.th
+
+[2025-12-28T20:11:53.211Z] STDERR: Traceback (most recent call last):
+
+[2025-12-28T20:11:53.213Z] STDERR:   File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/urllib/request.py", line 1319, in do_open
+    h.request(req.get_method(), req.selector, req.data, headers,
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              encode_chunked=req.has_header('Transfer-encoding'))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/client.py", line 1358, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/client.py", line 1404, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/client.py", line 1353, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[2025-12-28T20:11:53.214Z] STDERR:   File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/client.py", line 1113, in _send_output
+    self.send(msg)
+    ~~~~~~~~~^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/client.py", line 1057, in send
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/client.py", line 1499, in connect
+    self.sock = self._context.wrap_socket(self.sock,
+                ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+                                          server_hostname=server_hostname)
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ssl.py", line 455, in wrap_socket
+    return self.sslsocket_class._create(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sock=sock,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        session=session
+        ^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ssl.py", line 1076, in _create
+    self.do_handshake()
+    ~~~~~~~~~~~~~~~~~^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ssl.py", line 1372, in do_handshake
+    self._sslobj.do_handshake()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+
+[2025-12-28T20:11:53.214Z] STDERR:   File "/Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py", line 53, in <module>
+    demucs.separate.main()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/separate.py", line 133, in main
+    model = get_model_from_args(args)
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/pretrained.py", line 96, in get_model_from_args
+    return get_model(name=args.name, repo=args.repo)
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/pretrained.py", line 76, in get_model
+    model = any_repo.get_model(name)
+
+[2025-12-28T20:11:53.215Z] STDERR:   File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/repo.py", line 148, in get_model
+    return self.bag_repo.get_model(name_or_sig)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/repo.py", line 130, in get_model
+    models = [self.model_repo.get_model(sig) for sig in signatures]
+              ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/repo.py", line 65, in get_model
+    pkg = torch.hub.load_state_dict_from_url(
+        url, map_location='cpu', check_hash=True)  # type: ignore
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torch/hub.py", line 876, in load_state_dict_from_url
+    download_url_to_file(url, cached_file, hash_prefix, progress=progress)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torch/hub.py", line 717, in download_url_to_file
+    u = urlopen(req)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/urllib/request.py", line 189, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/urllib/request.py", line 489, in open
+    response = self._open(req, data)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/urllib/request.py", line 506, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+                              '_open', req)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/urllib/request.py", line 466, in _call_chain
+    result = func(*args)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/urllib/request.py", line 1367, in https_open
+    return self.do_open(http.client.HTTPSConnection, req,
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        context=self._context)
+                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/urllib/request.py", line 1322, in do_open
+    raise URLError(err)
+urllib.error.URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032)>
+
+[2025-12-28T20:11:53.474Z] Demucs process exited with code 1
+[2025-12-28T20:11:53.845Z] Processing failed.
+[2025-12-28T20:13:04.795Z] Worker started. PID: 38991
+[2025-12-28T20:13:04.796Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T20:13:04.797Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766952784376_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T20:13:04.798Z] Updating status to processing...
+[2025-12-28T20:13:05.166Z] Spawning Demucs Wrapper: python3 /Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py -m demucs.separate ...
+[2025-12-28T20:13:06.090Z] STDERR: Applying torchaudio.save monkeypatch...
+Running Demucs with args: ['-o', '/Users/jf27yc/Development/musicurious-ai/public/stems', '-n', 'htdemucs_6s', '/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766952784376_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3']
+
+[2025-12-28T20:13:06.121Z] STDOUT: Downloading: "https://dl.fbaipublicfiles.com/demucs/hybrid_transformer/5c90dfd2-34c22ccb.th" to /Users/jf27yc/.cache/torch/hub/checkpoints/5c90dfd2-34c22ccb.th
+
+[2025-12-28T20:13:06.122Z] STDERR: Traceback (most recent call last):
+
+[2025-12-28T20:13:06.123Z] STDERR:   File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/urllib/request.py", line 1319, in do_open
+    h.request(req.get_method(), req.selector, req.data, headers,
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              encode_chunked=req.has_header('Transfer-encoding'))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[2025-12-28T20:13:06.123Z] STDERR:   File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/client.py", line 1358, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/client.py", line 1404, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/client.py", line 1353, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/client.py", line 1113, in _send_output
+    self.send(msg)
+    ~~~~~~~~~^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/client.py", line 1057, in send
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/client.py", line 1499, in connect
+    self.sock = self._context.wrap_socket(self.sock,
+                ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+                                          server_hostname=server_hostname)
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ssl.py", line 455, in wrap_socket
+    return self.sslsocket_class._create(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sock=sock,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        session=session
+        ^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ssl.py", line 1076, in _create
+    self.do_handshake()
+    ~~~~~~~~~~~~~~~~~^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ssl.py", line 1372, in do_handshake
+    self._sslobj.do_handshake()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+
+[2025-12-28T20:13:06.123Z] STDERR:   File "/Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py", line 53, in <module>
+    demucs.separate.main()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/separate.py", line 133, in main
+    model = get_model_from_args(args)
+
+[2025-12-28T20:13:06.124Z] STDERR:   File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/pretrained.py", line 96, in get_model_from_args
+    return get_model(name=args.name, repo=args.repo)
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/pretrained.py", line 76, in get_model
+    model = any_repo.get_model(name)
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/repo.py", line 148, in get_model
+    return self.bag_repo.get_model(name_or_sig)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/repo.py", line 130, in get_model
+    models = [self.model_repo.get_model(sig) for sig in signatures]
+              ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/demucs/repo.py", line 65, in get_model
+    pkg = torch.hub.load_state_dict_from_url(
+        url, map_location='cpu', check_hash=True)  # type: ignore
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torch/hub.py", line 876, in load_state_dict_from_url
+    download_url_to_file(url, cached_file, hash_prefix, progress=progress)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/jf27yc/Library/Python/3.13/lib/python/site-packages/torch/hub.py", line 717, in download_url_to_file
+    u = urlopen(req)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/urllib/request.py", line 189, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/urllib/request.py", line 489, in open
+    response = self._open(req, data)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/urllib/request.py", line 506, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+                              '_open', req)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/urllib/request.py", line 466, in _call_chain
+    result = func(*args)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/urllib/request.py", line 1367, in https_open
+    return self.do_open(http.client.HTTPSConnection, req,
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        context=self._context)
+                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/urllib/request.py", line 1322, in do_open
+    raise URLError(err)
+urllib.error.URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1032)>
+
+[2025-12-28T20:13:06.268Z] Demucs process exited with code 1
+[2025-12-28T20:13:06.377Z] Processing failed.
+[2025-12-28T20:14:34.716Z] Worker started. PID: 39145
+[2025-12-28T20:14:34.718Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T20:14:34.719Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766952874283_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T20:14:34.720Z] Updating status to processing...
+[2025-12-28T20:14:35.100Z] Spawning Demucs Wrapper: python3 /Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py -m demucs.separate ...
+[2025-12-28T20:14:36.088Z] STDERR: Applying torchaudio.save monkeypatch...
+Running Demucs with args: ['-o', '/Users/jf27yc/Development/musicurious-ai/public/stems', '-n', 'htdemucs_6s', '/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766952874283_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3']
+
+[2025-12-28T20:14:36.174Z] STDOUT: Downloading: "https://dl.fbaipublicfiles.com/demucs/hybrid_transformer/5c90dfd2-34c22ccb.th" to /Users/jf27yc/.cache/torch/hub/checkpoints/5c90dfd2-34c22ccb.th
+
+[2025-12-28T20:14:36.175Z] STDERR:   0%|          | 0.00/52.4M [00:00<?, ?B/s]
+[2025-12-28T20:14:36.276Z] STDERR:   7%|▋         | 3.62M/52.4M [00:00<00:01, 37.4MB/s]
+[2025-12-28T20:14:36.379Z] STDERR:  20%|█▉        | 10.4M/52.4M [00:00<00:00, 56.2MB/s]
+[2025-12-28T20:14:36.479Z] STDERR:  35%|███▍      | 18.2M/52.4M [00:00<00:00, 67.8MB/s]
+[2025-12-28T20:14:36.581Z] STDERR:  52%|█████▏    | 27.1M/52.4M [00:00<00:00, 77.2MB/s]
+[2025-12-28T20:14:36.681Z] STDERR:  67%|██████▋   | 35.2M/52.4M [00:00<00:00, 80.0MB/s]
+[2025-12-28T20:14:36.794Z] STDERR:  82%|████████▏ | 43.0M/52.4M [00:00<00:00, 77.1MB/s]
+[2025-12-28T20:14:36.899Z] STDERR:  96%|█████████▋| 50.5M/52.4M [00:00<00:00, 76.4MB/s]
+[2025-12-28T20:14:36.928Z] STDERR: 100%|██████████| 52.4M/52.4M [00:00<00:00, 73.0MB/s]
+
+[2025-12-28T20:14:37.671Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs_6s
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766952874283_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T20:14:37.672Z] STDERR:   0%|                                                                                 | 0.0/239.85 [00:00<?, ?seconds/s]
+[2025-12-28T20:14:43.000Z] STDERR:   2%|█▊                                                                      | 5.85/239.85 [00:05<03:33,  1.10seconds/s]
+[2025-12-28T20:14:44.480Z] STDERR:   5%|███▌                                                                    | 11.7/239.85 [00:06<01:59,  1.91seconds/s]
+[2025-12-28T20:14:45.955Z] STDERR:   7%|████▏                                                     | 17.549999999999997/239.85 [00:08<01:28,  2.50seconds/s]
+[2025-12-28T20:14:47.479Z] STDERR:  10%|███████                                                                 | 23.4/239.85 [00:09<01:14,  2.90seconds/s]
+[2025-12-28T20:14:49.006Z] STDERR:  12%|████████▋                                                              | 29.25/239.85 [00:11<01:06,  3.18seconds/s]
+[2025-12-28T20:14:50.514Z] STDERR:  15%|████████▍                                                 | 35.099999999999994/239.85 [00:12<01:00,  3.39seconds/s]
+[2025-12-28T20:14:51.994Z] STDERR:  17%|█████████▉                                                | 40.949999999999996/239.85 [00:14<00:55,  3.55seconds/s]
+[2025-12-28T20:14:53.479Z] STDERR:  20%|██████████████                                                          | 46.8/239.85 [00:15<00:52,  3.67seconds/s]
+[2025-12-28T20:14:54.931Z] STDERR:  22%|███████████████▌                                                       | 52.65/239.85 [00:17<00:49,  3.77seconds/s]
+[2025-12-28T20:14:56.382Z] STDERR:  24%|█████████████████▌                                                      | 58.5/239.85 [00:18<00:47,  3.85seconds/s]
+[2025-12-28T20:14:57.845Z] STDERR:  27%|███████████████████                                                    | 64.35/239.85 [00:20<00:45,  3.89seconds/s]
+[2025-12-28T20:14:59.305Z] STDERR:  29%|█████████████████▎                                         | 70.19999999999999/239.85 [00:21<00:43,  3.93seconds/s]
+[2025-12-28T20:15:00.907Z] STDERR:  32%|██████████████████████▌                                                | 76.05/239.85 [00:23<00:42,  3.84seconds/s]
+[2025-12-28T20:15:02.349Z] STDERR:  34%|████████████████████▏                                      | 81.89999999999999/239.85 [00:24<00:40,  3.90seconds/s]
+[2025-12-28T20:15:03.796Z] STDERR:  37%|█████████████████████████▉                                             | 87.75/239.85 [00:26<00:38,  3.94seconds/s]
+[2025-12-28T20:15:05.238Z] STDERR:  39%|████████████████████████████                                            | 93.6/239.85 [00:27<00:36,  3.98seconds/s]
+[2025-12-28T20:15:06.709Z] STDERR:  41%|████████████████████████▍                                  | 99.44999999999999/239.85 [00:29<00:35,  3.98seconds/s]
+[2025-12-28T20:15:08.166Z] STDERR:  44%|███████████████████████████████▏                                       | 105.3/239.85 [00:30<00:33,  3.99seconds/s]
+[2025-12-28T20:15:09.667Z] STDERR:  46%|██████████████████████████▉                               | 111.14999999999999/239.85 [00:31<00:32,  3.96seconds/s]
+[2025-12-28T20:15:11.147Z] STDERR:  49%|██████████████████████████████████▋                                    | 117.0/239.85 [00:33<00:31,  3.96seconds/s]
+[2025-12-28T20:15:12.614Z] STDERR:  51%|███████████████████████████████████▊                                  | 122.85/239.85 [00:34<00:29,  3.97seconds/s]
+[2025-12-28T20:15:14.063Z] STDERR:  54%|██████████████████████████████████████                                 | 128.7/239.85 [00:36<00:27,  3.99seconds/s]
+[2025-12-28T20:15:15.522Z] STDERR:  56%|████████████████████████████████▌                         | 134.54999999999998/239.85 [00:37<00:26,  3.99seconds/s]
+[2025-12-28T20:15:16.991Z] STDERR:  59%|█████████████████████████████████▉                        | 140.39999999999998/239.85 [00:39<00:24,  3.99seconds/s]
+[2025-12-28T20:15:18.450Z] STDERR:  61%|██████████████████████████████████████████▋                           | 146.25/239.85 [00:40<00:23,  4.00seconds/s]
+[2025-12-28T20:15:19.933Z] STDERR:  63%|█████████████████████████████████████████████                          | 152.1/239.85 [00:42<00:22,  3.98seconds/s]
+[2025-12-28T20:15:21.391Z] STDERR:  66%|██████████████████████████████████████████████                        | 157.95/239.85 [00:43<00:20,  3.99seconds/s]
+[2025-12-28T20:15:22.842Z] STDERR:  68%|███████████████████████████████████████▌                  | 163.79999999999998/239.85 [00:45<00:18,  4.00seconds/s]
+[2025-12-28T20:15:24.299Z] STDERR:  71%|█████████████████████████████████████████                 | 169.64999999999998/239.85 [00:46<00:17,  4.01seconds/s]
+[2025-12-28T20:15:25.779Z] STDERR:  73%|███████████████████████████████████████████████████▉                   | 175.5/239.85 [00:48<00:16,  3.99seconds/s]
+[2025-12-28T20:15:27.236Z] STDERR:  76%|████████████████████████████████████████████████████▉                 | 181.35/239.85 [00:49<00:14,  4.00seconds/s]
+[2025-12-28T20:15:28.715Z] STDERR:  78%|███████████████████████████████████████████████████████▍               | 187.2/239.85 [00:51<00:13,  3.98seconds/s]
+[2025-12-28T20:15:30.184Z] STDERR:  80%|██████████████████████████████████████████████▋           | 193.04999999999998/239.85 [00:52<00:11,  3.98seconds/s]
+[2025-12-28T20:15:31.694Z] STDERR:  83%|████████████████████████████████████████████████          | 198.89999999999998/239.85 [00:54<00:10,  3.95seconds/s]
+[2025-12-28T20:15:33.164Z] STDERR:  85%|███████████████████████████████████████████████████████████▊          | 204.75/239.85 [00:55<00:08,  3.96seconds/s]
+[2025-12-28T20:15:34.625Z] STDERR:  88%|██████████████████████████████████████████████████████████████▎        | 210.6/239.85 [00:56<00:07,  3.97seconds/s]
+[2025-12-28T20:15:36.099Z] STDERR:  90%|███████████████████████████████████████████████████████████████▏      | 216.45/239.85 [00:58<00:05,  3.97seconds/s]
+[2025-12-28T20:15:37.567Z] STDERR:  93%|█████████████████████████████████████████████████████▊    | 222.29999999999998/239.85 [00:59<00:04,  3.98seconds/s]
+[2025-12-28T20:15:39.046Z] STDERR:  95%|███████████████████████████████████████████████████████▏  | 228.14999999999998/239.85 [01:01<00:02,  3.97seconds/s]
+[2025-12-28T20:15:40.528Z] STDERR:  98%|█████████████████████████████████████████████████████████████████████▎ | 234.0/239.85 [01:02<00:01,  3.96seconds/s]
+[2025-12-28T20:15:42.002Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:04<00:00,  3.96seconds/s]
+[2025-12-28T20:15:42.004Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:04<00:00,  3.73seconds/s]
+
+[2025-12-28T20:15:43.215Z] Demucs process exited with code 0
+[2025-12-28T20:15:43.326Z] Processing completed successfully.
+[2025-12-28T20:19:07.467Z] Worker started. PID: 39693
+[2025-12-28T20:19:07.468Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T20:19:07.470Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766953147034_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T20:19:07.470Z] Updating status to processing...
+[2025-12-28T20:19:07.861Z] Spawning Demucs Wrapper: python3 /Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py -m demucs.separate ...
+[2025-12-28T20:19:08.977Z] STDERR: Applying torchaudio.save monkeypatch...
+Running Demucs with args: ['-o', '/Users/jf27yc/Development/musicurious-ai/public/stems', '-n', 'htdemucs_6s', '--mp3', '--mp3-bitrate', '320', '/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766953147034_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3']
+
+[2025-12-28T20:19:09.586Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs_6s
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766953147034_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T20:19:09.587Z] STDERR:   0%|                                                                                 | 0.0/239.85 [00:00<?, ?seconds/s]
+[2025-12-28T20:19:11.841Z] STDERR:   2%|█▊                                                                      | 5.85/239.85 [00:02<01:30,  2.60seconds/s]
+[2025-12-28T20:19:13.290Z] STDERR:   5%|███▌                                                                    | 11.7/239.85 [00:03<01:09,  3.29seconds/s]
+[2025-12-28T20:19:14.781Z] STDERR:   7%|████▏                                                     | 17.549999999999997/239.85 [00:05<01:02,  3.55seconds/s]
+[2025-12-28T20:19:16.611Z] STDERR:  10%|███████                                                                 | 23.4/239.85 [00:07<01:03,  3.40seconds/s]
+[2025-12-28T20:19:18.118Z] STDERR:  12%|████████▋                                                              | 29.25/239.85 [00:08<00:59,  3.56seconds/s]
+[2025-12-28T20:19:19.773Z] STDERR:  15%|████████▍                                                 | 35.099999999999994/239.85 [00:10<00:57,  3.55seconds/s]
+[2025-12-28T20:19:21.314Z] STDERR:  17%|█████████▉                                                | 40.949999999999996/239.85 [00:11<00:54,  3.63seconds/s]
+[2025-12-28T20:19:23.017Z] STDERR:  20%|██████████████                                                          | 46.8/239.85 [00:13<00:54,  3.56seconds/s]
+[2025-12-28T20:19:24.509Z] STDERR:  22%|███████████████▌                                                       | 52.65/239.85 [00:14<00:51,  3.67seconds/s]
+[2025-12-28T20:19:25.965Z] STDERR:  24%|█████████████████▌                                                      | 58.5/239.85 [00:16<00:48,  3.77seconds/s]
+[2025-12-28T20:19:27.440Z] STDERR:  27%|███████████████████                                                    | 64.35/239.85 [00:17<00:45,  3.83seconds/s]
+[2025-12-28T20:19:28.915Z] STDERR:  29%|█████████████████▎                                         | 70.19999999999999/239.85 [00:19<00:43,  3.87seconds/s]
+[2025-12-28T20:19:30.384Z] STDERR:  32%|██████████████████████▌                                                | 76.05/239.85 [00:20<00:41,  3.90seconds/s]
+[2025-12-28T20:19:31.839Z] STDERR:  34%|████████████████████▏                                      | 81.89999999999999/239.85 [00:22<00:40,  3.94seconds/s]
+[2025-12-28T20:19:33.346Z] STDERR:  37%|█████████████████████████▉                                             | 87.75/239.85 [00:23<00:38,  3.92seconds/s]
+[2025-12-28T20:19:34.830Z] STDERR:  39%|████████████████████████████                                            | 93.6/239.85 [00:25<00:37,  3.93seconds/s]
+[2025-12-28T20:19:36.298Z] STDERR:  41%|████████████████████████▍                                  | 99.44999999999999/239.85 [00:26<00:35,  3.94seconds/s]
+[2025-12-28T20:19:37.778Z] STDERR:  44%|███████████████████████████████▏                                       | 105.3/239.85 [00:28<00:34,  3.95seconds/s]
+[2025-12-28T20:19:39.301Z] STDERR:  46%|██████████████████████████▉                               | 111.14999999999999/239.85 [00:29<00:32,  3.91seconds/s]
+[2025-12-28T20:19:40.855Z] STDERR:  49%|██████████████████████████████████▋                                    | 117.0/239.85 [00:31<00:31,  3.87seconds/s]
+[2025-12-28T20:19:42.315Z] STDERR:  51%|███████████████████████████████████▊                                  | 122.85/239.85 [00:32<00:29,  3.91seconds/s]
+[2025-12-28T20:19:43.777Z] STDERR:  54%|██████████████████████████████████████                                 | 128.7/239.85 [00:34<00:28,  3.94seconds/s]
+[2025-12-28T20:19:45.264Z] STDERR:  56%|████████████████████████████████▌                         | 134.54999999999998/239.85 [00:35<00:26,  3.94seconds/s]
+[2025-12-28T20:19:46.736Z] STDERR:  59%|█████████████████████████████████▉                        | 140.39999999999998/239.85 [00:37<00:25,  3.95seconds/s]
+[2025-12-28T20:19:48.206Z] STDERR:  61%|██████████████████████████████████████████▋                           | 146.25/239.85 [00:38<00:23,  3.96seconds/s]
+[2025-12-28T20:19:49.694Z] STDERR:  63%|█████████████████████████████████████████████                          | 152.1/239.85 [00:40<00:22,  3.95seconds/s]
+[2025-12-28T20:19:51.163Z] STDERR:  66%|██████████████████████████████████████████████                        | 157.95/239.85 [00:41<00:20,  3.96seconds/s]
+[2025-12-28T20:19:52.628Z] STDERR:  68%|███████████████████████████████████████▌                  | 163.79999999999998/239.85 [00:43<00:19,  3.97seconds/s]
+[2025-12-28T20:19:54.097Z] STDERR:  71%|█████████████████████████████████████████                 | 169.64999999999998/239.85 [00:44<00:17,  3.97seconds/s]
+[2025-12-28T20:19:55.580Z] STDERR:  73%|███████████████████████████████████████████████████▉                   | 175.5/239.85 [00:45<00:16,  3.96seconds/s]
+[2025-12-28T20:19:57.064Z] STDERR:  76%|████████████████████████████████████████████████████▉                 | 181.35/239.85 [00:47<00:14,  3.96seconds/s]
+[2025-12-28T20:19:58.535Z] STDERR:  78%|███████████████████████████████████████████████████████▍               | 187.2/239.85 [00:48<00:13,  3.96seconds/s]
+[2025-12-28T20:20:00.033Z] STDERR:  80%|██████████████████████████████████████████████▋           | 193.04999999999998/239.85 [00:50<00:11,  3.95seconds/s]
+[2025-12-28T20:20:01.541Z] STDERR:  83%|████████████████████████████████████████████████          | 198.89999999999998/239.85 [00:51<00:10,  3.93seconds/s]
+[2025-12-28T20:20:02.994Z] STDERR:  85%|███████████████████████████████████████████████████████████▊          | 204.75/239.85 [00:53<00:08,  3.96seconds/s]
+[2025-12-28T20:20:04.483Z] STDERR:  88%|██████████████████████████████████████████████████████████████▎        | 210.6/239.85 [00:54<00:07,  3.95seconds/s]
+[2025-12-28T20:20:05.965Z] STDERR:  90%|███████████████████████████████████████████████████████████████▏      | 216.45/239.85 [00:56<00:05,  3.95seconds/s]
+[2025-12-28T20:20:07.454Z] STDERR:  93%|█████████████████████████████████████████████████████▊    | 222.29999999999998/239.85 [00:57<00:04,  3.94seconds/s]
+[2025-12-28T20:20:09.015Z] STDERR:  95%|███████████████████████████████████████████████████████▏  | 228.14999999999998/239.85 [00:59<00:03,  3.88seconds/s]
+[2025-12-28T20:20:10.583Z] STDERR:  98%|█████████████████████████████████████████████████████████████████████▎ | 234.0/239.85 [01:00<00:01,  3.83seconds/s]
+[2025-12-28T20:20:12.097Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:02<00:00,  3.84seconds/s]
+[2025-12-28T20:20:12.098Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:02<00:00,  3.84seconds/s]
+
+[2025-12-28T20:20:29.609Z] Demucs process exited with code 0
+[2025-12-28T20:20:29.935Z] Processing completed successfully.
+[2025-12-28T20:25:10.546Z] Worker started. PID: 40254
+[2025-12-28T20:25:10.547Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T20:25:10.549Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766953510103_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T20:25:10.549Z] Updating status to processing...
+[2025-12-28T20:25:10.949Z] Spawning Demucs Wrapper: python3 /Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py -m demucs.separate ...
+[2025-12-28T20:25:12.028Z] STDERR: Applying torchaudio.save monkeypatch...
+Running Demucs with args: ['-o', '/Users/jf27yc/Development/musicurious-ai/public/stems', '-n', 'htdemucs_6s', '--mp3', '--mp3-bitrate', '320', '/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766953510103_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3']
+
+[2025-12-28T20:25:12.636Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs_6s
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766953510103_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T20:25:12.637Z] STDERR:   0%|                                                                                 | 0.0/239.85 [00:00<?, ?seconds/s]
+[2025-12-28T20:25:14.769Z] STDERR:   2%|█▊                                                                      | 5.85/239.85 [00:02<01:25,  2.74seconds/s]
+[2025-12-28T20:25:16.169Z] STDERR:   5%|███▌                                                                    | 11.7/239.85 [00:03<01:06,  3.44seconds/s]
+[2025-12-28T20:25:17.640Z] STDERR:   7%|████▏                                                     | 17.549999999999997/239.85 [00:05<01:00,  3.67seconds/s]
+[2025-12-28T20:25:19.149Z] STDERR:  10%|███████                                                                 | 23.4/239.85 [00:06<00:57,  3.75seconds/s]
+[2025-12-28T20:25:20.601Z] STDERR:  12%|████████▋                                                              | 29.25/239.85 [00:07<00:54,  3.84seconds/s]
+[2025-12-28T20:25:22.005Z] STDERR:  15%|████████▍                                                 | 35.099999999999994/239.85 [00:09<00:51,  3.95seconds/s]
+[2025-12-28T20:25:23.487Z] STDERR:  17%|█████████▉                                                | 40.949999999999996/239.85 [00:10<00:50,  3.95seconds/s]
+[2025-12-28T20:25:24.884Z] STDERR:  20%|██████████████                                                          | 46.8/239.85 [00:12<00:48,  4.02seconds/s]
+[2025-12-28T20:25:26.308Z] STDERR:  22%|███████████████▌                                                       | 52.65/239.85 [00:13<00:46,  4.05seconds/s]
+[2025-12-28T20:25:27.732Z] STDERR:  24%|█████████████████▌                                                      | 58.5/239.85 [00:15<00:44,  4.07seconds/s]
+[2025-12-28T20:25:29.149Z] STDERR:  27%|███████████████████                                                    | 64.35/239.85 [00:16<00:42,  4.09seconds/s]
+[2025-12-28T20:25:30.595Z] STDERR:  29%|█████████████████▎                                         | 70.19999999999999/239.85 [00:17<00:41,  4.07seconds/s]
+[2025-12-28T20:25:32.040Z] STDERR:  32%|██████████████████████▌                                                | 76.05/239.85 [00:19<00:40,  4.07seconds/s]
+[2025-12-28T20:25:33.497Z] STDERR:  34%|████████████████████▏                                      | 81.89999999999999/239.85 [00:20<00:38,  4.05seconds/s]
+[2025-12-28T20:25:34.937Z] STDERR:  37%|█████████████████████████▉                                             | 87.75/239.85 [00:22<00:37,  4.05seconds/s]
+[2025-12-28T20:25:36.347Z] STDERR:  39%|████████████████████████████                                            | 93.6/239.85 [00:23<00:35,  4.08seconds/s]
+[2025-12-28T20:25:37.825Z] STDERR:  41%|████████████████████████▍                                  | 99.44999999999999/239.85 [00:25<00:34,  4.04seconds/s]
+[2025-12-28T20:25:39.289Z] STDERR:  44%|███████████████████████████████▏                                       | 105.3/239.85 [00:26<00:33,  4.03seconds/s]
+[2025-12-28T20:25:40.713Z] STDERR:  46%|██████████████████████████▉                               | 111.14999999999999/239.85 [00:28<00:31,  4.05seconds/s]
+[2025-12-28T20:25:42.174Z] STDERR:  49%|██████████████████████████████████▋                                    | 117.0/239.85 [00:29<00:30,  4.04seconds/s]
+[2025-12-28T20:25:43.630Z] STDERR:  51%|███████████████████████████████████▊                                  | 122.85/239.85 [00:30<00:29,  4.03seconds/s]
+[2025-12-28T20:25:45.048Z] STDERR:  54%|██████████████████████████████████████                                 | 128.7/239.85 [00:32<00:27,  4.06seconds/s]
+[2025-12-28T20:25:46.567Z] STDERR:  56%|████████████████████████████████▌                         | 134.54999999999998/239.85 [00:33<00:26,  3.99seconds/s]
+[2025-12-28T20:25:48.033Z] STDERR:  59%|█████████████████████████████████▉                        | 140.39999999999998/239.85 [00:35<00:24,  3.99seconds/s]
+[2025-12-28T20:25:49.480Z] STDERR:  61%|██████████████████████████████████████████▋                           | 146.25/239.85 [00:36<00:23,  4.01seconds/s]
+[2025-12-28T20:25:50.890Z] STDERR:  63%|█████████████████████████████████████████████                          | 152.1/239.85 [00:38<00:21,  4.05seconds/s]
+[2025-12-28T20:25:52.317Z] STDERR:  66%|██████████████████████████████████████████████                        | 157.95/239.85 [00:39<00:20,  4.06seconds/s]
+[2025-12-28T20:25:53.734Z] STDERR:  68%|███████████████████████████████████████▌                  | 163.79999999999998/239.85 [00:41<00:18,  4.08seconds/s]
+[2025-12-28T20:25:55.163Z] STDERR:  71%|█████████████████████████████████████████                 | 169.64999999999998/239.85 [00:42<00:17,  4.09seconds/s]
+[2025-12-28T20:25:56.618Z] STDERR:  73%|███████████████████████████████████████████████████▉                   | 175.5/239.85 [00:43<00:15,  4.07seconds/s]
+[2025-12-28T20:25:58.165Z] STDERR:  76%|████████████████████████████████████████████████████▉                 | 181.35/239.85 [00:45<00:14,  3.98seconds/s]
+[2025-12-28T20:25:59.611Z] STDERR:  78%|███████████████████████████████████████████████████████▍               | 187.2/239.85 [00:46<00:13,  4.00seconds/s]
+[2025-12-28T20:26:01.024Z] STDERR:  80%|██████████████████████████████████████████████▋           | 193.04999999999998/239.85 [00:48<00:11,  4.04seconds/s]
+[2025-12-28T20:26:02.450Z] STDERR:  83%|████████████████████████████████████████████████          | 198.89999999999998/239.85 [00:49<00:10,  4.06seconds/s]
+[2025-12-28T20:26:03.902Z] STDERR:  85%|███████████████████████████████████████████████████████████▊          | 204.75/239.85 [00:51<00:08,  4.05seconds/s]
+[2025-12-28T20:26:05.414Z] STDERR:  88%|██████████████████████████████████████████████████████████████▎        | 210.6/239.85 [00:52<00:07,  3.99seconds/s]
+[2025-12-28T20:26:06.874Z] STDERR:  90%|███████████████████████████████████████████████████████████████▏      | 216.45/239.85 [00:54<00:05,  4.00seconds/s]
+[2025-12-28T20:26:08.336Z] STDERR:  93%|█████████████████████████████████████████████████████▊    | 222.29999999999998/239.85 [00:55<00:04,  4.00seconds/s]
+[2025-12-28T20:26:09.826Z] STDERR:  95%|███████████████████████████████████████████████████████▏  | 228.14999999999998/239.85 [00:57<00:02,  3.98seconds/s]
+[2025-12-28T20:26:11.272Z] STDERR:  98%|█████████████████████████████████████████████████████████████████████▎ | 234.0/239.85 [00:58<00:01,  4.00seconds/s]
+[2025-12-28T20:26:12.795Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:00<00:00,  3.95seconds/s]
+[2025-12-28T20:26:12.797Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:00<00:00,  3.99seconds/s]
+
+[2025-12-28T20:26:30.067Z] Demucs processing successfully completed. Starting mix generation...
+[2025-12-28T20:26:30.068Z] Running mix generation on: /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs_6s/8_1766953510103_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi
+[2025-12-28T20:27:16.567Z] Mixer STDOUT: Loading stems from /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs_6s/8_1766953510103_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi...
+Generating mixes...
+Creating no_vocals...
+Creating no_drums...
+Creating no_bass...
+Creating no_guitar...
+Creating no_piano...
+
+[2025-12-28T20:27:16.594Z] Mix generation completed successfully.
+[2025-12-28T20:27:16.595Z] Processing flow finished.
+[2025-12-28T20:32:52.727Z] Worker started. PID: 41174
+[2025-12-28T20:32:52.728Z] Loading env from /Users/jf27yc/Development/musicurious-ai/.env.local
+[2025-12-28T20:32:52.730Z] Args: videoId=8, filePath=/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766953972273_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3, outputDir=/Users/jf27yc/Development/musicurious-ai/public/stems
+[2025-12-28T20:32:52.730Z] Updating status to processing...
+[2025-12-28T20:32:53.134Z] Spawning Demucs Wrapper: python3 /Users/jf27yc/Development/musicurious-ai/scripts/run_demucs.py -m demucs.separate ...
+[2025-12-28T20:32:54.144Z] STDERR: Applying torchaudio.save monkeypatch...
+Running Demucs with args: ['-o', '/Users/jf27yc/Development/musicurious-ai/public/stems', '-n', 'htdemucs_6s', '--mp3', '--mp3-bitrate', '320', '/Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766953972273_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3']
+
+[2025-12-28T20:32:55.508Z] STDOUT: Selected model is a bag of 1 models. You will see that many progress bars per track.
+Separated tracks will be stored in /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs_6s
+Separating track /Users/jf27yc/Development/musicurious-ai/local_uploads/8_1766953972273_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi.mp3
+
+[2025-12-28T20:32:55.509Z] STDERR:   0%|                                                                                 | 0.0/239.85 [00:00<?, ?seconds/s]
+[2025-12-28T20:32:57.818Z] STDERR:   2%|█▊                                                                      | 5.85/239.85 [00:02<01:32,  2.53seconds/s]
+[2025-12-28T20:32:59.415Z] STDERR:   5%|███▌                                                                    | 11.7/239.85 [00:03<01:13,  3.09seconds/s]
+[2025-12-28T20:33:00.825Z] STDERR:   7%|████▏                                                     | 17.549999999999997/239.85 [00:05<01:03,  3.50seconds/s]
+[2025-12-28T20:33:02.304Z] STDERR:  10%|███████                                                                 | 23.4/239.85 [00:06<00:59,  3.67seconds/s]
+[2025-12-28T20:33:03.736Z] STDERR:  12%|████████▋                                                              | 29.25/239.85 [00:08<00:55,  3.81seconds/s]
+[2025-12-28T20:33:05.194Z] STDERR:  15%|████████▍                                                 | 35.099999999999994/239.85 [00:09<00:52,  3.88seconds/s]
+[2025-12-28T20:33:06.705Z] STDERR:  17%|█████████▉                                                | 40.949999999999996/239.85 [00:11<00:51,  3.87seconds/s]
+[2025-12-28T20:33:08.193Z] STDERR:  20%|██████████████                                                          | 46.8/239.85 [00:12<00:49,  3.89seconds/s]
+[2025-12-28T20:33:09.642Z] STDERR:  22%|███████████████▌                                                       | 52.65/239.85 [00:14<00:47,  3.94seconds/s]
+[2025-12-28T20:33:11.091Z] STDERR:  24%|█████████████████▌                                                      | 58.5/239.85 [00:15<00:45,  3.97seconds/s]
+[2025-12-28T20:33:12.585Z] STDERR:  27%|███████████████████                                                    | 64.35/239.85 [00:17<00:44,  3.95seconds/s]
+[2025-12-28T20:33:14.038Z] STDERR:  29%|█████████████████▎                                         | 70.19999999999999/239.85 [00:18<00:42,  3.97seconds/s]
+[2025-12-28T20:33:15.665Z] STDERR:  32%|██████████████████████▌                                                | 76.05/239.85 [00:20<00:42,  3.85seconds/s]
+[2025-12-28T20:33:17.131Z] STDERR:  34%|████████████████████▏                                      | 81.89999999999999/239.85 [00:21<00:40,  3.89seconds/s]
+[2025-12-28T20:33:18.586Z] STDERR:  37%|█████████████████████████▉                                             | 87.75/239.85 [00:23<00:38,  3.93seconds/s]
+[2025-12-28T20:33:20.075Z] STDERR:  39%|████████████████████████████                                            | 93.6/239.85 [00:24<00:37,  3.93seconds/s]
+[2025-12-28T20:33:21.595Z] STDERR:  41%|████████████████████████▍                                  | 99.44999999999999/239.85 [00:26<00:35,  3.90seconds/s]
+[2025-12-28T20:33:23.108Z] STDERR:  44%|███████████████████████████████▏                                       | 105.3/239.85 [00:27<00:34,  3.89seconds/s]
+[2025-12-28T20:33:24.541Z] STDERR:  46%|██████████████████████████▉                               | 111.14999999999999/239.85 [00:29<00:32,  3.95seconds/s]
+[2025-12-28T20:33:25.973Z] STDERR:  49%|██████████████████████████████████▋                                    | 117.0/239.85 [00:30<00:30,  3.99seconds/s]
+[2025-12-28T20:33:27.396Z] STDERR:  51%|███████████████████████████████████▊                                  | 122.85/239.85 [00:31<00:29,  4.02seconds/s]
+[2025-12-28T20:33:28.811Z] STDERR:  54%|██████████████████████████████████████                                 | 128.7/239.85 [00:33<00:27,  4.06seconds/s]
+[2025-12-28T20:33:30.248Z] STDERR:  56%|████████████████████████████████▌                         | 134.54999999999998/239.85 [00:34<00:25,  4.06seconds/s]
+[2025-12-28T20:33:31.718Z] STDERR:  59%|█████████████████████████████████▉                        | 140.39999999999998/239.85 [00:36<00:24,  4.04seconds/s]
+[2025-12-28T20:33:33.203Z] STDERR:  61%|██████████████████████████████████████████▋                           | 146.25/239.85 [00:37<00:23,  4.01seconds/s]
+[2025-12-28T20:33:34.644Z] STDERR:  63%|█████████████████████████████████████████████                          | 152.1/239.85 [00:39<00:21,  4.02seconds/s]
+[2025-12-28T20:33:36.119Z] STDERR:  66%|██████████████████████████████████████████████                        | 157.95/239.85 [00:40<00:20,  4.01seconds/s]
+[2025-12-28T20:33:37.718Z] STDERR:  68%|███████████████████████████████████████▌                  | 163.79999999999998/239.85 [00:42<00:19,  3.89seconds/s]
+[2025-12-28T20:33:39.264Z] STDERR:  71%|█████████████████████████████████████████                 | 169.64999999999998/239.85 [00:43<00:18,  3.86seconds/s]
+[2025-12-28T20:33:40.827Z] STDERR:  73%|███████████████████████████████████████████████████▉                   | 175.5/239.85 [00:45<00:16,  3.82seconds/s]
+[2025-12-28T20:33:42.328Z] STDERR:  76%|████████████████████████████████████████████████████▉                 | 181.35/239.85 [00:46<00:15,  3.85seconds/s]
+[2025-12-28T20:33:43.822Z] STDERR:  78%|███████████████████████████████████████████████████████▍               | 187.2/239.85 [00:48<00:13,  3.87seconds/s]
+[2025-12-28T20:33:45.293Z] STDERR:  80%|██████████████████████████████████████████████▋           | 193.04999999999998/239.85 [00:49<00:12,  3.90seconds/s]
+[2025-12-28T20:33:46.778Z] STDERR:  83%|████████████████████████████████████████████████          | 198.89999999999998/239.85 [00:51<00:10,  3.91seconds/s]
+[2025-12-28T20:33:48.226Z] STDERR:  85%|███████████████████████████████████████████████████████████▊          | 204.75/239.85 [00:52<00:08,  3.95seconds/s]
+[2025-12-28T20:33:49.687Z] STDERR:  88%|██████████████████████████████████████████████████████████████▎        | 210.6/239.85 [00:54<00:07,  3.97seconds/s]
+[2025-12-28T20:33:51.174Z] STDERR:  90%|███████████████████████████████████████████████████████████████▏      | 216.45/239.85 [00:55<00:05,  3.96seconds/s]
+[2025-12-28T20:33:52.698Z] STDERR:  93%|█████████████████████████████████████████████████████▊    | 222.29999999999998/239.85 [00:57<00:04,  3.92seconds/s]
+[2025-12-28T20:33:54.137Z] STDERR:  95%|███████████████████████████████████████████████████████▏  | 228.14999999999998/239.85 [00:58<00:02,  3.96seconds/s]
+[2025-12-28T20:33:55.556Z] STDERR:  98%|█████████████████████████████████████████████████████████████████████▎ | 234.0/239.85 [01:00<00:01,  4.01seconds/s]
+[2025-12-28T20:33:57.036Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:01<00:00,  3.99seconds/s]
+[2025-12-28T20:33:57.038Z] STDERR: 100%|██████████████████████████████████████████████████████████████████████| 239.85/239.85 [01:01<00:00,  3.90seconds/s]
+
+[2025-12-28T20:34:14.523Z] Demucs processing successfully completed. Starting mix generation...
+[2025-12-28T20:34:14.524Z] Running mix generation on: /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs_6s/8_1766953972273_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi
+[2025-12-28T20:35:01.053Z] Mixer STDOUT: Loading stems from /Users/jf27yc/Development/musicurious-ai/public/stems/htdemucs_6s/8_1766953972273_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi...
+Generating mixes...
+Creating no_vocals...
+Creating no_drums...
+Creating no_bass...
+Creating no_guitar...
+Creating no_piano...
+
+[2025-12-28T20:35:01.077Z] Mix generation completed successfully.
+[2025-12-28T20:35:01.077Z] Processing flow finished.

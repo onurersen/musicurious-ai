@@ -42,6 +42,20 @@ async function main() {
             console.log('approval_status column might already exist:', e);
         }
 
+        try {
+            await sql`ALTER TABLE videos ADD COLUMN IF NOT EXISTS processing_status VARCHAR(20) DEFAULT 'pending';`;
+            console.log('Added processing_status column to videos');
+        } catch (e) {
+            console.log('processing_status column might already exist:', e);
+        }
+
+        try {
+            await sql`ALTER TABLE videos ADD COLUMN IF NOT EXISTS processing_progress INTEGER DEFAULT 0;`;
+            console.log('Added processing_progress column to videos');
+        } catch (e) {
+            console.log('processing_progress column might already exist:', e);
+        }
+
         console.log('Migration completed successfully.');
     } catch (err) {
         console.error('Migration failed:', err);

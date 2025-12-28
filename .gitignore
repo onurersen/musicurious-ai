@@ -43,3 +43,9 @@ next-env.d.ts
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Local Demucs Processing
+local_uploads/
+public/stems/
+__pycache__/
+*.py[cod]
