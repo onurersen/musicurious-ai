@@ -1,6 +1,111 @@
 "use server";
 
 import { sql } from '@vercel/postgres';
+import { currentUser, clerkClient } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
+
+// ... existing interfaces ...
+
+// ... (skip down to deleteUser and banUser) ...
+
+export async function deleteUser(userId: string) {
+    const admin = await isAdmin();
+    if (!admin) return { success: false, error: "Forbidden" };
+
+    try {
+        // 1. Delete from Clerk (if possible)
+        try {
+            const client = await clerkClient();
+            await client.users.deleteUser(userId);
+            console.log(`[deleteUser] Deleted user ${userId} from Clerk`);
+        } catch (e) {
+            console.error(`[deleteUser] Failed to delete user ${userId} from Clerk (proceeding with DB delete):`, e);
+        }
+
+        // 2. Delete from App DB
+        await sql`DELETE FROM videos WHERE user_id = ${userId}`;
+        await sql`DELETE FROM users WHERE id = ${userId}`;
+        revalidatePath('/admin/users');
+        return { success: true };
+    } catch (err) {
+        console.error("Error deleting user:", err);
+        return { success: false, error: "Database error" };
+    }
+}
+
+export async function banUser(userId: string, email: string) {
+    const admin = await isAdmin();
+    if (!admin) return { success: false, error: "Forbidden" };
+
+    try {
+        // 1. Add to banned list
+        await sql`INSERT INTO banned_emails (email) VALUES (${email}) ON CONFLICT (email) DO NOTHING`;
+
+        // 2. Delete from Clerk
+        try {
+            const client = await clerkClient();
+            await client.users.deleteUser(userId);
+            console.log(`[banUser] Deleted user ${userId} from Clerk`);
+        } catch (e) {
+            console.error(`[banUser] Failed to delete user ${userId} from Clerk:`, e);
+        }
+
+        // 3. Delete from App DB
+        await sql`DELETE FROM videos WHERE user_id = ${userId}`;
+        await sql`DELETE FROM users WHERE id = ${userId}`;
+
+        revalidatePath('/admin/users');
+        return { success: true };
+    } catch (err) {
+        console.error("Error banning user:", err);
+        return { success: false, error: "Database error" };
+    }
+}
+
+export async function forceLogoutUser(userId: string) {
+    const admin = await isAdmin();
+    if (!admin) return { success: false, error: "Forbidden" };
+
+    try {
+        const client = await clerkClient();
+        const sessions = await client.sessions.getSessionList({ userId, status: 'active' });
+
+        for (const session of sessions.data) {
+            await client.sessions.revokeSession(session.id);
+        }
+
+        console.log(`[forceLogoutUser] Revoked ${sessions.data.length} sessions for user ${userId}`);
+        return { success: true, count: sessions.data.length };
+    } catch (err) {
+        console.error("Error forcing logout:", err);
+        return { success: false, error: "Failed to revoke sessions" };
+    }
+}
+
+export interface Video {
+    id: number;
+    youtube_url: string;
+    title?: string;
+    status: string; // e.g. 'pending', 'completed'
+    created_at: string;
+    updated_at: string | null;
+    user_id: string;
+    approval_status: string;
+    user_email?: string;
+    first_name?: string;
+    last_name?: string;
+}
+
+export interface User {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    role: string;
+    status: 'pending' | 'approved' | 'blocked';
+    created_at: string;
+    last_login?: string | null;
+}
 
 export async function checkVideoCategory(url: string) {
     try {
@@ -20,12 +125,18 @@ export async function checkVideoCategory(url: string) {
         // Check for "category":"Music" in JSON (strict)
         const isMusicCategory = /"category"\s*:\s*"Music"/i.test(html);
 
+        // Check title using regex for proper extraction
+        const titleMatch = html.match(/<title>(.*?)<\/title>/) || html.match(/<meta property="og:title" content="(.*?)">/);
+        const rawTitle = titleMatch ? titleMatch[1].replace(" - YouTube", "") : "";
+        const title = rawTitle || "Unknown Title";
+
         console.log(`Checking URL: ${url}`);
-        console.log(`isMusicGenre: ${isMusicGenre}, isMusicCategory: ${isMusicCategory}`);
+        console.log(`isMusicGenre: ${isMusicGenre}, isMusicCategory: ${isMusicCategory}, title: ${title}`);
 
         return {
             isMusic: isMusicGenre || isMusicCategory,
             category: isMusicGenre || isMusicCategory ? "Music" : "Unknown",
+            title
         };
     } catch (error) {
         console.error("Failed to fetch video page:", error);
@@ -34,19 +145,263 @@ export async function checkVideoCategory(url: string) {
     }
 }
 
-export async function createVideoRecord(url: string) {
+export async function createVideoRecord(url: string, title?: string) {
     try {
-        // Insert and return the new row
-        // Note: returning * works in Postgres
-        const result = await sql`
-      INSERT INTO videos (youtube_url, status)
-      VALUES (${url}, 'pending')
-      RETURNING id, youtube_url, status, created_at;
-    `;
+        const user = await currentUser();
+        if (!user) {
+            return { success: false, error: 'Unauthorized' };
+        }
 
+        const email = user.emailAddresses[0]?.emailAddress || "unknown";
+        const role = email === 'onurersen@gmail.com' ? 'admin' : 'user';
+
+        // Check if user is banned
+        const bannedCheck = await sql`SELECT * FROM banned_emails WHERE email = ${email}`;
+        if (bannedCheck.rows.length > 0) {
+            return { success: false, error: 'User is banned' };
+        }
+
+        // Upsert user
+        // We set status to 'approved' for admin explicitly
+        const initialStatus = role === 'admin' ? 'approved' : 'pending';
+
+        await sql`
+            INSERT INTO users (id, email, first_name, last_name, role, status)
+            VALUES (${user.id}, ${email}, ${user.firstName}, ${user.lastName}, ${role}, ${initialStatus})
+            ON CONFLICT (id) DO UPDATE SET 
+            email = EXCLUDED.email,
+            first_name = EXCLUDED.first_name,
+            last_name = EXCLUDED.last_name,
+            role = ${role},
+            last_login = NOW();
+        `;
+
+        // Check Permissions (must be approved)
+        const userRow = await sql`SELECT status FROM users WHERE id = ${user.id}`;
+        const userStatus = userRow.rows[0]?.status;
+
+        if (userStatus === 'pending') {
+            return { success: false, error: 'Account pending approval' };
+        }
+        if (userStatus === 'blocked') {
+            return { success: false, error: 'Account blocked' };
+        }
+
+        // Check for duplicate submission
+        const duplicateCheck = await sql`
+            SELECT id FROM videos 
+            WHERE user_id = ${user.id} AND youtube_url = ${url}
+        `;
+        if (duplicateCheck.rows.length > 0) {
+            return { success: false, error: 'Duplicate submission' };
+        }
+
+        // Insert and return the new row
+        const result = await sql`
+          INSERT INTO videos (youtube_url, title, status, user_id, approval_status)
+          VALUES (${url}, ${title || 'Untitled Jam'}, 'pending', ${user.id}, 'pending')
+          RETURNING id, youtube_url, title, status, created_at, approval_status;
+        `;
         return { success: true, video: result.rows[0] };
     } catch (error) {
         console.error('Failed to create video record:', error);
         return { success: false, error: 'Database error' };
     }
 }
+
+export async function getVideos(): Promise<Video[]> {
+    const user = await currentUser();
+    if (!user) return [];
+
+    try {
+        // Get user role
+        const email = user.emailAddresses[0]?.emailAddress;
+        let role = 'user';
+
+        if (email === 'onurersen@gmail.com') {
+            role = 'admin';
+        } else {
+            const userRes = await sql`SELECT role FROM users WHERE id = ${user.id}`;
+            role = userRes.rows[0]?.role || 'user';
+        }
+
+        let rows;
+        if (role === 'admin') {
+            const result = await sql`
+                SELECT v.*, u.email as user_email, u.first_name, u.last_name 
+                FROM videos v 
+                LEFT JOIN users u ON v.user_id = u.id 
+                ORDER BY v.created_at DESC
+            `;
+            rows = result.rows;
+        } else {
+            const result = await sql`
+                SELECT * FROM videos 
+                WHERE user_id = ${user.id} 
+                ORDER BY created_at DESC
+            `;
+            rows = result.rows;
+        }
+
+        return rows.map((row: any) => ({
+            ...row,
+            created_at: new Date(row.created_at).toISOString(),
+            updated_at: row.updated_at ? new Date(row.updated_at).toISOString() : null
+        })) as Video[];
+
+    } catch (err) {
+        console.error("Error fetching videos:", err);
+        return [];
+    }
+}
+
+export async function updateVideoApproval(videoId: number, status: 'approved' | 'rejected') {
+    const user = await currentUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    const email = user.emailAddresses[0]?.emailAddress;
+    let isAdmin = false;
+
+    if (email === 'onurersen@gmail.com') {
+        isAdmin = true;
+    } else {
+        const userRes = await sql`SELECT role FROM users WHERE id = ${user.id}`;
+        isAdmin = userRes.rows[0]?.role === 'admin';
+    }
+
+    if (!isAdmin) {
+        return { success: false, error: "Forbidden" };
+    }
+
+    try {
+        if (status === 'rejected') {
+            await sql`DELETE FROM videos WHERE id = ${videoId}`;
+        } else {
+            await sql`
+                UPDATE videos 
+                SET approval_status = ${status} 
+                WHERE id = ${videoId}
+            `;
+        }
+        revalidatePath('/videos');
+        revalidatePath('/admin/videos');
+        return { success: true };
+    } catch (err) {
+        console.error("Error updating video:", err);
+        return { success: false, error: "Update failed" };
+    }
+}
+
+export async function isAdmin() {
+    const user = await currentUser();
+    if (!user) return false;
+
+    const email = user.emailAddresses[0]?.emailAddress;
+    if (email === 'onurersen@gmail.com') return true;
+
+    const res = await sql`SELECT role FROM users WHERE id = ${user.id}`;
+    return res.rows[0]?.role === 'admin';
+}
+
+export async function trackUserActivity(userId: string) {
+    try {
+        await sql`UPDATE users SET last_login = NOW() WHERE id = ${userId}`;
+    } catch (e) {
+        console.error("Failed to track user activity:", e);
+    }
+}
+
+export async function getUserStatus() {
+    const user = await currentUser();
+    if (!user) return null;
+
+    const email = user.emailAddresses[0]?.emailAddress?.toLowerCase();
+
+    console.log(`[getUserStatus] Checking status for ${email} (${user.id})`);
+
+    try {
+        // Check if banned - this handles cases where user was 'banned' (deleted + added to ban list)
+        const bannedCheck = await sql`SELECT 1 FROM banned_emails WHERE email = ${email}`;
+        if (bannedCheck.rows.length > 0) {
+            console.log(`[getUserStatus] User ${email} is banned`);
+            return 'blocked';
+        }
+
+        let res = await sql`SELECT status, role FROM users WHERE id = ${user.id}`;
+
+        // If user record doesn't exist, create it as pending
+        if (res.rows.length === 0) {
+            console.log(`[getUserStatus] User ${user.emailAddresses[0]?.emailAddress} not found in DB, creating pending record.`);
+            const email = user.emailAddresses[0]?.emailAddress;
+            const firstName = user.firstName || '';
+            const lastName = user.lastName || '';
+            const role = 'user';
+
+            await sql`
+                INSERT INTO users (id, email, first_name, last_name, role, status, last_login)
+                VALUES (${user.id}, ${email}, ${firstName}, ${lastName}, ${role}, 'pending', NOW())
+                ON CONFLICT (id) DO NOTHING
+            `;
+
+            // Re-fetch to be sure or just return pending
+            return 'pending';
+        }
+
+        if (res.rows.length > 0) {
+            // Update last_login silently for existing users
+            await sql`UPDATE users SET last_login = NOW() WHERE id = ${user.id}`;
+        }
+
+        const status = res.rows[0]?.status;
+        const role = res.rows[0]?.role;
+
+        console.log(`[getUserStatus] DB result for ${user.id}: status=${status}, role=${role}`);
+
+        if (role === 'admin' || email === 'onurersen@gmail.com') return 'approved';
+        return status || 'pending';
+    } catch (e) {
+        console.error("Error getting user status:", e);
+        return 'pending';
+    }
+}
+
+// User Management Actions
+
+export async function getUsers(): Promise<User[]> {
+    const user = await currentUser();
+    if (!user) return [];
+
+    const admin = await isAdmin();
+    if (!admin) return [];
+
+    try {
+        const result = await sql`
+            SELECT * FROM users 
+            ORDER BY created_at DESC
+        `;
+        return result.rows.map(row => ({
+            ...row,
+            created_at: new Date(row.created_at).toISOString(),
+            last_login: row.last_login ? new Date(row.last_login).toISOString() : null
+        })) as User[];
+    } catch (err) {
+        console.error("Error fetching users:", err);
+        return [];
+    }
+}
+
+export async function updateUserStatus(userId: string, status: 'approved' | 'blocked' | 'pending') {
+    const admin = await isAdmin();
+    if (!admin) return { success: false, error: "Forbidden" };
+
+    try {
+        await sql`UPDATE users SET status = ${status} WHERE id = ${userId}`;
+        revalidatePath('/admin/users');
+        return { success: true };
+    } catch (err) {
+        console.error("Error updating user status:", err);
+        return { success: false, error: "Database error" };
+    }
+}
+
+
