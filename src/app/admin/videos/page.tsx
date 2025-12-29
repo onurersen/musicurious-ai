@@ -13,7 +13,7 @@ export default async function AdminVideosPage() {
     return (
         <div className="container mx-auto px-6 py-12">
             <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-bold tracking-tight">Submission Console</h1>
+                <h1 className="text-3xl font-bold tracking-tight">Jam Management</h1>
             </div>
 
             <VideosTable videos={videos} isDev={isDev} />

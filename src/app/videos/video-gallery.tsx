@@ -36,7 +36,7 @@ export default function VideoGallery({ videos, isAdmin }: { videos: Video[], isA
             <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
                 <div>
                     <h1 className="text-4xl font-extrabold tracking-tight mb-2">
-                        Submissions <span className="gradient-text">Gallery</span>
+                        Jam <span className="gradient-text">Gallery</span>
                     </h1>
                     <p className="text-muted-foreground">
                         Browse and explore extracted musical jams.
@@ -74,18 +74,27 @@ export default function VideoGallery({ videos, isAdmin }: { videos: Video[], isA
                             />
 
                             {/* Status Badges */}
+                            {/* Status Badges */}
                             <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
-                                <span className={`px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider backdrop-blur-md border border-white/10 ${video.status === 'completed' ? 'bg-green-500/20 text-green-200' : 'bg-blue-500/20 text-blue-200'
-                                    }`}>
-                                    {video.status === 'completed' ? 'Ready' : (isAdmin ? 'Requested' : 'Processing')}
-                                </span>
-
-                                {(isAdmin || video.approval_status === 'pending') && (
-                                    <span className={`px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider backdrop-blur-md border border-white/10 ${video.approval_status === 'approved' ? 'bg-emerald-500/80 text-white' :
-                                        video.approval_status === 'rejected' ? 'bg-red-500/80 text-white' : 'bg-yellow-500/80 text-white'
-                                        }`}>
-                                        {video.approval_status === 'pending' ? 'In Review' : video.approval_status}
+                                {video.processing_status === 'completed' ? (
+                                    <span className="px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider backdrop-blur-md border border-white/10 bg-green-500/80 text-white shadow-lg">
+                                        Available
                                     </span>
+                                ) : (
+                                    <>
+                                        <span className={`px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider backdrop-blur-md border border-white/10 ${video.status === 'completed' ? 'bg-green-500/20 text-green-200' : 'bg-blue-500/20 text-blue-200'
+                                            }`}>
+                                            {video.status === 'completed' ? 'Ready' : (isAdmin ? 'Requested' : 'Processing')}
+                                        </span>
+
+                                        {(isAdmin || video.approval_status === 'pending') && (
+                                            <span className={`px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider backdrop-blur-md border border-white/10 ${video.approval_status === 'approved' ? 'bg-emerald-500/80 text-white' :
+                                                video.approval_status === 'rejected' ? 'bg-red-500/80 text-white' : 'bg-yellow-500/80 text-white'
+                                                }`}>
+                                                {video.approval_status === 'pending' ? 'In Review' : video.approval_status}
+                                            </span>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -95,7 +104,7 @@ export default function VideoGallery({ videos, isAdmin }: { videos: Video[], isA
                                 <h3 className="font-bold text-lg leading-tight line-clamp-2 mb-1 text-white/90 group-hover:text-primary transition-colors">
                                     {video.title || "Processing Video..."}
                                 </h3>
-                                <p className="text-xs text-muted-foreground font-medium">
+                                <p suppressHydrationWarning className="text-xs text-muted-foreground font-medium">
                                     {new Date(video.created_at).toLocaleDateString(undefined, {
                                         year: 'numeric',
                                         month: 'long',

@@ -1,5 +1,5 @@
 import { getJam } from "@/app/actions";
-import JamPlayer from "@/components/jam-player";
+import { SessionPlayer } from "@/components/session-player";
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
@@ -27,6 +27,16 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
 
     const { video, stems } = data;
 
+    // Map stems to tracks format
+    // Since this is the session view for "playing versions", we want all stems available
+    const tracks = stems.map(stem => ({
+        name: stem.type, // e.g., 'vocals', 'no_drums', 'bass'
+        url: stem.blob_url
+    }));
+
+    // Sort to put 'no_' tracks first if possible, or just alpha
+    tracks.sort((a, b) => a.name.localeCompare(b.name));
+
     return (
         <div className="container mx-auto px-4 py-8">
             <Link href="/videos" className="inline-flex items-center text-muted-foreground hover:text-white mb-8 transition-colors">
@@ -46,30 +56,22 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
                         </p>
                     </div>
 
-                    {/* JAM PLAYER */}
-                    <JamPlayer
-                        stems={stems}
-                        title={video.title || "Jam Session"}
-                        youtubeUrl={video.youtube_url}
-                    />
+                    {/* NEW SESSION PLAYER */}
+                    <SessionPlayer tracks={tracks} />
 
-                    {/* Stems list (Debug/Info) */}
-                    <div className="glass-panel p-6 rounded-2xl border border-white/5 opacity-50 hover:opacity-100 transition-opacity">
-                        <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4">Available Stems</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {stems.map((stem) => (
-                                <div key={stem.id} className="bg-white/5 p-3 rounded-lg border border-white/5 text-xs">
-                                    <div className="font-bold capitalize text-white mb-1">{stem.type}</div>
-                                    <div className="truncate text-white/30">{stem.blob_url.split('/').pop()}</div>
-                                </div>
-                            ))}
-                            {stems.length === 0 && (
-                                <div className="col-span-full text-center py-4 text-muted-foreground text-sm">
-                                    No stems found for this jam.
-                                </div>
-                            )}
+                    {/* Original Source Link */}
+                    {video.youtube_url && (
+                        <div className="text-center mt-4">
+                            <a
+                                href={video.youtube_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-primary hover:underline opacity-80 hover:opacity-100"
+                            >
+                                Watch Original on YouTube
+                            </a>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>

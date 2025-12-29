@@ -3,7 +3,7 @@
 import { updateVideoApproval, getVideoStatus, cancelProcessing } from "@/app/actions";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, X, Upload, Trash2, CheckCircle } from "lucide-react";
+import { AlertTriangle, X, Upload, Trash2, CheckCircle, Play } from "lucide-react";
 import { createPortal } from "react-dom";
 
 export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
@@ -273,6 +273,13 @@ export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
                             <div className="flex flex-col gap-1">
                                 {isDev ? (
                                     <>
+                                        <button
+                                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 border border-purple-500/20 transition-all text-xs font-semibold w-full justify-center group/btn"
+                                            onClick={() => router.push(`/admin/videos/${video.id}/session`)}
+                                        >
+                                            <Play size={14} className="group-hover/btn:scale-110 transition-transform" />
+                                            View Session
+                                        </button>
                                         <button
                                             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 border border-blue-500/20 transition-all text-xs font-semibold w-full justify-center group/btn disabled:opacity-50 disabled:grayscale disabled:pointer-events-none"
                                             onClick={() => setShowTransferConfirm(true)}

@@ -51,12 +51,12 @@ export async function Navbar() {
                                     Submit
                                 </Link>
                                 <Link href="/videos" className="text-sm font-medium text-muted-foreground hover:text-white transition-colors">
-                                    {isAdmin ? "Videos" : "My Videos"}
+                                    {isAdmin ? "Jams" : "My Jams"}
                                 </Link>
                                 {isAdmin && (
                                     <>
                                         <Link href="/admin/videos" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-                                            Submissions
+                                            Jam Management
                                         </Link>
                                         <Link href="/admin/users" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
                                             Users
