@@ -57,7 +57,12 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
                     </div>
 
                     {/* NEW SESSION PLAYER */}
-                    <SessionPlayer tracks={tracks} />
+                    <SessionPlayer
+                        tracks={tracks}
+                        baseBpm={Number(video.bpm) || 120}
+                        baseKey={video.key_tonic}
+                        baseScale={video.key_scale}
+                    />
 
                     {/* Original Source Link */}
                     {video.youtube_url && (

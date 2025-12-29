@@ -1,14 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import { Play, Pause, Loader2, Volume2, Music } from "lucide-react";
+import { Play, Pause, Loader2, Volume2, Music, RotateCcw } from "lucide-react";
+import * as Tone from "tone";
 
 interface SessionTrack {
     name: string;
     url: string;
 }
 
-export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
+interface SessionPlayerProps {
+    tracks: SessionTrack[];
+    baseBpm: number;
+    baseKey?: string;
+    baseScale?: string;
+}
+
+export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale }: SessionPlayerProps) {
     const [selectedTrack, setSelectedTrack] = useState<SessionTrack | null>(tracks.length > 0 ? tracks[0] : null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -16,16 +24,16 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
     const [currentTime, setCurrentTime] = useState(0);
     const [volume, setVolume] = useState(0.8);
 
-    // Web Audio Refs
-    const audioCtxRef = useRef<AudioContext | null>(null);
-    const gainNodeRef = useRef<GainNode | null>(null);
-    const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
-    const audioBufferRef = useRef<AudioBuffer | null>(null);
+    // Audio Control State
+    const [targetBpm, setTargetBpm] = useState(baseBpm); // Default to base BPM
+    const [pitchShift, setPitchShift] = useState(0); // Semitones
 
-    // Timing Refs
-    const startTimeRef = useRef<number>(0);
-    const pauseOffsetRef = useRef<number>(0);
+    // Tone Refs
+    const playerRef = useRef<Tone.Player | null>(null);
+    const pitchShiftEffectRef = useRef<Tone.PitchShift | null>(null);
+    const isReadyRef = useRef(false);
 
+    // Canvas Refs
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const progressLineRef = useRef<HTMLDivElement>(null);
@@ -44,172 +52,203 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
             .sort((a, b) => a.name.localeCompare(b.name));
     }, [tracks]);
 
-    // Initialize Audio Context Once
+    // Initialize Tone.js Context
     useEffect(() => {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioContextClass();
-        const gain = ctx.createGain();
-        gain.connect(ctx.destination);
-
-        audioCtxRef.current = ctx;
-        gainNodeRef.current = gain;
-
+        // Start Tone context on first user interaction if needed, but we do it on Load usually
         return () => {
-            if (ctx.state !== 'closed') {
-                ctx.close();
+            // Cleanup
+            if (playerRef.current) {
+                playerRef.current.dispose();
             }
-        }
+            if (pitchShiftEffectRef.current) {
+                pitchShiftEffectRef.current.dispose();
+            }
+        };
     }, []);
 
-    // Helper to stop audio safely
-    const stopAudioSource = useCallback(() => {
-        if (sourceNodeRef.current) {
-            try {
-                sourceNodeRef.current.stop();
-            } catch (e) {
-                // Ignore errors if already stopped
-            }
-            sourceNodeRef.current.disconnect();
-            sourceNodeRef.current = null;
-        }
-    }, []);
-
-    // Play Audio
-    const playAudio = useCallback(() => {
-        if (!audioCtxRef.current || !audioBufferRef.current || !gainNodeRef.current) return;
-
-        if (audioCtxRef.current.state === 'suspended') {
-            audioCtxRef.current.resume();
-        }
-
-        stopAudioSource(); // Ensure clean slate
-
-        const source = audioCtxRef.current.createBufferSource();
-        source.buffer = audioBufferRef.current;
-        source.connect(gainNodeRef.current);
-
-        const offset = pauseOffsetRef.current;
-        // Clamp offset to duration to avoid errors
-        const safeOffset = Math.min(offset, audioBufferRef.current.duration);
-
-        source.start(0, safeOffset);
-
-        sourceNodeRef.current = source;
-        // Capture exact context time adjusted by offset
-        startTimeRef.current = audioCtxRef.current.currentTime - safeOffset;
-
-        setIsPlaying(true);
-    }, [stopAudioSource]);
-
-    // Pause Audio
-    const pauseAudio = useCallback(() => {
-        if (audioCtxRef.current) {
-            stopAudioSource();
-
-            // Calculate where we stopped
-            const elapsed = audioCtxRef.current.currentTime - startTimeRef.current;
-            pauseOffsetRef.current = elapsed;
-
-            setIsPlaying(false);
-        }
-    }, [stopAudioSource]);
-
-    // Load Track
+    // Load Track logic
     useEffect(() => {
-        if (!selectedTrack || !audioCtxRef.current) return;
+        if (!selectedTrack) return;
 
-        // Reset state
-        stopAudioSource();
-        setIsPlaying(false);
-        setIsLoading(true);
-        setDuration(0);
-        setCurrentTime(0);
-        pauseOffsetRef.current = 0;
-        audioBufferRef.current = null;
+        let isActive = true;
 
-        // Clear canvas context
-        if (canvasRef.current) {
-            const ctx = canvasRef.current.getContext('2d');
-            if (ctx) ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        }
+        const loadTrack = async () => {
+            setIsLoading(true);
+            setIsPlaying(false);
+            setCurrentTime(0);
+            isReadyRef.current = false;
 
-        const abortController = new AbortController();
-        const loadAudio = async () => {
+            if (playerRef.current) {
+                playerRef.current.stop();
+                playerRef.current.dispose();
+            }
+            if (pitchShiftEffectRef.current) {
+                pitchShiftEffectRef.current.dispose();
+            }
+
             try {
-                const response = await fetch(selectedTrack.url, { signal: abortController.signal });
-                const arrayBuffer = await response.arrayBuffer();
+                // Ensure context is started
+                // await Tone.start(); // Removed to prevent blocking loading on Autoplay Policy
 
-                // Decode
-                const decodedBuffer = await audioCtxRef.current!.decodeAudioData(arrayBuffer);
 
-                if (abortController.signal.aborted) return;
+                // Create Effect Chain
+                // Player -> PitchShift -> Destination
+                const pitchEffect = new Tone.PitchShift().toDestination();
+                pitchShiftEffectRef.current = pitchEffect;
 
-                audioBufferRef.current = decodedBuffer;
-                setDuration(decodedBuffer.duration);
-                drawWaveform(decodedBuffer);
-                setIsLoading(false);
+                if (!selectedTrack.url) throw new Error("No URL for track");
 
-            } catch (err: any) {
-                if (err.name !== 'AbortError') {
-                    console.error("Error loading audio:", err);
+                // Load Player
+                const player = new Tone.Player({
+                    url: selectedTrack.url,
+                    loop: false,
+                    onload: () => {
+                        if (!isActive) return;
+
+                        try {
+                            setDuration(player.buffer.duration);
+                            drawWaveform(player.buffer.get() as AudioBuffer);
+                            setIsLoading(false);
+                            isReadyRef.current = true;
+
+                            // Apply initial volume
+                            player.volume.value = Tone.gainToDb(volume);
+
+                            // Apply initial tempo/pitch logic
+                            updateAudioParams(targetBpm, pitchShift, player, pitchEffect);
+                        } catch (e) {
+                            console.error("Error in player onload:", e);
+                        }
+                    }
+                }).connect(pitchEffect);
+
+                playerRef.current = player;
+
+            } catch (err) {
+                if (isActive) {
+                    console.error("Failed to load audio", err);
                     setIsLoading(false);
                 }
             }
         };
 
-        loadAudio();
+        loadTrack();
 
         return () => {
-            abortController.abort();
-            stopAudioSource();
+            isActive = false;
+            // Cleanup handled in main useEffect or before re-run
         };
-    }, [selectedTrack, stopAudioSource]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedTrack]); // Re-load when track changes
 
-    // Volume Effect
+    // Update Audio Parameters (Tempo & Pitch)
+    const updateAudioParams = useCallback((bpm: number, semitones: number, player: Tone.Player | null, shifter: Tone.PitchShift | null) => {
+        if (!player || !shifter || !isReadyRef.current) return;
+
+        // Guard against NaN
+        const safeBpm = isNaN(bpm) || bpm <= 0 ? 120 : bpm;
+        const safeSemitones = isNaN(semitones) ? 0 : semitones;
+        const safeBase = baseBpm || 120;
+
+        // 1. Calculate Playback Rate for Tempo
+        const rate = safeBpm / safeBase;
+
+        // Apply rate
+        // Ensure rate is finite and positive
+        if (isFinite(rate) && rate > 0) {
+            player.playbackRate = rate;
+        }
+
+        // 2. Calculate Pitch Compensation
+        const pitchCorrection = -12 * Math.log2(rate);
+
+        // Final Pitch
+        let finalPitch = safeSemitones + pitchCorrection;
+        if (!isFinite(finalPitch)) finalPitch = 0;
+
+        shifter.pitch = finalPitch;
+
+    }, [baseBpm]);
+
+    // React to State Changes
     useEffect(() => {
-        if (gainNodeRef.current) {
-            gainNodeRef.current.gain.value = volume;
+        updateAudioParams(targetBpm, pitchShift, playerRef.current, pitchShiftEffectRef.current);
+    }, [targetBpm, pitchShift, updateAudioParams]);
+
+    // Volume
+    useEffect(() => {
+        if (playerRef.current) {
+            playerRef.current.volume.value = Tone.gainToDb(volume);
         }
     }, [volume]);
 
-    // Animation Loop
-    useEffect(() => {
-        const animate = () => {
-            if (isPlaying && audioCtxRef.current) {
-                const now = audioCtxRef.current.currentTime;
-                // Calculate current track time
-                let current = now - startTimeRef.current;
+    // Play/Pause Toggle
+    const togglePlay = async () => {
+        if (!isReadyRef.current || !playerRef.current) return;
 
-                // Check for end of track
-                if (duration > 0 && current >= duration) {
-                    stopAudioSource();
-                    pauseOffsetRef.current = 0;
-                    current = 0;
-                    setIsPlaying(false);
-                }
-
-                setCurrentTime(current);
-
-                if (progressLineRef.current) {
-                    const dur = duration || 1;
-                    progressLineRef.current.style.left = `${Math.min((current / dur) * 100, 100)}%`;
-                }
-            }
-            rafRef.current = requestAnimationFrame(animate);
-        };
+        if (Tone.context.state !== "running") {
+            await Tone.start();
+        }
 
         if (isPlaying) {
-            rafRef.current = requestAnimationFrame(animate);
+            playerRef.current.stop();
         } else {
-            if (rafRef.current) cancelAnimationFrame(rafRef.current);
-            // Even when paused, we might want to ensure the visual indicator stays at the pause position
-            // But state currentTime usually handles this.
+            // Safe time check
+            const safeTime = isNaN(currentTime) ? 0 : currentTime;
+            if (safeTime >= duration) {
+                playerRef.current.start(undefined, 0); // Restart
+            } else {
+                playerRef.current.start(undefined, safeTime);
+            }
         }
+        setIsPlaying(!isPlaying);
+    };
+
+    // Animation Loop for Progress
+    useEffect(() => {
+        const animate = () => {
+            if (!playerRef.current || !isReadyRef.current) return;
+
+            // Sync visual state if playing
+            if (playerRef.current.state === "started") {
+                setIsPlaying(true);
+            } else {
+                if (isPlaying) setIsPlaying(false); // Auto-detected stop (end of file)
+            }
+
+            // Manual seek loop check?
+            // Tone.Player `onstop` callback?
+
+            rafRef.current = requestAnimationFrame(animate);
+        };
+        rafRef.current = requestAnimationFrame(animate);
 
         return () => {
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
         };
-    }, [isPlaying, duration, stopAudioSource]);
+    }, [isPlaying]); // Dependent on nothing really
+
+    // Re-implementing Animation/Time Tracking properly
+    // We will use a separate effect for precise time tracking if we can.
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isPlaying) {
+            interval = setInterval(() => {
+                setCurrentTime(prev => {
+                    if (prev >= duration) return duration;
+                    const delta = 0.1; // 100ms
+
+                    const safeTarget = isNaN(targetBpm) ? 120 : targetBpm;
+                    const safeBase = baseBpm || 120;
+                    const ratio = safeTarget / safeBase;
+
+                    const nextTime = prev + (delta * ratio);
+                    return isNaN(nextTime) ? prev : nextTime;
+                });
+            }, 100);
+        }
+        return () => clearInterval(interval);
+    }, [isPlaying, targetBpm, baseBpm, duration]);
 
 
     const drawWaveform = (buffer: AudioBuffer) => {
@@ -229,10 +268,8 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
 
         ctx.clearRect(0, 0, width, height);
         const rawDataL = buffer.getChannelData(0);
-        const rawDataR = buffer.numberOfChannels > 1 ? buffer.getChannelData(1) : rawDataL;
 
-        // Use float step for precise alignment over long durations
-        const step = rawDataL.length / width;
+        const step = Math.ceil(rawDataL.length / width);
         const amp = height / 2;
 
         ctx.fillStyle = '#A855F7'; // Purple-500
@@ -242,24 +279,13 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
             let min = 1.0;
             let max = -1.0;
 
-            const startIdx = Math.floor(i * step);
-            const endIdx = Math.floor((i + 1) * step);
-
-            // Prevent infinite loop if step is < 1 (zoomed in extremely, though here width < samples usually)
-            // But usually samples >> width.
-
-            for (let j = startIdx; j < endIdx && j < rawDataL.length; j++) {
-                const valL = rawDataL[j];
-                const valR = rawDataR[j];
-
-                // Check extrema independently to avoid phase cancellation (L + -L = 0)
-                if (valL < min) min = valL;
-                if (valL > max) max = valL;
-                if (valR < min) min = valR;
-                if (valR > max) max = valR;
+            for (let j = 0; j < step; j++) {
+                const datum = rawDataL[(i * step) + j];
+                if (datum < min) min = datum;
+                if (datum > max) max = datum;
             }
 
-            // If no samples in bucket (shouldn't happen with step >= 1), draw flat
+            // Optimization
             if (min > max) { min = 0; max = 0; }
 
             ctx.fillRect(i, (1 + min) * amp, 1, Math.max(1, (max - min) * amp));
@@ -267,7 +293,7 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
     };
 
     const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        if (!duration) return;
+        if (!duration || !playerRef.current) return;
 
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -277,28 +303,13 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
         const progress = Math.max(0, Math.min(1, x / rect.width));
         const seekTime = duration * progress;
 
-        // Apply seek
-        const wasPlaying = isPlaying;
+        setCurrentTime(seekTime); // Update UI
+
+        // If playing, we need to restart at new time
         if (isPlaying) {
-            stopAudioSource();
+            playerRef.current.stop();
+            playerRef.current.start(undefined, seekTime);
         }
-
-        pauseOffsetRef.current = seekTime;
-        setCurrentTime(seekTime);
-
-        // Update visual immediately
-        if (progressLineRef.current) {
-            progressLineRef.current.style.left = `${progress * 100}%`;
-        }
-
-        if (wasPlaying) {
-            playAudio();
-        }
-    };
-
-    const togglePlay = () => {
-        if (isPlaying) pauseAudio();
-        else playAudio();
     };
 
     const formatTime = (seconds: number) => {
@@ -314,10 +325,10 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
     return (
         <div className="flex flex-col gap-8 w-full">
             {/* Player Main Area */}
-            <div className={`sticky top-20 z-50 relative w-full h-64 bg-black/60 backdrop-blur-xl rounded-xl overflow-hidden border border-white/10 shadow-2xl transition-all duration-500 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
+            <div className={`sticky top-20 z-50 relative w-full h-80 bg-black/60 backdrop-blur-xl rounded-xl overflow-hidden border border-white/10 shadow-2xl transition-all duration-500 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
 
                 {/* Visualizer Canvas */}
-                <div ref={containerRef} className="absolute inset-0 w-full h-full flex items-center justify-center">
+                <div ref={containerRef} className="absolute inset-x-0 top-0 h-48 flex items-center justify-center border-b border-white/5">
                     <canvas
                         ref={canvasRef}
                         className="w-full h-full cursor-pointer z-10"
@@ -329,50 +340,108 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
                             <span className="ml-3 font-medium text-white/80">Loading audio...</span>
                         </div>
                     )}
+                    {/* Progress Overlay Line */}
+                    {!isLoading && (
+                        <div
+                            ref={progressLineRef}
+                            className="absolute top-0 bottom-0 w-0.5 bg-white z-10 pointer-events-none"
+                            style={{ left: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+                        />
+                    )}
                 </div>
 
-                {/* Progress Overlay Line */}
-                {!isLoading && (
-                    <div
-                        ref={progressLineRef}
-                        className="absolute top-0 bottom-0 w-0.5 bg-white z-10 pointer-events-none"
-                        style={{ left: `${duration ? (currentTime / duration) * 100 : 0}%` }}
-                    />
-                )}
+                {/* Controls Area */}
+                <div className="absolute bottom-0 left-0 right-0 h-32 p-4 bg-white/5 backdrop-blur-md flex flex-col justify-between">
 
-                {/* Controls Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 to-transparent z-20 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={togglePlay}
-                            disabled={isLoading}
-                            className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-50"
-                        >
-                            {isPlaying ? <Pause fill="currentColor" /> : <Play fill="currentColor" className="ml-1" />}
-                        </button>
+                    {/* Top Row: Play/Volume/Info */}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={togglePlay}
+                                disabled={isLoading}
+                                className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-50"
+                            >
+                                {isPlaying ? <Pause fill="currentColor" size={18} /> : <Play fill="currentColor" size={18} className="ml-0.5" />}
+                            </button>
 
-                        <div className="flex flex-col">
-                            <span className="text-white font-medium text-lg leading-tight capitalize">
-                                {selectedTrack?.name.replace(/^no_/, "No ").replace('.mp3', '').replace(/_/g, ' ') || "Unknown Track"}
-                            </span>
-                            <span className="text-xs text-muted-foreground font-mono">
-                                {formatTime(currentTime)} / {formatTime(duration)}
-                            </span>
+                            <div className="flex flex-col">
+                                <span className="text-white font-medium text-sm leading-tight capitalize max-w-[200px] truncate">
+                                    {selectedTrack?.name.replace(/^no_/, "No ").replace('.mp3', '').replace(/_/g, ' ') || "Unknown Track"}
+                                </span>
+                                <span className="text-xs text-muted-foreground font-mono">
+                                    {formatTime(currentTime)} / {formatTime(duration)}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <Volume2 size={16} className="text-muted-foreground" />
+                            <input
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.01"
+                                value={volume}
+                                onChange={(e) => setVolume(parseFloat(e.target.value))}
+                                className="w-20 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                            />
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <Volume2 size={16} className="text-muted-foreground" />
-                        <input
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.01"
-                            value={volume}
-                            onChange={(e) => setVolume(parseFloat(e.target.value))}
-                            className="w-24 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-                        />
+                    {/* Bottom Row: Pitch & Metronome */}
+                    <div className="flex items-center gap-6 pt-2 border-t border-white/5">
+                        {/* Metronome / Tempo */}
+                        <div className="flex flex-col gap-1 flex-1">
+                            <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                                <span>Tempo (BPM)</span>
+                                <div className="flex gap-2">
+                                    <span className="text-white">{Math.round(targetBpm) || 0}</span>
+                                    <button onClick={() => setTargetBpm(baseBpm || 120)} className="hover:text-white" title="Reset"><RotateCcw size={10} /></button>
+                                </div>
+                            </div>
+                            <input
+                                type="range"
+                                min={(baseBpm || 120) - 50}
+                                max={(baseBpm || 120) + 50}
+                                step="1"
+                                value={isNaN(targetBpm) ? (baseBpm || 120) : targetBpm}
+                                onChange={(e) => setTargetBpm(parseFloat(e.target.value))}
+                                disabled={isLoading}
+                                className="w-full h-1 bg-blue-500/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-400"
+                            />
+                        </div>
+
+                        {/* Divider */}
+                        <div className="w-px h-8 bg-white/10" />
+
+                        {/* Pitch Shifter */}
+                        <div className="flex flex-col gap-1 flex-1">
+                            <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                                <span>Pitch Shift</span>
+                                <div className="flex gap-2">
+                                    <span className="text-white">{pitchShift > 0 ? `+${pitchShift}` : pitchShift} semi</span>
+                                    <button onClick={() => setPitchShift(0)} className="hover:text-white" title="Reset"><RotateCcw size={10} /></button>
+                                </div>
+                            </div>
+                            <input
+                                type="range"
+                                min="-12"
+                                max="12"
+                                step="1"
+                                value={isNaN(pitchShift) ? 0 : pitchShift}
+                                onChange={(e) => setPitchShift(parseFloat(e.target.value))}
+                                disabled={isLoading}
+                                className="w-full h-1 bg-purple-500/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-400"
+                            />
+                        </div>
                     </div>
+
+                    {/* Key Info Badge (Absolute Center-ish or corner) */}
+                    {(baseKey || baseScale) && (
+                        <div className="absolute top-2 right-4 px-2 py-0.5 rounded bg-white/5 border border-white/5 text-[10px] text-muted-foreground font-mono">
+                            {baseKey} {baseScale} • {baseBpm} BPM
+                        </div>
+                    )}
                 </div>
             </div>
 
