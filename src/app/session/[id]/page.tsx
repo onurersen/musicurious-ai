@@ -25,7 +25,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
         );
     }
 
-    const { video, stems } = data;
+    const { video, stems, userSettings } = data;
 
     // Map stems to tracks format
     // Since this is the session view for "playing versions", we want all stems available
@@ -62,6 +62,8 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
                         baseBpm={Number(video.bpm) || 120}
                         baseKey={video.key_tonic}
                         baseScale={video.key_scale}
+                        videoId={jamId}
+                        initialSettings={userSettings}
                     />
 
                     {/* Original Source Link */}

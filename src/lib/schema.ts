@@ -40,3 +40,27 @@ export async function createStemsTable() {
     throw error;
   }
 }
+
+export async function createUserJamSettingsTable() {
+  try {
+    const result = await sql`
+        CREATE TABLE IF NOT EXISTS user_jam_settings (
+          id SERIAL PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          video_id INTEGER NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+          pitch INTEGER DEFAULT 0,
+          tempo INTEGER DEFAULT 120,
+          active_track TEXT,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(user_id, video_id)
+        );
+      `;
+    console.log(`Created "user_jam_settings" table`);
+    return result;
+  } catch (error) {
+    console.error('Error creating "user_jam_settings" table:', error);
+    throw error;
+  }
+}
+
