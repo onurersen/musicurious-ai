@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
-import { Howl } from "howler";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { Play, Pause, Loader2, Volume2, Music } from "lucide-react";
 
 interface SessionTrack {
@@ -10,8 +9,6 @@ interface SessionTrack {
 }
 
 export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
-    // Default to the first track or specifically 'no_vocals' if available?
-    // Let's default to the first one for now.
     const [selectedTrack, setSelectedTrack] = useState<SessionTrack | null>(tracks.length > 0 ? tracks[0] : null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -19,12 +16,19 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
     const [currentTime, setCurrentTime] = useState(0);
     const [volume, setVolume] = useState(0.8);
 
-    const howlRef = useRef<Howl | null>(null);
+    // Web Audio Refs
+    const audioCtxRef = useRef<AudioContext | null>(null);
+    const gainNodeRef = useRef<GainNode | null>(null);
+    const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
+    const audioBufferRef = useRef<AudioBuffer | null>(null);
+
+    // Timing Refs
+    const startTimeRef = useRef<number>(0);
+    const pauseOffsetRef = useRef<number>(0);
+
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-
     const progressLineRef = useRef<HTMLDivElement>(null);
-    const bufferDurationRef = useRef<number>(0);
     const rafRef = useRef<number | undefined>(undefined);
 
     // Group tracks
@@ -40,73 +44,110 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
             .sort((a, b) => a.name.localeCompare(b.name));
     }, [tracks]);
 
+    // Initialize Audio Context Once
     useEffect(() => {
-        if (!selectedTrack) return;
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        const ctx = new AudioContextClass();
+        const gain = ctx.createGain();
+        gain.connect(ctx.destination);
 
-        // Cleanup previous
-        if (howlRef.current) {
-            howlRef.current.unload();
+        audioCtxRef.current = ctx;
+        gainNodeRef.current = gain;
+
+        return () => {
+            if (ctx.state !== 'closed') {
+                ctx.close();
+            }
         }
-        if (rafRef.current) {
-            cancelAnimationFrame(rafRef.current);
+    }, []);
+
+    // Helper to stop audio safely
+    const stopAudioSource = useCallback(() => {
+        if (sourceNodeRef.current) {
+            try {
+                sourceNodeRef.current.stop();
+            } catch (e) {
+                // Ignore errors if already stopped
+            }
+            sourceNodeRef.current.disconnect();
+            sourceNodeRef.current = null;
+        }
+    }, []);
+
+    // Play Audio
+    const playAudio = useCallback(() => {
+        if (!audioCtxRef.current || !audioBufferRef.current || !gainNodeRef.current) return;
+
+        if (audioCtxRef.current.state === 'suspended') {
+            audioCtxRef.current.resume();
         }
 
-        setIsLoading(true);
+        stopAudioSource(); // Ensure clean slate
+
+        const source = audioCtxRef.current.createBufferSource();
+        source.buffer = audioBufferRef.current;
+        source.connect(gainNodeRef.current);
+
+        const offset = pauseOffsetRef.current;
+        // Clamp offset to duration to avoid errors
+        const safeOffset = Math.min(offset, audioBufferRef.current.duration);
+
+        source.start(0, safeOffset);
+
+        sourceNodeRef.current = source;
+        // Capture exact context time adjusted by offset
+        startTimeRef.current = audioCtxRef.current.currentTime - safeOffset;
+
+        setIsPlaying(true);
+    }, [stopAudioSource]);
+
+    // Pause Audio
+    const pauseAudio = useCallback(() => {
+        if (audioCtxRef.current) {
+            stopAudioSource();
+
+            // Calculate where we stopped
+            const elapsed = audioCtxRef.current.currentTime - startTimeRef.current;
+            pauseOffsetRef.current = elapsed;
+
+            setIsPlaying(false);
+        }
+    }, [stopAudioSource]);
+
+    // Load Track
+    useEffect(() => {
+        if (!selectedTrack || !audioCtxRef.current) return;
+
+        // Reset state
+        stopAudioSource();
         setIsPlaying(false);
-        setCurrentTime(0);
+        setIsLoading(true);
         setDuration(0);
+        setCurrentTime(0);
+        pauseOffsetRef.current = 0;
+        audioBufferRef.current = null;
 
-        // Fetch Audio Buffer for Waveform
+        // Clear canvas context
+        if (canvasRef.current) {
+            const ctx = canvasRef.current.getContext('2d');
+            if (ctx) ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        }
+
         const abortController = new AbortController();
-
         const loadAudio = async () => {
             try {
                 const response = await fetch(selectedTrack.url, { signal: abortController.signal });
                 const arrayBuffer = await response.arrayBuffer();
 
-                // Create Blobs for Howler to avoid re-download
-                const blob = new Blob([arrayBuffer], { type: 'audio/mp3' });
-                const blobUrl = URL.createObjectURL(blob);
+                // Decode
+                const decodedBuffer = await audioCtxRef.current!.decodeAudioData(arrayBuffer);
 
-                // Draw Waveform first
-                const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-                // decodeAudioData detaches the buffer, so we slice it
-                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+                if (abortController.signal.aborted) return;
 
-                // Use the decoded buffer duration as the source of truth
-                const bufferDuration = audioBuffer.duration;
-                setDuration(bufferDuration);
-                bufferDurationRef.current = bufferDuration;
-
-                drawWaveform(audioBuffer);
-
-                // Initialize Howler
-                const sound = new Howl({
-                    src: [blobUrl],
-                    format: ['mp3'],
-                    html5: true,
-                    volume: volume,
-                    onload: () => {
-                        // We strictly use the buffer duration derived from the full decode
-                        // Howl's duration() might be an estimate for MP3s
-                        setIsLoading(false);
-                    },
-                    onplay: () => {
-                        setIsPlaying(true);
-                    },
-                    onpause: () => {
-                        setIsPlaying(false);
-                    },
-                    onend: () => {
-                        setIsPlaying(false);
-                        setCurrentTime(0);
-                    },
-                    onseek: () => {
-                        // Animation loop handles update
-                    }
-                });
-
-                howlRef.current = sound;
+                audioBufferRef.current = decodedBuffer;
+                setDuration(decodedBuffer.duration);
+                drawWaveform(decodedBuffer);
+                setIsLoading(false);
 
             } catch (err: any) {
                 if (err.name !== 'AbortError') {
@@ -120,31 +161,38 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
 
         return () => {
             abortController.abort();
-            if (howlRef.current) {
-                howlRef.current.unload();
-            }
-            if (rafRef.current) {
-                cancelAnimationFrame(rafRef.current);
-            }
+            stopAudioSource();
         };
-    }, [selectedTrack]);
+    }, [selectedTrack, stopAudioSource]);
+
+    // Volume Effect
+    useEffect(() => {
+        if (gainNodeRef.current) {
+            gainNodeRef.current.gain.value = volume;
+        }
+    }, [volume]);
 
     // Animation Loop
     useEffect(() => {
         const animate = () => {
-            if (howlRef.current && howlRef.current.playing()) {
-                const seek = howlRef.current.seek();
-                if (typeof seek === 'number') {
-                    setCurrentTime(seek);
+            if (isPlaying && audioCtxRef.current) {
+                const now = audioCtxRef.current.currentTime;
+                // Calculate current track time
+                let current = now - startTimeRef.current;
 
-                    // Direct DOM update for smoothness and to fix "stuck" indicator
-                    if (progressLineRef.current) {
-                        // Use buffer duration if available for visual sync, fallback to Howl duration
-                        const dur = bufferDurationRef.current || howlRef.current.duration();
-                        if (dur > 0) {
-                            progressLineRef.current.style.left = `${(seek / dur) * 100}%`;
-                        }
-                    }
+                // Check for end of track
+                if (duration > 0 && current >= duration) {
+                    stopAudioSource();
+                    pauseOffsetRef.current = 0;
+                    current = 0;
+                    setIsPlaying(false);
+                }
+
+                setCurrentTime(current);
+
+                if (progressLineRef.current) {
+                    const dur = duration || 1;
+                    progressLineRef.current.style.left = `${Math.min((current / dur) * 100, 100)}%`;
                 }
             }
             rafRef.current = requestAnimationFrame(animate);
@@ -153,24 +201,16 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
         if (isPlaying) {
             rafRef.current = requestAnimationFrame(animate);
         } else {
-            if (rafRef.current) {
-                cancelAnimationFrame(rafRef.current);
-            }
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            // Even when paused, we might want to ensure the visual indicator stays at the pause position
+            // But state currentTime usually handles this.
         }
 
         return () => {
-            if (rafRef.current) {
-                cancelAnimationFrame(rafRef.current);
-            }
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
         };
-    }, [isPlaying]);
+    }, [isPlaying, duration, stopAudioSource]);
 
-    // Volume Effect
-    useEffect(() => {
-        if (howlRef.current) {
-            howlRef.current.volume(volume);
-        }
-    }, [volume]);
 
     const drawWaveform = (buffer: AudioBuffer) => {
         const canvas = canvasRef.current;
@@ -188,12 +228,11 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
         ctx.scale(dpr, dpr);
 
         ctx.clearRect(0, 0, width, height);
-
-        // Merge channels if stereo
         const rawDataL = buffer.getChannelData(0);
         const rawDataR = buffer.numberOfChannels > 1 ? buffer.getChannelData(1) : rawDataL;
 
-        const step = Math.ceil(rawDataL.length / width);
+        // Use float step for precise alignment over long durations
+        const step = rawDataL.length / width;
         const amp = height / 2;
 
         ctx.fillStyle = '#A855F7'; // Purple-500
@@ -203,45 +242,63 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
             let min = 1.0;
             let max = -1.0;
 
-            for (let j = 0; j < step; j++) {
-                const idx = (i * step) + j;
-                if (idx >= rawDataL.length) break;
+            const startIdx = Math.floor(i * step);
+            const endIdx = Math.floor((i + 1) * step);
 
-                // Merge: Average or Max? Average is safer for visualization
-                const valL = rawDataL[idx];
-                const valR = rawDataR[idx];
-                const val = (valL + valR) / 2;
+            // Prevent infinite loop if step is < 1 (zoomed in extremely, though here width < samples usually)
+            // But usually samples >> width.
 
-                if (val < min) min = val;
-                if (val > max) max = val;
+            for (let j = startIdx; j < endIdx && j < rawDataL.length; j++) {
+                const valL = rawDataL[j];
+                const valR = rawDataR[j];
+
+                // Check extrema independently to avoid phase cancellation (L + -L = 0)
+                if (valL < min) min = valL;
+                if (valL > max) max = valL;
+                if (valR < min) min = valR;
+                if (valR > max) max = valR;
             }
+
+            // If no samples in bucket (shouldn't happen with step >= 1), draw flat
+            if (min > max) { min = 0; max = 0; }
 
             ctx.fillRect(i, (1 + min) * amp, 1, Math.max(1, (max - min) * amp));
         }
     };
 
     const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        if (!duration || !howlRef.current) return;
+        if (!duration) return;
 
         const canvas = canvasRef.current;
         if (!canvas) return;
 
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
-        const progress = x / rect.width;
-
+        const progress = Math.max(0, Math.min(1, x / rect.width));
         const seekTime = duration * progress;
-        howlRef.current.seek(seekTime);
+
+        // Apply seek
+        const wasPlaying = isPlaying;
+        if (isPlaying) {
+            stopAudioSource();
+        }
+
+        pauseOffsetRef.current = seekTime;
         setCurrentTime(seekTime);
+
+        // Update visual immediately
+        if (progressLineRef.current) {
+            progressLineRef.current.style.left = `${progress * 100}%`;
+        }
+
+        if (wasPlaying) {
+            playAudio();
+        }
     };
 
     const togglePlay = () => {
-        if (!howlRef.current) return;
-        if (isPlaying) {
-            howlRef.current.pause();
-        } else {
-            howlRef.current.play();
-        }
+        if (isPlaying) pauseAudio();
+        else playAudio();
     };
 
     const formatTime = (seconds: number) => {
@@ -260,7 +317,7 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
             <div className={`sticky top-20 z-50 relative w-full h-64 bg-black/60 backdrop-blur-xl rounded-xl overflow-hidden border border-white/10 shadow-2xl transition-all duration-500 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
 
                 {/* Visualizer Canvas */}
-                <div ref={containerRef} className="absolute inset-0 w-full h-full flex items-center justify-center p-4">
+                <div ref={containerRef} className="absolute inset-0 w-full h-full flex items-center justify-center">
                     <canvas
                         ref={canvasRef}
                         className="w-full h-full cursor-pointer z-10"
@@ -320,7 +377,6 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
             </div>
 
             {/* Stem Switcher */}
-            {/* Stem Switcher */}
             <div className="flex flex-col gap-8">
                 {/* Instruments Section */}
                 {instrumentStems.length > 0 && (
@@ -363,6 +419,10 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
                     </div>
                 )}
 
+                {instrumentStems.length > 0 && filterStems.length > 0 && (
+                    <div className="h-px w-full bg-white/10" />
+                )}
+
                 {/* Filters Section */}
                 {filterStems.length > 0 && (
                     <div className="flex flex-col gap-3">
@@ -386,7 +446,6 @@ export function SessionPlayer({ tracks }: { tracks: SessionTrack[] }) {
                                                 size={20}
                                                 className={`transition-colors ${selectedTrack?.name === track.name ? 'text-purple-400' : 'text-muted-foreground group-hover:text-white'}`}
                                             />
-                                            {/* Maybe a 'slash' icon or something to denote filter? standard music icon is fine for now but let's keep it consistent */}
                                         </div>
 
                                         {selectedTrack?.name === track.name && (
