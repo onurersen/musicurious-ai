@@ -221,66 +221,72 @@ export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
                     <div className="flex flex-col gap-2 min-w-[160px]">
                         {(procStatus === 'completed' || (procStatus === 'processing' && progress >= 100)) ? (
                             <div className="flex flex-col gap-1">
-                                <button
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 border border-blue-500/20 transition-all text-xs font-semibold w-full justify-center group/btn"
-                                    onClick={async () => {
-                                        setLoading(true);
-                                        setTransferProgress(0);
-                                        try {
-                                            const fd = new FormData();
-                                            fd.append('videoId', video.id.toString());
-                                            const res = await fetch('/api/admin/transfer-stems', { method: 'POST', body: fd });
+                                {isDev ? (
+                                    <>
+                                        <button
+                                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 border border-blue-500/20 transition-all text-xs font-semibold w-full justify-center group/btn"
+                                            onClick={async () => {
+                                                setLoading(true);
+                                                setTransferProgress(0);
+                                                try {
+                                                    const fd = new FormData();
+                                                    fd.append('videoId', video.id.toString());
+                                                    const res = await fetch('/api/admin/transfer-stems', { method: 'POST', body: fd });
 
-                                            // Handle ReadableStream
-                                            const reader = res.body?.getReader();
-                                            if (!reader) throw new Error("No response body");
+                                                    // Handle ReadableStream
+                                                    const reader = res.body?.getReader();
+                                                    if (!reader) throw new Error("No response body");
 
-                                            const decoder = new TextDecoder();
-                                            let done = false;
+                                                    const decoder = new TextDecoder();
+                                                    let done = false;
 
-                                            while (!done) {
-                                                const { value, done: doneReading } = await reader.read();
-                                                done = doneReading;
-                                                const chunkValue = decoder.decode(value);
+                                                    while (!done) {
+                                                        const { value, done: doneReading } = await reader.read();
+                                                        done = doneReading;
+                                                        const chunkValue = decoder.decode(value);
 
-                                                // Split by newline as multiple chunks might arrive at once
-                                                const lines = chunkValue.split('\n').filter(line => line.trim() !== '');
-                                                for (const line of lines) {
-                                                    try {
-                                                        const data = JSON.parse(line);
-                                                        if (data.type === 'progress') {
-                                                            setTransferProgress(data.percent);
-                                                        } else if (data.type === 'error') {
-                                                            throw new Error(data.message);
+                                                        // Split by newline as multiple chunks might arrive at once
+                                                        const lines = chunkValue.split('\n').filter(line => line.trim() !== '');
+                                                        for (const line of lines) {
+                                                            try {
+                                                                const data = JSON.parse(line);
+                                                                if (data.type === 'progress') {
+                                                                    setTransferProgress(data.percent);
+                                                                } else if (data.type === 'error') {
+                                                                    throw new Error(data.message);
+                                                                }
+                                                            } catch (e) {
+                                                                // ignore non-json or partial lines
+                                                            }
                                                         }
-                                                    } catch (e) {
-                                                        // ignore non-json or partial lines
                                                     }
-                                                }
-                                            }
 
-                                            setShowTransferSuccess(true);
-                                            router.refresh();
-                                        } catch (e: any) {
-                                            alert("Transfer failed: " + e.message);
-                                        } finally {
-                                            setLoading(false);
-                                            setTransferProgress(0);
-                                        }
-                                    }}
-                                    disabled={loading || procStatus === 'completed'}
-                                >
-                                    <Upload size={14} className="group-hover/btn:scale-110 transition-transform" />
-                                    {loading ? (transferProgress > 0 ? `Transferring ${transferProgress}%` : "Transferring...") : "Transfer Stems"}
-                                </button>
-                                <button
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all text-xs font-semibold w-full justify-center group/btn"
-                                    onClick={() => setShowRemoveStemsConfirm(true)}
-                                    disabled={loading}
-                                >
-                                    <Trash2 size={14} className="group-hover/btn:scale-110 transition-transform" />
-                                    Remove Stems
-                                </button>
+                                                    setShowTransferSuccess(true);
+                                                    router.refresh();
+                                                } catch (e: any) {
+                                                    alert("Transfer failed: " + e.message);
+                                                } finally {
+                                                    setLoading(false);
+                                                    setTransferProgress(0);
+                                                }
+                                            }}
+                                            disabled={loading || procStatus === 'completed'}
+                                        >
+                                            <Upload size={14} className="group-hover/btn:scale-110 transition-transform" />
+                                            {loading ? (transferProgress > 0 ? `Transferring ${transferProgress}%` : "Transferring...") : "Transfer Stems"}
+                                        </button>
+                                        <button
+                                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all text-xs font-semibold w-full justify-center group/btn"
+                                            onClick={() => setShowRemoveStemsConfirm(true)}
+                                            disabled={loading}
+                                        >
+                                            <Trash2 size={14} className="group-hover/btn:scale-110 transition-transform" />
+                                            Remove Stems
+                                        </button>
+                                    </>
+                                ) : (
+                                    <span className="text-xs text-muted-foreground/50 italic text-center">Processed (Cloud)</span>
+                                )}
                             </div>
                         ) : procStatus === 'failed' ? (
                             <ProcessingUploadButton videoId={video.id} onUploadStart={() => router.refresh()} />

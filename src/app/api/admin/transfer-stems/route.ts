@@ -25,7 +25,11 @@ export async function POST(request: Request) {
     }
 
     if (!isAdmin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (process.env.NODE_ENV !== 'development') {
+        return NextResponse.json({ error: "Transfer stems is only available in local development" }, { status: 403 });
     }
 
     const formData = await request.formData();
