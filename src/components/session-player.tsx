@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import { Play, Pause, Loader2, Volume2, Music, RotateCcw } from "lucide-react";
+import { Play, Pause, Loader2, Volume2, Music, RotateCcw, Repeat, Scissors, Trash2, Pencil, Save, X } from "lucide-react";
 import * as Tone from "tone";
-import { saveJamSettings, type UserJamSettings } from "@/app/actions";
+import { saveJamSettings, type UserJamSettings, saveExtractedSection, getExtractedSections, deleteExtractedSection, renameExtractedSection, type ExtractedSection } from "@/app/actions";
 
 interface SessionTrack {
     name: string;
@@ -36,6 +36,18 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
     // Audio Control State
     const [targetBpm, setTargetBpm] = useState(initialSettings?.tempo || baseBpm);
     const [pitchShift, setPitchShift] = useState(initialSettings?.pitch || 0); // Semitones
+
+    // Loop State
+    const [loopStart, setLoopStart] = useState(0);
+    const [loopEnd, setLoopEnd] = useState(0);
+    const [isLoopActive, setIsLoopActive] = useState(false);
+    const [warningMessage, setWarningMessage] = useState<string | null>(null);
+
+    // Extracted Sections State
+    const [extractedSections, setExtractedSections] = useState<ExtractedSection[]>([]);
+    const [editingSectionId, setEditingSectionId] = useState<number | null>(null);
+    const [deletingSectionId, setDeletingSectionId] = useState<number | null>(null);
+    const [editingTitle, setEditingTitle] = useState("");
 
     // Tone Refs
     const playerRef = useRef<Tone.Player | null>(null);
@@ -195,6 +207,164 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
         updateAudioParams(targetBpm, pitchShift, playerRef.current, pitchShiftEffectRef.current);
     }, [targetBpm, pitchShift, updateAudioParams]);
 
+    // Loop Logic
+    useEffect(() => {
+        if (warningMessage) {
+            const timer = setTimeout(() => setWarningMessage(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [warningMessage]);
+
+    useEffect(() => {
+        if (videoId) {
+            getExtractedSections(videoId).then(setExtractedSections);
+        }
+    }, [videoId]);
+
+    const handleSetLoopStart = () => {
+        // If looping is active, we reset everything to start fresh as per user request
+        if (isLoopActive) {
+            setIsLoopActive(false);
+            setLoopStart(currentTime);
+            setLoopEnd(0); // Reset end point
+            return;
+        }
+
+        // Standard validation
+        if (loopEnd > 0 && currentTime >= loopEnd) {
+            // If invalid, we also assume they want to start fresh or just reset end
+            setLoopEnd(0);
+        }
+        setLoopStart(currentTime);
+    };
+
+    const handleSetLoopEnd = () => {
+        // If looping is active, reset to start fresh
+        if (isLoopActive) {
+            setIsLoopActive(false);
+            setLoopEnd(currentTime);
+            setLoopStart(0); // Reset start point? 
+            // Actually, if we set End, usually we want a start. 
+            // But "start from scratch" implies clearing old constraints.
+            return;
+        }
+
+        if (currentTime <= loopStart) {
+            // Instead of warning, maybe just reset start?
+            setWarningMessage("End point cannot be before start point");
+            return;
+        }
+        setLoopEnd(currentTime);
+    };
+
+    const toggleLoop = () => {
+        if (loopStart === 0 && loopEnd === 0) {
+            setWarningMessage("Please select start and end points");
+            return;
+        }
+        if (loopEnd <= loopStart) {
+            setWarningMessage("Invalid loop range");
+            return;
+        }
+
+        const newLoopState = !isLoopActive;
+        setIsLoopActive(newLoopState);
+
+        if (newLoopState && playerRef.current) {
+            // Force boundaries immediately
+            playerRef.current.loopStart = loopStart;
+            playerRef.current.loopEnd = loopEnd;
+            playerRef.current.loop = true;
+
+            // Check if we need to jump into the loop
+            // We add a tiny buffer to loopStart to avoid edge case issues
+            if (currentTime < loopStart - 0.1 || currentTime >= loopEnd) {
+                playerRef.current.seek(loopStart);
+                setCurrentTime(loopStart); // Force UI sync
+            }
+        } else if (playerRef.current) {
+            playerRef.current.loop = false;
+        }
+    };
+
+    const handleExtractSection = async () => {
+        if (!isLoopActive || loopEnd <= loopStart) {
+            setWarningMessage("Please set a valid loop first");
+            return;
+        }
+        const title = `Section ${extractedSections.length + 1}`;
+        try {
+            const res = await saveExtractedSection(videoId, loopStart, loopEnd, title);
+            if (res.success && res.section) {
+                setExtractedSections(prev => [res.section as ExtractedSection, ...prev]);
+                setWarningMessage("Section extracted!");
+            } else {
+                setWarningMessage("Failed to extract section");
+            }
+        } catch (e) {
+            setWarningMessage("Error extracting section");
+        }
+    };
+
+    const handlePlaySection = (section: ExtractedSection) => {
+        if (!playerRef.current) return;
+
+        setIsLoopActive(true);
+        setLoopStart(section.start_time);
+        setLoopEnd(section.end_time);
+
+        playerRef.current.loop = true;
+        playerRef.current.loopStart = section.start_time;
+        playerRef.current.loopEnd = section.end_time;
+
+        // Force UI sync
+        setCurrentTime(section.start_time);
+
+        // Immediate playback
+        if (Tone.context.state !== "running") Tone.start();
+
+        if (playerRef.current.state !== 'started') {
+            playerRef.current.start(undefined, section.start_time);
+        } else {
+            playerRef.current.seek(section.start_time);
+        }
+        setIsPlaying(true);
+    };
+
+    const handleDeleteSection = async (id: number) => {
+        // Optimistic UI update or wait? Let's wait for server.
+        const res = await deleteExtractedSection(id);
+        if (res.success) {
+            setExtractedSections(prev => prev.filter(s => s.id !== id));
+            setDeletingSectionId(null);
+        }
+    };
+
+    const startEditing = (section: ExtractedSection) => {
+        setEditingSectionId(section.id);
+        setEditingTitle(section.title);
+    };
+
+    const saveEditing = async (id: number) => {
+        const res = await renameExtractedSection(id, editingTitle);
+        if (res.success) {
+            setExtractedSections(prev => prev.map(s => s.id === id ? { ...s, title: editingTitle } : s));
+            setEditingSectionId(null);
+        }
+    };
+
+    // Update Tone Player Params (Loop & Volume)
+    useEffect(() => {
+        if (playerRef.current) {
+            // We only update properties here, but do NOT force seek to avoid stuttering during playback updates
+            playerRef.current.loop = isLoopActive;
+            if (isLoopActive && loopStart < loopEnd) {
+                playerRef.current.loopStart = loopStart;
+                playerRef.current.loopEnd = loopEnd;
+            }
+        }
+    }, [isLoopActive, loopStart, loopEnd]);
+
     // Volume
     useEffect(() => {
         if (playerRef.current && isReadyRef.current) {
@@ -262,8 +432,24 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                     const safeBase = baseBpm || 120;
                     const ratio = safeTarget / safeBase;
 
-                    const nextTime = prev + (delta * ratio);
-                    return isNaN(nextTime) ? prev : nextTime;
+                    let nextTime = prev + (delta * ratio);
+                    if (isNaN(nextTime)) nextTime = prev;
+
+                    // Manual Loop Enforcement
+                    // If Loop is Active and we've crossed the End point
+                    if (isLoopActive && loopEnd > loopStart && nextTime >= loopEnd) {
+                        // 1. Visually reset
+                        nextTime = loopStart;
+                        // 2. Audio reset (Force Seek)
+                        if (playerRef.current) {
+                            // We use seek to enforce the loop. 
+                            // Note: seeking might cause a tiny click but guarantees loop. 
+                            // Tone.Player should handle it but as a fallback this is robust.
+                            playerRef.current.seek(loopStart);
+                        }
+                    }
+
+                    return nextTime;
                 });
             }, 100);
         }
@@ -360,8 +546,8 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
 
     return (
         <div className="flex flex-col gap-8 w-full">
-            {/* Player Main Area */}
-            <div className={`sticky top-20 z-50 relative w-full h-80 bg-black/60 backdrop-blur-xl rounded-xl overflow-hidden border border-white/10 shadow-2xl transition-all duration-500 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
+            {/* Player Main Area - Increased height for extra controls */}
+            <div className={`sticky top-20 z-50 relative w-full h-[22rem] bg-black/60 backdrop-blur-xl rounded-xl overflow-hidden border border-white/10 shadow-2xl transition-all duration-500 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
 
                 {/* Visualizer Canvas */}
                 <div ref={containerRef} className="absolute inset-x-0 top-0 h-48 flex items-center justify-center border-b border-white/5">
@@ -384,10 +570,44 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                             style={{ left: `${duration ? (currentTime / duration) * 100 : 0}%` }}
                         />
                     )}
+                    {/* Loop Markers Overlay */}
+                    {!isLoading && (
+                        <>
+                            {loopStart > 0 && (
+                                <div
+                                    className="absolute top-0 bottom-0 w-0.5 bg-yellow-400 z-10 pointer-events-none opacity-50"
+                                    style={{ left: `${duration ? (loopStart / duration) * 100 : 0}%` }}
+                                />
+                            )}
+                            {loopEnd > 0 && (
+                                <div
+                                    className="absolute top-0 bottom-0 w-0.5 bg-yellow-400 z-10 pointer-events-none opacity-50"
+                                    style={{ left: `${duration ? (loopEnd / duration) * 100 : 0}%` }}
+                                />
+                            )}
+                            {/* Loop Region */}
+                            {loopStart >= 0 && loopEnd > loopStart && (
+                                <div
+                                    className="absolute top-0 bottom-0 bg-yellow-400/10 z-0 pointer-events-none"
+                                    style={{
+                                        left: `${duration ? (loopStart / duration) * 100 : 0}%`,
+                                        width: `${duration ? ((loopEnd - loopStart) / duration) * 100 : 0}%`
+                                    }}
+                                />
+                            )}
+                        </>
+                    )}
                 </div>
 
-                {/* Controls Area */}
-                <div className="absolute bottom-0 left-0 right-0 h-32 p-4 bg-white/5 backdrop-blur-md flex flex-col justify-between">
+                {/* Looping Warning */}
+                {warningMessage && (
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-red-500/90 text-white px-3 py-1 rounded-full text-xs font-bold z-50 animate-in fade-in slide-in-from-top-2">
+                        {warningMessage}
+                    </div>
+                )}
+
+                {/* Controls Area - Height auto or flex grow */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/5 backdrop-blur-md flex flex-col gap-2">
 
                     {/* Top Row: Play/Volume/Info */}
                     <div className="flex items-center justify-between">
@@ -424,7 +644,38 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                         </div>
                     </div>
 
-                    {/* Bottom Row: Pitch & Metronome */}
+                    {/* Loop Controls */}
+                    <div className="flex items-center gap-4 py-2 border-t border-white/5 justify-center">
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleSetLoopStart}
+                                className="px-2 py-1 bg-white/10 hover:bg-white/20 rounded text-[10px] text-white font-mono uppercase tracking-wider"
+                            >
+                                Set Start
+                            </button>
+                            <span className="text-[10px] text-muted-foreground font-mono">{formatTime(loopStart)}</span>
+                        </div>
+
+                        <button
+                            onClick={toggleLoop}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${isLoopActive ? 'bg-yellow-500 text-black' : 'bg-white/10 text-muted-foreground hover:bg-white/20 hover:text-white'}`}
+                        >
+                            <Repeat size={12} />
+                            Loop
+                        </button>
+
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-muted-foreground font-mono">{formatTime(loopEnd)}</span>
+                            <button
+                                onClick={handleSetLoopEnd}
+                                className="px-2 py-1 bg-white/10 hover:bg-white/20 rounded text-[10px] text-white font-mono uppercase tracking-wider"
+                            >
+                                Set End
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Bottom Row: Pitch & Metronome - Integrated with Extract Button */}
                     <div className="flex items-center gap-6 pt-2 border-t border-white/5">
                         {/* Metronome / Tempo */}
                         <div className="flex flex-col gap-1 flex-1">
@@ -470,15 +721,29 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                                 className="w-full h-1 bg-purple-500/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-400"
                             />
                         </div>
+
+                        {/* Divider */}
+                        <div className="w-px h-8 bg-white/10" />
+
+                        {/* Extract Button */}
+                        <button
+                            onClick={handleExtractSection}
+                            disabled={!isLoopActive || loopEnd <= loopStart}
+                            className="flex flex-col items-center justify-center text-xs gap-1 px-4 text-muted-foreground hover:text-white disabled:opacity-50 disabled:cursor-not-allowed group"
+                            title="Extract current loop as a section"
+                        >
+                            <Scissors size={18} className="group-hover:text-yellow-400 transition-colors" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Extract</span>
+                        </button>
                     </div>
 
-                    {/* Key Info Badge (Absolute Center-ish or corner) */}
+                    {/* Key Info Badge */}
                     {(baseKey || baseScale) && (
                         <div className="absolute top-2 right-4 px-2 py-0.5 rounded bg-white/5 border border-white/5 text-[10px] text-muted-foreground font-mono">
                             {baseKey} {baseScale} • {baseBpm} BPM
                         </div>
                     )}
-                </div>
+                </div> {/* Closing Controls Area properly */}
             </div>
 
             {/* Stem Switcher */}
@@ -572,6 +837,73 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                     </div>
                 )}
             </div>
+
+            {/* Extracted Sections List */}
+            {extractedSections.length > 0 && (
+                <div className="flex flex-col gap-3">
+                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1">Extracted Sections</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        {extractedSections.map((section) => (
+                            <div
+                                key={section.id}
+                                className="bg-white/5 border border-white/5 rounded-xl p-3 flex items-center justify-between group hover:bg-white/10 transition-colors"
+                            >
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                    <button
+                                        onClick={() => handlePlaySection(section)}
+                                        className="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center hover:bg-purple-500 hover:text-white transition-all flex-shrink-0"
+                                    >
+                                        <Play size={14} fill="currentColor" />
+                                    </button>
+
+                                    {editingSectionId === section.id ? (
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                value={editingTitle}
+                                                onChange={(e) => setEditingTitle(e.target.value)}
+                                                className="bg-black/50 border border-white/20 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-purple-500 w-full"
+                                                autoFocus
+                                            />
+                                            <button onClick={() => saveEditing(section.id)} className="text-green-400 hover:text-green-300"><Save size={14} /></button>
+                                            <button onClick={() => setEditingSectionId(null)} className="text-red-400 hover:text-red-300"><X size={14} /></button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col overflow-hidden">
+                                            <span className="text-sm font-medium text-white truncate">{section.title}</span>
+                                            <span className="text-[10px] text-muted-foreground font-mono">
+                                                {formatTime(section.start_time)} - {formatTime(section.end_time)}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {!editingSectionId && (
+                                        <>
+                                            {deletingSectionId === section.id ? (
+                                                <div className="flex items-center gap-2 bg-black/50 rounded px-1 animate-in fade-in slide-in-from-right-2">
+                                                    <span className="text-[10px] text-red-400 font-bold uppercase">Sure?</span>
+                                                    <button onClick={() => handleDeleteSection(section.id)} className="text-red-400 hover:text-red-300 font-bold text-xs px-2 py-0.5 bg-red-500/10 rounded">Yes</button>
+                                                    <button onClick={() => setDeletingSectionId(null)} className="text-muted-foreground hover:text-white text-xs px-1">No</button>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <button onClick={() => startEditing(section)} className="p-1.5 text-muted-foreground hover:text-white transition-colors">
+                                                        <Pencil size={12} />
+                                                    </button>
+                                                    <button onClick={() => setDeletingSectionId(section.id)} className="p-1.5 text-muted-foreground hover:text-red-400 transition-colors">
+                                                        <Trash2 size={12} />
+                                                    </button>
+                                                </>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

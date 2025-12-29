@@ -692,3 +692,94 @@ export async function saveJamSettings(videoId: number, settings: UserJamSettings
         return { success: false, error: "Database error" };
     }
 }
+
+// Extracted Sections Actions
+
+export interface ExtractedSection {
+    id: number;
+    user_id: string;
+    video_id: number;
+    title: string;
+    start_time: number;
+    end_time: number;
+    created_at: string;
+}
+
+export async function saveExtractedSection(videoId: number, start: number, end: number, title: string) {
+    const user = await currentUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    try {
+        const result = await sql`
+            INSERT INTO extracted_sections (user_id, video_id, title, start_time, end_time)
+            VALUES (${user.id}, ${videoId}, ${title}, ${start}, ${end})
+            RETURNING *;
+        `;
+        revalidatePath(`/jam/${videoId}`); // Assuming this is the path
+        return { success: true, section: result.rows[0] };
+    } catch (err) {
+        console.error("Error saving extracted section:", err);
+        return { success: false, error: "Database error" };
+    }
+}
+
+export async function getExtractedSections(videoId: number) {
+    const user = await currentUser();
+    if (!user) return [];
+
+    try {
+        const result = await sql`
+            SELECT * FROM extracted_sections 
+            WHERE user_id = ${user.id} AND video_id = ${videoId}
+            ORDER BY created_at DESC
+        `;
+        return result.rows.map((row: any) => ({
+            ...row,
+            created_at: new Date(row.created_at).toISOString(),
+            updated_at: row.updated_at ? new Date(row.updated_at).toISOString() : null
+        })) as ExtractedSection[];
+    } catch (err) {
+        console.error("Error fetching extracted sections:", err);
+        return [];
+    }
+}
+
+export async function deleteExtractedSection(sectionId: number) {
+    const user = await currentUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    try {
+        // Ensure user owns the section
+        const result = await sql`
+            DELETE FROM extracted_sections 
+            WHERE id = ${sectionId} AND user_id = ${user.id}
+        `;
+        if (result.rowCount === 0) {
+            return { success: false, error: "Section not found or unauthorized" };
+        }
+        return { success: true };
+    } catch (err) {
+        console.error("Error deleting extracted section:", err);
+        return { success: false, error: "Database error" };
+    }
+}
+
+export async function renameExtractedSection(sectionId: number, newTitle: string) {
+    const user = await currentUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    try {
+        const result = await sql`
+            UPDATE extracted_sections 
+            SET title = ${newTitle}, updated_at = NOW()
+            WHERE id = ${sectionId} AND user_id = ${user.id}
+        `;
+        if (result.rowCount === 0) {
+            return { success: false, error: "Section not found or unauthorized" };
+        }
+        return { success: true };
+    } catch (err) {
+        console.error("Error renaming extracted section:", err);
+        return { success: false, error: "Database error" };
+    }
+}

@@ -64,3 +64,25 @@ export async function createUserJamSettingsTable() {
   }
 }
 
+export async function createExtractedSectionsTable() {
+  try {
+    const result = await sql`
+        CREATE TABLE IF NOT EXISTS extracted_sections (
+          id SERIAL PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          video_id INTEGER NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+          title TEXT NOT NULL,
+          start_time DOUBLE PRECISION NOT NULL,
+          end_time DOUBLE PRECISION NOT NULL,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+    console.log(`Created "extracted_sections" table`);
+    return result;
+  } catch (error) {
+    console.error('Error creating "extracted_sections" table:', error);
+    throw error;
+  }
+}
+
