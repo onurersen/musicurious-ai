@@ -3,7 +3,7 @@
 import { updateVideoApproval, getVideoStatus, cancelProcessing } from "@/app/actions";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle, X, Upload, Trash2 } from "lucide-react";
 import { createPortal } from "react-dom";
 
 export function VideoRow({ video }: { video: any }) {
@@ -71,19 +71,23 @@ export function VideoRow({ video }: { video: any }) {
 
     return (
         <tr className="group hover:bg-white/5 transition-colors">
-            {/* Same columns 1-3 ... */}
+            {/* 1. Submitted */}
             <td className="p-4 text-muted-foreground whitespace-nowrap">
                 <div className="flex flex-col gap-0.5">
                     <span suppressHydrationWarning className="text-white font-medium text-sm">{new Date(video.created_at).toLocaleDateString()}</span>
                     <span suppressHydrationWarning className="text-xs text-muted-foreground/70">{new Date(video.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
             </td>
+
+            {/* 2. User */}
             <td className="p-4">
                 <div className="flex flex-col">
                     <span className="font-medium text-white">{video.first_name} {video.last_name}</span>
                     <span className="text-xs text-muted-foreground">{video.user_email}</span>
                 </div>
             </td>
+
+            {/* 3. Link */}
             <td className="p-4 max-w-xs">
                 <div className="flex flex-col gap-0.5">
                     <span className="text-sm font-medium text-white truncate" title={video.title || "Untitled"}>
@@ -94,11 +98,12 @@ export function VideoRow({ video }: { video: any }) {
                     </a>
                 </div>
             </td>
+
+            {/* 4. Processing Status */}
             <td className="p-4">
-                <div className="flex flex-col gap-2">
-                    {/* Processing Status Display */}
+                <div className="flex flex-col gap-2 min-w-[140px]">
                     {(procStatus === 'pending_processing' || (procStatus === 'processing' && progress < 100)) && (
-                        <div className="flex flex-col gap-1 w-full max-w-[140px]">
+                        <div className="flex flex-col gap-1 w-full">
                             <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
                                 <span>Processing</span>
                                 <span>{Math.round(progress)}%</span>
@@ -112,78 +117,27 @@ export function VideoRow({ video }: { video: any }) {
                         </div>
                     )}
 
-                    {/* Controls */}
                     {(procStatus === 'completed' || (procStatus === 'processing' && progress >= 100)) ? (
-                        <div className="flex flex-col gap-1">
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-300 w-fit">
-                                Processed
-                            </span>
-                            <button
-                                className="text-xs text-primary hover:text-primary/80 transition-colors text-left"
-                                onClick={async () => {
-                                    setLoading(true);
-                                    try {
-                                        const fd = new FormData();
-                                        fd.append('videoId', video.id.toString());
-                                        const res = await fetch('/api/admin/transfer-stems', { method: 'POST', body: fd });
-                                        if (!res.ok) throw new Error(await res.text());
-                                        alert("Stems transferred successfully!");
-                                        router.refresh();
-                                    } catch (e: any) {
-                                        alert("Transfer failed: " + e.message);
-                                    } finally {
-                                        setLoading(false);
-                                    }
-                                }}
-                                disabled={loading}
-                            >
-                                {loading ? "Transferring..." : "Transfer Stems"}
-                            </button>
-                            <button
-                                className="text-xs text-red-400 hover:text-red-300 transition-colors text-left"
-                                onClick={() => setShowRemoveStemsConfirm(true)}
-                                disabled={loading}
-                            >
-                                Remove Stems
-                            </button>
-                        </div>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-300 w-fit">
+                            Processed
+                        </span>
                     ) : procStatus === 'failed' ? (
-                        <div className="flex flex-col gap-1">
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-300 w-fit">
-                                Failed
-                            </span>
-                            <ProcessingUploadButton videoId={video.id} onUploadStart={() => router.refresh()} />
-                        </div>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-300 w-fit">
+                            Failed
+                        </span>
                     ) : procStatus === 'processing' ? (
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground animate-pulse">
-                                Demucs Running...
-                            </span>
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    setShowCancelConfirm(true);
-                                }}
-                                className="text-red-500 hover:text-red-400 transition-colors p-1"
-                                title="Cancel (Force Fail)"
-                            >
-                                <X size={14} />
-                            </button>
-                        </div>
+                        <span className="text-xs text-muted-foreground animate-pulse">
+                            Demucs Running...
+                        </span>
+                    ) : procStatus === 'pending_processing' ? (
+                        <span className="text-xs text-muted-foreground">Pending</span>
                     ) : (
-                        // Only show Start Processing if Approved
-                        video.approval_status === 'approved' ? (
-                            process.env.NODE_ENV === 'development' ? (
-                                <ProcessingUploadButton videoId={video.id} onUploadStart={() => router.refresh()} />
-                            ) : (
-                                <span className="text-xs text-muted-foreground/50 italic">Local Dev Only</span>
-                            )
-                        ) : (
-                            <span className="text-xs text-muted-foreground/50 italic">Approve to Process</span>
-                        )
+                        <span className="text-xs text-muted-foreground">-</span>
                     )}
                 </div>
             </td>
+
+            {/* 5. Approval */}
             <td className="p-4">
                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${video.approval_status === 'approved' ? 'bg-green-500/20 text-green-400' :
                     video.approval_status === 'rejected' ? 'bg-red-500/20 text-red-400' :
@@ -192,6 +146,8 @@ export function VideoRow({ video }: { video: any }) {
                     {video.approval_status}
                 </span>
             </td>
+
+            {/* 6. Review (Approve/Reject) */}
             <td className="p-4">
                 <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
                     <button
@@ -203,7 +159,7 @@ export function VideoRow({ video }: { video: any }) {
                     </button>
                     <button
                         onClick={() => setShowRejectConfirm(true)}
-                        disabled={loading || video.approval_status === 'rejected'}
+                        disabled={loading || video.approval_status === 'rejected' || video.approval_status === 'approved'}
                         className="px-3 py-1.5 rounded-lg bg-red-600/20 hover:bg-red-600 hover:text-white border border-red-600/30 text-red-400 text-xs font-semibold disabled:opacity-30 disabled:pointer-events-none transition-all"
                     >
                         Reject
@@ -253,6 +209,70 @@ export function VideoRow({ video }: { video: any }) {
                             </div>
                         </div>,
                         document.body
+                    )}
+                </div>
+            </td>
+
+            {/* 7. Actions (Process/Modify) */}
+            <td className="p-4">
+                <div className="flex flex-col gap-2 min-w-[160px]">
+                    {(procStatus === 'completed' || (procStatus === 'processing' && progress >= 100)) ? (
+                        <div className="flex flex-col gap-1">
+                            <button
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 border border-blue-500/20 transition-all text-xs font-semibold w-full justify-center group/btn"
+                                onClick={async () => {
+                                    setLoading(true);
+                                    try {
+                                        const fd = new FormData();
+                                        fd.append('videoId', video.id.toString());
+                                        const res = await fetch('/api/admin/transfer-stems', { method: 'POST', body: fd });
+                                        if (!res.ok) throw new Error(await res.text());
+                                        alert("Stems transferred successfully!");
+                                        router.refresh();
+                                    } catch (e: any) {
+                                        alert("Transfer failed: " + e.message);
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                                disabled={loading}
+                            >
+                                <Upload size={14} className="group-hover/btn:scale-110 transition-transform" />
+                                {loading ? "Transferring..." : "Transfer Stems"}
+                            </button>
+                            <button
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all text-xs font-semibold w-full justify-center group/btn"
+                                onClick={() => setShowRemoveStemsConfirm(true)}
+                                disabled={loading}
+                            >
+                                <Trash2 size={14} className="group-hover/btn:scale-110 transition-transform" />
+                                Remove Stems
+                            </button>
+                        </div>
+                    ) : procStatus === 'failed' ? (
+                        <ProcessingUploadButton videoId={video.id} onUploadStart={() => router.refresh()} />
+                    ) : procStatus === 'processing' ? (
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setShowCancelConfirm(true);
+                            }}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all text-xs font-semibold w-full justify-center"
+                            title="Cancel (Force Fail)"
+                        >
+                            <X size={14} /> Cancel Processing
+                        </button>
+                    ) : (
+                        // Only show Start Processing if Approved
+                        video.approval_status === 'approved' ? (
+                            process.env.NODE_ENV === 'development' ? (
+                                <ProcessingUploadButton videoId={video.id} onUploadStart={() => router.refresh()} />
+                            ) : (
+                                <span className="text-xs text-muted-foreground/50 italic">Local Dev Only</span>
+                            )
+                        ) : (
+                            <span className="text-xs text-muted-foreground/50 italic">Approve to Process</span>
+                        )
                     )}
 
                     {/* Remove Stems Confirmation Modal */}
