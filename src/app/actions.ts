@@ -498,6 +498,20 @@ export async function removeStems(videoId: number) {
     try {
         const { join } = await import('path');
         const { rm, readdir } = await import('fs/promises');
+        const { del } = await import('@vercel/blob');
+
+        // 0. Cleanup Vercel Blobs
+        try {
+            const stemsRes = await sql`SELECT blob_url FROM stems WHERE video_id = ${videoId}`;
+            const blobUrls = stemsRes.rows.map(r => r.blob_url).filter(url => url);
+
+            if (blobUrls.length > 0) {
+                console.log(`[removeStems] Deleting ${blobUrls.length} blobs for video ${videoId}`);
+                await del(blobUrls); // del accepts string or string[]
+            }
+        } catch (e) {
+            console.error("[removeStems] Error cleaning up blobs (continuing..):", e);
+        }
 
         // Check both potential locations (legacy 4-stem and new 6-stem)
         const stemRoots = [
