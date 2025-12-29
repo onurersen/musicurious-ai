@@ -147,6 +147,61 @@ export async function checkVideoCategory(url: string) {
     }
 }
 
+export async function getSessionFiles(videoId: number) {
+    try {
+        const { join } = await import('path');
+        const { readdir } = await import('fs/promises');
+        const fs = await import('fs');
+
+        const stemRoots = [
+            join(process.cwd(), 'public', 'stems', 'htdemucs'),
+            join(process.cwd(), 'public', 'stems', 'htdemucs_6s')
+        ];
+
+        let foundFolder = null;
+        let rootUsed = "";
+
+        // Find the folder
+        for (const root of stemRoots) {
+            if (fs.existsSync(root)) {
+                const entries = await readdir(root, { withFileTypes: true });
+                const folder = entries.find(e => e.isDirectory() && e.name.startsWith(`${videoId}_`));
+                if (folder) {
+                    foundFolder = folder.name;
+                    rootUsed = root;
+                    break;
+                }
+            }
+        }
+
+        if (!foundFolder) {
+            return [];
+        }
+
+        const folderPath = join(rootUsed, foundFolder);
+        const files = await readdir(folderPath);
+
+        // Filter for audio files (mp3/wav)
+        const sessionFiles = files
+            .filter(f => f.endsWith('.mp3') || f.endsWith('.wav'))
+            .map(f => {
+                // Construct public URL
+                // Assuming public/stems maps to /stems
+                const relativeRoot = rootUsed.split('public')[1];
+                return {
+                    name: f,
+                    url: join(relativeRoot, foundFolder as string, f)
+                };
+            });
+
+        return sessionFiles;
+
+    } catch (err) {
+        console.error("Error getting session files:", err);
+        return [];
+    }
+}
+
 export async function createVideoRecord(url: string, title?: string) {
     try {
         const user = await currentUser();
