@@ -525,7 +525,20 @@ export async function getJam(id: number) {
             created_at: new Date(row.created_at).toISOString()
         })) as Stem[];
 
-        return { video, stems };
+        // Fetch User Settings if logged in
+        let userSettings = null;
+        if (currentUserObj) {
+            const settingsRes = await sql`
+                SELECT pitch, tempo, active_track 
+                FROM user_jam_settings 
+                WHERE user_id = ${currentUserObj.id} AND video_id = ${id}
+            `;
+            if (settingsRes.rows.length > 0) {
+                userSettings = settingsRes.rows[0] as UserJamSettings;
+            }
+        }
+
+        return { video, stems, userSettings };
 
     } catch (err) {
         console.error("Error fetching jam:", err);
@@ -643,6 +656,39 @@ export async function cancelProcessing(videoId: number) {
         return { success: true };
     } catch (err) {
         console.error("Error canceling processing:", err);
+        return { success: false, error: "Database error" };
+    }
+}
+
+export interface UserJamSettings {
+    pitch: number;
+    tempo: number;
+    active_track: string | null;
+}
+
+export async function saveJamSettings(videoId: number, settings: UserJamSettings) {
+    const user = await currentUser();
+    if (!user) {
+        console.log("[saveJamSettings] No user logged in.");
+        return { success: false, error: "Unauthorized" };
+    }
+    console.log(`[saveJamSettings] Saving for user ${user.id}, video ${videoId}:`, settings);
+
+    try {
+        await sql`
+            INSERT INTO user_jam_settings (user_id, video_id, pitch, tempo, active_track, updated_at)
+            VALUES (${user.id}, ${videoId}, ${Math.round(settings.pitch)}, ${Math.round(settings.tempo)}, ${settings.active_track}, NOW())
+            ON CONFLICT (user_id, video_id) 
+            DO UPDATE SET 
+                pitch = EXCLUDED.pitch,
+                tempo = EXCLUDED.tempo,
+                active_track = EXCLUDED.active_track,
+                updated_at = NOW();
+        `;
+        console.log("[saveJamSettings] Success.");
+        return { success: true };
+    } catch (err) {
+        console.error("Error saving jam settings:", err);
         return { success: false, error: "Database error" };
     }
 }

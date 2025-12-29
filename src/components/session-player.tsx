@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { Play, Pause, Loader2, Volume2, Music, RotateCcw } from "lucide-react";
 import * as Tone from "tone";
+import { saveJamSettings, type UserJamSettings } from "@/app/actions";
 
 interface SessionTrack {
     name: string;
@@ -14,10 +15,18 @@ interface SessionPlayerProps {
     baseBpm: number;
     baseKey?: string;
     baseScale?: string;
+    videoId: number;
+    initialSettings?: UserJamSettings | null;
 }
 
-export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale }: SessionPlayerProps) {
-    const [selectedTrack, setSelectedTrack] = useState<SessionTrack | null>(tracks.length > 0 ? tracks[0] : null);
+export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, initialSettings }: SessionPlayerProps) {
+    const [selectedTrack, setSelectedTrack] = useState<SessionTrack | null>(() => {
+        if (initialSettings?.active_track) {
+            const found = tracks.find(t => t.name === initialSettings.active_track);
+            if (found) return found;
+        }
+        return tracks.length > 0 ? tracks[0] : null;
+    });
     const [isPlaying, setIsPlaying] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [duration, setDuration] = useState(0);
@@ -25,8 +34,8 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale }: SessionPl
     const [volume, setVolume] = useState(0.8);
 
     // Audio Control State
-    const [targetBpm, setTargetBpm] = useState(baseBpm); // Default to base BPM
-    const [pitchShift, setPitchShift] = useState(0); // Semitones
+    const [targetBpm, setTargetBpm] = useState(initialSettings?.tempo || baseBpm);
+    const [pitchShift, setPitchShift] = useState(initialSettings?.pitch || 0); // Semitones
 
     // Tone Refs
     const playerRef = useRef<Tone.Player | null>(null);
@@ -52,10 +61,13 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale }: SessionPl
             .sort((a, b) => a.name.localeCompare(b.name));
     }, [tracks]);
 
+
     // Initialize Tone.js Context
     useEffect(() => {
+        console.log("[SessionPlayer] Mounted with settings:", initialSettings);
         // Start Tone context on first user interaction if needed, but we do it on Load usually
         return () => {
+
             // Cleanup
             if (playerRef.current) {
                 playerRef.current.dispose();
@@ -78,15 +90,23 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale }: SessionPl
             setCurrentTime(0);
             isReadyRef.current = false;
 
-            if (playerRef.current) {
-                playerRef.current.stop();
-                playerRef.current.dispose();
-            }
-            if (pitchShiftEffectRef.current) {
-                pitchShiftEffectRef.current.dispose();
-            }
-
             try {
+                if (playerRef.current) {
+                    try {
+                        playerRef.current.stop();
+                    } catch (e) { /* ignore stop error */ }
+                    try {
+                        playerRef.current.dispose();
+                    } catch (e) { /* ignore dispose error */ }
+                    playerRef.current = null;
+                }
+                if (pitchShiftEffectRef.current) {
+                    try {
+                        pitchShiftEffectRef.current.dispose();
+                    } catch (e) { /* ignore dispose error */ }
+                    pitchShiftEffectRef.current = null;
+                }
+
                 // Ensure context is started
                 // await Tone.start(); // Removed to prevent blocking loading on Autoplay Policy
 
@@ -177,7 +197,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale }: SessionPl
 
     // Volume
     useEffect(() => {
-        if (playerRef.current) {
+        if (playerRef.current && isReadyRef.current) {
             playerRef.current.volume.value = Tone.gainToDb(volume);
         }
     }, [volume]);
@@ -249,6 +269,22 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale }: SessionPl
         }
         return () => clearInterval(interval);
     }, [isPlaying, targetBpm, baseBpm, duration]);
+
+    // Save Settings Debounced
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (videoId) {
+                saveJamSettings(videoId, {
+                    pitch: pitchShift,
+                    tempo: targetBpm,
+                    active_track: selectedTrack?.name || null
+                });
+            }
+        }, 2000); // 2 seconds debounce
+
+        return () => clearTimeout(timer);
+    }, [pitchShift, targetBpm, selectedTrack, videoId]);
+
 
 
     const drawWaveform = (buffer: AudioBuffer) => {

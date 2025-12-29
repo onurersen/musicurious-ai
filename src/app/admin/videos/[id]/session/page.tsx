@@ -10,7 +10,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
     const data = await getJam(videoId);
     if (!data) return notFound();
 
-    const { video } = data;
+    const { video, userSettings } = data;
     const files = await getSessionFiles(videoId);
 
     // Map files to match SessionPlayer 'tracks' prop
@@ -36,6 +36,8 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
                         baseBpm={Number(video.bpm) || 120}
                         baseKey={video.key_tonic}
                         baseScale={video.key_scale}
+                        videoId={videoId}
+                        initialSettings={userSettings}
                     />
                 </div>
             </div>
