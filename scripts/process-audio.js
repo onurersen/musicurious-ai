@@ -46,6 +46,38 @@ async function run() {
         log('Updating status to processing...');
         await sql`UPDATE videos SET processing_status = 'processing', processing_progress = 0 WHERE id = ${videoId}`;
 
+        // --- NEW: Audio Analysis Step ---
+        log('Starting audio analysis (BPM/Key)...');
+        const analysisScript = path.join(process.cwd(), 'scripts', 'analyze_audio.py');
+        try {
+            // execSync is fine here as analysis is relatively fast and we want it before stems
+            // or use spawnPromise if we want non-blocking, but blocking is simpler for sequential flow
+            const { execSync } = require('child_process');
+
+            // Need to set PYTHONHTTPSVERIFY for librosa/numba potential network fetches? likely not needed for local files but safe to keep env
+            const analysisOutput = execSync(`python3 "${analysisScript}" "${filePath}"`, {
+                env: { ...process.env, PATH: `${path.join(process.cwd(), 'bin')}:${process.env.PATH}` }
+            }).toString();
+
+            const analysisResult = JSON.parse(analysisOutput);
+            if (analysisResult.error) {
+                log(`Analysis warning: ${analysisResult.error}`);
+            } else {
+                log(`Analysis success: BPM=${analysisResult.bpm}, Key=${analysisResult.key} ${analysisResult.scale}`);
+                await sql`
+                    UPDATE videos 
+                    SET bpm = ${analysisResult.bpm},
+                        key_tonic = ${analysisResult.key},
+                        key_scale = ${analysisResult.scale}
+                    WHERE id = ${videoId}
+                `;
+            }
+        } catch (err) {
+            log(`Analysis failed: ${err.message}`);
+            // Continue processing anyway
+        }
+        // --------------------------------
+
         // Use the custom wrapper script that monkeypatches torchaudio.save
         const runnerScript = path.join(process.cwd(), 'scripts', 'run_demucs.py');
         log(`Spawning Demucs Wrapper: python3 ${runnerScript} -m demucs.separate ...`);
@@ -67,9 +99,13 @@ async function run() {
             }
         });
 
+        let currentProgress = 0;
+
         demucs.stdout.on('data', (data) => {
             log(`STDOUT: ${data}`);
         });
+
+
 
         demucs.stderr.on('data', (data) => {
             const output = data.toString();
@@ -79,10 +115,15 @@ async function run() {
             if (match) {
                 const percent = parseInt(match[1]);
                 if (!isNaN(percent)) {
-                    // Update DB 
-                    // log(`Progress detected: ${percent}%`);
-                    sql`UPDATE videos SET processing_progress = ${percent} WHERE id = ${videoId}`
-                        .catch(err => log(`DB Update Error: ${err.message}`));
+                    // Start at 0, max out at 80% for Demucs phase
+                    const scaledProgress = Math.round(percent * 0.8);
+
+                    // Only update if we moved forward to avoid database spam
+                    if (scaledProgress > currentProgress) {
+                        currentProgress = scaledProgress;
+                        sql`UPDATE videos SET processing_progress = ${currentProgress} WHERE id = ${videoId}`
+                            .catch(err => log(`DB Update Error: ${err.message}`));
+                    }
                 }
             }
         });
@@ -99,11 +140,13 @@ async function run() {
 
             log('Demucs processing successfully completed. Starting mix generation...');
 
-            // Expected output path for htdemucs_6s model
-            // Demucs output structure: outputDir/modelName/trackName
-            // trackName is currently just filename without extension?
-            // "htdemucs_6s/8_1766952784376_Sevda_C_ic_eg_i_-_Mor_ve_O_tesi"
+            // Ensure we are at least at 80% before starting mixes
+            if (currentProgress < 80) {
+                currentProgress = 80;
+                sql`UPDATE videos SET processing_progress = 80 WHERE id = ${videoId}`.catch(() => { });
+            }
 
+            // Expected output path for htdemucs_6s model
             const modelName = 'htdemucs_6s';
             const trackName = path.parse(filePath).name;
             const stemsPath = path.join(outputDir, modelName, trackName);
@@ -116,10 +159,35 @@ async function run() {
                 env: { ...process.env, PATH: `${path.join(process.cwd(), 'bin')}:${process.env.PATH}` }
             });
 
-            mixer.stdout.on('data', (data) => log(`Mixer STDOUT: ${data}`));
+            // We expect 5 mixes. We have 20% progress left (80 -> 100).
+            // So each mix is worth ~4%.
+            let mixCount = 0;
+
+            mixer.stdout.on('data', (data) => {
+                const msg = data.toString();
+                log(`Mixer STDOUT: ${msg}`);
+
+                // Check for "Creating {mix_name}..."
+                // Data chunk might contain multiple lines, so we count all occurrences
+                const matches = msg.match(/Creating /g);
+                if (matches && matches.length > 0) {
+                    mixCount += matches.length;
+
+                    // Base 80% + 4% per mix
+                    const nextProgress = Math.min(99, 80 + (mixCount * 4));
+
+                    if (nextProgress > currentProgress) {
+                        currentProgress = nextProgress;
+                        log(`Mixer progress: ${currentProgress}%`);
+                        sql`UPDATE videos SET processing_progress = ${currentProgress} WHERE id = ${videoId}`
+                            .catch(err => log(`DB Update Error (Mixer): ${err.message}`));
+                    }
+                }
+            });
+
             mixer.stderr.on('data', (data) => log(`Mixer STDERR: ${data}`));
 
-            mixer.on('close', (mixerCode) => {
+            mixer.on('close', async (mixerCode) => {
                 if (mixerCode !== 0) {
                     log(`Mixer process exited with code ${mixerCode}. Continuing anyway as stems might be fine.`);
                 } else {
@@ -128,32 +196,13 @@ async function run() {
 
                 log("Processing flow finished.");
 
-                // Assuming route handles DB update via progress polling? 
-                // No, the original implementation relied on `transfer-stems` to mark "completed"?
-                // Wait, process-audio doesn't mark "completed".
-                // Actually `transfer-stems` marks completion.
-                // But the UI needs to know when it *can* transfer.
-                // The `process-audio` worker updates progress.
-                // It should probably set it to 100% or "ready_to_transfer"?
-                // Currently it stops at progress updates.
-                // The `transfer-stems` button appears when status is 'completed' ?? 
-                // No, previously the user had to click Transfer.
-                // The worker should update status to 'completed' or 'ready'?
-                // VideoRow checks `procStatus === 'completed'` for Transfer button?
-                // Actually, let's check video-row.tsx again.
-                // Line 118: `procStatus === 'completed' && ...`
-                // But `process-audio.js` only updates progress.
-                // The `transfer-stems` API (called by button) sets status to 'completed'.
-                // So the status *before* transfer must be something else?
-                // Ah, the worker sets it to 'processing'.
-                // If it stays 'processing' (even at 100%), does the button appear?
-                // VideoRow: `progress === 100 && procStatus === 'processing'`.
-
-                // So we need to ensure progress reaches 100.
-                // Let's force update progress to 100 here.
-                sql`UPDATE videos SET processing_progress = 100 WHERE id = ${videoId}`
-                    .then(() => log("Updated progress to 100."))
-                    .catch(e => log(`Error updating progress: ${e}`));
+                // Force update progress to 100 when fully done
+                try {
+                    await sql`UPDATE videos SET processing_progress = 100 WHERE id = ${videoId}`;
+                    log("Updated progress to 100.");
+                } catch (e) {
+                    log(`Error updating progress: ${e}`);
+                }
 
                 // Exit the process after mix generation and progress update
                 process.exit(0);

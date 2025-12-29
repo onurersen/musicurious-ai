@@ -96,6 +96,9 @@ export interface Video {
     last_name?: string;
     processing_status?: 'pending' | 'processing' | 'completed' | 'failed';
     processing_progress?: number;
+    bpm?: number;
+    key_tonic?: string;
+    key_scale?: string;
 }
 
 export interface User {
