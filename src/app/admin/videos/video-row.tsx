@@ -12,6 +12,7 @@ export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
     const [showRejectConfirm, setShowRejectConfirm] = useState(false);
     const [showRemoveStemsConfirm, setShowRemoveStemsConfirm] = useState(false);
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+    const [showTransferConfirm, setShowTransferConfirm] = useState(false);
     const [showTransferSuccess, setShowTransferSuccess] = useState(false);
     const [progress, setProgress] = useState(video.processing_progress || 0);
     const [procStatus, setProcStatus] = useState<string>(video.processing_status);
@@ -68,6 +69,55 @@ export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
             alert("Removal failed: " + e.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleTransfer = async () => {
+        setLoading(true);
+        setTransferProgress(0);
+        setShowTransferConfirm(false);
+        try {
+            const fd = new FormData();
+            fd.append('videoId', video.id.toString());
+            const res = await fetch('/api/admin/transfer-stems', { method: 'POST', body: fd });
+
+            // Handle ReadableStream
+            const reader = res.body?.getReader();
+            if (!reader) throw new Error("No response body");
+
+            const decoder = new TextDecoder();
+            let done = false;
+
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+                const chunkValue = decoder.decode(value);
+
+                // Split by newline as multiple chunks might arrive at once
+                const lines = chunkValue.split('\n').filter(line => line.trim() !== '');
+                for (const line of lines) {
+                    try {
+                        const data = JSON.parse(line);
+                        if (data.type === 'progress') {
+                            setTransferProgress(data.percent);
+                        } else if (data.type === 'error') {
+                            throw new Error(data.message);
+                        }
+                    } catch (e) {
+                        // ignore non-json or partial lines
+                    }
+                }
+            }
+
+            setShowTransferSuccess(true);
+            setProcStatus('completed');
+            setProgress(100);
+            router.refresh();
+        } catch (e: any) {
+            alert("Transfer failed: " + e.message);
+        } finally {
+            setLoading(false);
+            setTransferProgress(0);
         }
     };
 
@@ -224,52 +274,8 @@ export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
                                 {isDev ? (
                                     <>
                                         <button
-                                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 border border-blue-500/20 transition-all text-xs font-semibold w-full justify-center group/btn"
-                                            onClick={async () => {
-                                                setLoading(true);
-                                                setTransferProgress(0);
-                                                try {
-                                                    const fd = new FormData();
-                                                    fd.append('videoId', video.id.toString());
-                                                    const res = await fetch('/api/admin/transfer-stems', { method: 'POST', body: fd });
-
-                                                    // Handle ReadableStream
-                                                    const reader = res.body?.getReader();
-                                                    if (!reader) throw new Error("No response body");
-
-                                                    const decoder = new TextDecoder();
-                                                    let done = false;
-
-                                                    while (!done) {
-                                                        const { value, done: doneReading } = await reader.read();
-                                                        done = doneReading;
-                                                        const chunkValue = decoder.decode(value);
-
-                                                        // Split by newline as multiple chunks might arrive at once
-                                                        const lines = chunkValue.split('\n').filter(line => line.trim() !== '');
-                                                        for (const line of lines) {
-                                                            try {
-                                                                const data = JSON.parse(line);
-                                                                if (data.type === 'progress') {
-                                                                    setTransferProgress(data.percent);
-                                                                } else if (data.type === 'error') {
-                                                                    throw new Error(data.message);
-                                                                }
-                                                            } catch (e) {
-                                                                // ignore non-json or partial lines
-                                                            }
-                                                        }
-                                                    }
-
-                                                    setShowTransferSuccess(true);
-                                                    router.refresh();
-                                                } catch (e: any) {
-                                                    alert("Transfer failed: " + e.message);
-                                                } finally {
-                                                    setLoading(false);
-                                                    setTransferProgress(0);
-                                                }
-                                            }}
+                                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 border border-blue-500/20 transition-all text-xs font-semibold w-full justify-center group/btn disabled:opacity-50 disabled:grayscale disabled:pointer-events-none"
+                                            onClick={() => setShowTransferConfirm(true)}
                                             disabled={loading || procStatus === 'completed'}
                                         >
                                             <Upload size={14} className="group-hover/btn:scale-110 transition-transform" />
@@ -445,6 +451,52 @@ export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
                                                 className="flex-1 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium transition-colors shadow-lg shadow-green-500/20"
                                             >
                                                 Done
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>,
+                            document.body
+                        )}
+
+                        {/* Transfer Confirmation Modal */}
+                        {showTransferConfirm && typeof document !== 'undefined' && createPortal(
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                                <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl max-w-sm w-full p-6 relative animate-in zoom-in-95 duration-200 text-left">
+                                    <div className="absolute top-4 right-4">
+                                        <button
+                                            onClick={() => setShowTransferConfirm(false)}
+                                            className="text-muted-foreground hover:text-white transition-colors"
+                                        >
+                                            <X size={20} />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex flex-col items-center text-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                            <Upload size={24} />
+                                        </div>
+
+                                        <div>
+                                            <h3 className="text-xl font-bold text-white mb-2">Transfer to Cloud?</h3>
+                                            <p className="text-muted-foreground text-sm">
+                                                This will upload the processed audio stems to Vercel Blob Storage. This action consumes blob bandwidth and updates the submission status to "Processed".
+                                            </p>
+                                        </div>
+
+                                        <div className="flex gap-3 w-full mt-2">
+                                            <button
+                                                onClick={() => setShowTransferConfirm(false)}
+                                                className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-colors border border-white/5"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                onClick={handleTransfer}
+                                                disabled={loading}
+                                                className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors shadow-lg shadow-blue-500/20"
+                                            >
+                                                {loading ? "Starting..." : "Yes, Transfer"}
                                             </button>
                                         </div>
                                     </div>

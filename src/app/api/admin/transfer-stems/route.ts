@@ -74,9 +74,13 @@ export async function POST(request: Request) {
 
                 send(JSON.stringify({ type: 'start', message: 'Starting upload...' }));
 
-                // 6-stem model outputs
-                const stemTypes = ['vocals', 'drums', 'bass', 'guitar', 'piano', 'other'];
-                const totalFiles = stemTypes.length;
+                // Get all MP3 files in the folder
+                const folderEntries = await readdir(sourceDir, { withFileTypes: true });
+                const mp3Files = folderEntries
+                    .filter(e => e.isFile() && e.name.endsWith('.mp3'))
+                    .map(e => e.name);
+
+                const totalFiles = mp3Files.length;
 
                 // Transaction start
                 await sql`BEGIN`;
@@ -84,15 +88,15 @@ export async function POST(request: Request) {
 
                 let completed = 0;
 
-                for (const type of stemTypes) {
-                    const filename = `${type}.mp3`;
+                for (const filename of mp3Files) {
+                    const type = filename.replace('.mp3', '');
                     const filePath = join(sourceDir, filename);
 
                     try {
                         const fileBuffer = await readFile(filePath);
 
                         // Upload to Vercel Blob
-                        // Path: submissions/<videoId>/<type>.mp3
+                        // Path: submissions/<videoId>/<filename>
                         const blobPath = `submissions/${videoId}/${filename}`;
                         const blob = await put(blobPath, fileBuffer, {
                             access: 'public',
@@ -111,8 +115,6 @@ export async function POST(request: Request) {
 
                     } catch (e: any) {
                         console.error(`Failed to upload ${type}:`, e);
-                        // We continue uploading others? Or fail hard? 
-                        // Let's fail hard to ensure consistency
                         throw new Error(`Failed to upload ${type}: ${e.message}`);
                     }
                 }
