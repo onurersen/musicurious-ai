@@ -78,15 +78,23 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale }: SessionPl
             setCurrentTime(0);
             isReadyRef.current = false;
 
-            if (playerRef.current) {
-                playerRef.current.stop();
-                playerRef.current.dispose();
-            }
-            if (pitchShiftEffectRef.current) {
-                pitchShiftEffectRef.current.dispose();
-            }
-
             try {
+                if (playerRef.current) {
+                    try {
+                        playerRef.current.stop();
+                    } catch (e) { /* ignore stop error */ }
+                    try {
+                        playerRef.current.dispose();
+                    } catch (e) { /* ignore dispose error */ }
+                    playerRef.current = null;
+                }
+                if (pitchShiftEffectRef.current) {
+                    try {
+                        pitchShiftEffectRef.current.dispose();
+                    } catch (e) { /* ignore dispose error */ }
+                    pitchShiftEffectRef.current = null;
+                }
+
                 // Ensure context is started
                 // await Tone.start(); // Removed to prevent blocking loading on Autoplay Policy
 
@@ -177,7 +185,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale }: SessionPl
 
     // Volume
     useEffect(() => {
-        if (playerRef.current) {
+        if (playerRef.current && isReadyRef.current) {
             playerRef.current.volume.value = Tone.gainToDb(volume);
         }
     }, [volume]);
