@@ -51,8 +51,9 @@ export function VideosTable({ videos }: VideosTableProps) {
                                 <th className="p-5 font-bold">Submitted</th>
                                 <th className="p-5 font-bold">User</th>
                                 <th className="p-5 font-bold">Link</th>
-                                <th className="p-5 font-bold">Process Video</th>
+                                <th className="p-5 font-bold">Processing</th>
                                 <th className="p-5 font-bold">Approval</th>
+                                <th className="p-5 font-bold">Review</th>
                                 <th className="p-5 font-bold">Actions</th>
                             </tr>
                         </thead>
