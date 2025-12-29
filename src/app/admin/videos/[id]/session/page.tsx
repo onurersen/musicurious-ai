@@ -31,7 +31,12 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
                 </div>
 
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
-                    <SessionPlayer tracks={tracks} />
+                    <SessionPlayer
+                        tracks={tracks}
+                        baseBpm={Number(video.bpm) || 120}
+                        baseKey={video.key_tonic}
+                        baseScale={video.key_scale}
+                    />
                 </div>
             </div>
         </div>
