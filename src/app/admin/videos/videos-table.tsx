@@ -7,9 +7,10 @@ import { Video } from '@/app/actions';
 
 interface VideosTableProps {
     videos: Video[];
+    isDev: boolean;
 }
 
-export function VideosTable({ videos }: VideosTableProps) {
+export function VideosTable({ videos, isDev }: VideosTableProps) {
     const [searchQuery, setSearchQuery] = useState("");
 
     const filteredVideos = videos.filter(video => {
@@ -54,12 +55,12 @@ export function VideosTable({ videos }: VideosTableProps) {
                                 <th className="p-5 font-bold">Processing</th>
                                 <th className="p-5 font-bold">Approval</th>
                                 <th className="p-5 font-bold">Review</th>
-                                <th className="p-5 font-bold">Actions</th>
+                                {isDev && <th className="p-5 font-bold">Actions</th>}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {filteredVideos.map((video) => (
-                                <VideoRow key={video.id} video={video} />
+                                <VideoRow key={video.id} video={video} isDev={isDev} />
                             ))}
                         </tbody>
                     </table>

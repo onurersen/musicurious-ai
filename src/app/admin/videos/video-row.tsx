@@ -3,14 +3,16 @@
 import { updateVideoApproval, getVideoStatus, cancelProcessing } from "@/app/actions";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, X, Upload, Trash2 } from "lucide-react";
+import { AlertTriangle, X, Upload, Trash2, CheckCircle } from "lucide-react";
 import { createPortal } from "react-dom";
 
-export function VideoRow({ video }: { video: any }) {
+export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
     const [loading, setLoading] = useState(false);
+    const [transferProgress, setTransferProgress] = useState(0);
     const [showRejectConfirm, setShowRejectConfirm] = useState(false);
     const [showRemoveStemsConfirm, setShowRemoveStemsConfirm] = useState(false);
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+    const [showTransferSuccess, setShowTransferSuccess] = useState(false);
     const [progress, setProgress] = useState(video.processing_progress || 0);
     const [procStatus, setProcStatus] = useState<string>(video.processing_status);
     const router = useRouter();
@@ -213,169 +215,240 @@ export function VideoRow({ video }: { video: any }) {
                 </div>
             </td>
 
-            {/* 7. Actions (Process/Modify) */}
-            <td className="p-4">
-                <div className="flex flex-col gap-2 min-w-[160px]">
-                    {(procStatus === 'completed' || (procStatus === 'processing' && progress >= 100)) ? (
-                        <div className="flex flex-col gap-1">
+            {/* 7. Actions (Process/Modify) - Only in Dev */}
+            {isDev && (
+                <td className="p-4">
+                    <div className="flex flex-col gap-2 min-w-[160px]">
+                        {(procStatus === 'completed' || (procStatus === 'processing' && progress >= 100)) ? (
+                            <div className="flex flex-col gap-1">
+                                <button
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 border border-blue-500/20 transition-all text-xs font-semibold w-full justify-center group/btn"
+                                    onClick={async () => {
+                                        setLoading(true);
+                                        setTransferProgress(0);
+                                        try {
+                                            const fd = new FormData();
+                                            fd.append('videoId', video.id.toString());
+                                            const res = await fetch('/api/admin/transfer-stems', { method: 'POST', body: fd });
+
+                                            // Handle ReadableStream
+                                            const reader = res.body?.getReader();
+                                            if (!reader) throw new Error("No response body");
+
+                                            const decoder = new TextDecoder();
+                                            let done = false;
+
+                                            while (!done) {
+                                                const { value, done: doneReading } = await reader.read();
+                                                done = doneReading;
+                                                const chunkValue = decoder.decode(value);
+
+                                                // Split by newline as multiple chunks might arrive at once
+                                                const lines = chunkValue.split('\n').filter(line => line.trim() !== '');
+                                                for (const line of lines) {
+                                                    try {
+                                                        const data = JSON.parse(line);
+                                                        if (data.type === 'progress') {
+                                                            setTransferProgress(data.percent);
+                                                        } else if (data.type === 'error') {
+                                                            throw new Error(data.message);
+                                                        }
+                                                    } catch (e) {
+                                                        // ignore non-json or partial lines
+                                                    }
+                                                }
+                                            }
+
+                                            setShowTransferSuccess(true);
+                                            router.refresh();
+                                        } catch (e: any) {
+                                            alert("Transfer failed: " + e.message);
+                                        } finally {
+                                            setLoading(false);
+                                            setTransferProgress(0);
+                                        }
+                                    }}
+                                    disabled={loading || procStatus === 'completed'}
+                                >
+                                    <Upload size={14} className="group-hover/btn:scale-110 transition-transform" />
+                                    {loading ? (transferProgress > 0 ? `Transferring ${transferProgress}%` : "Transferring...") : "Transfer Stems"}
+                                </button>
+                                <button
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all text-xs font-semibold w-full justify-center group/btn"
+                                    onClick={() => setShowRemoveStemsConfirm(true)}
+                                    disabled={loading}
+                                >
+                                    <Trash2 size={14} className="group-hover/btn:scale-110 transition-transform" />
+                                    Remove Stems
+                                </button>
+                            </div>
+                        ) : procStatus === 'failed' ? (
+                            <ProcessingUploadButton videoId={video.id} onUploadStart={() => router.refresh()} />
+                        ) : procStatus === 'processing' ? (
                             <button
-                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 border border-blue-500/20 transition-all text-xs font-semibold w-full justify-center group/btn"
-                                onClick={async () => {
-                                    setLoading(true);
-                                    try {
-                                        const fd = new FormData();
-                                        fd.append('videoId', video.id.toString());
-                                        const res = await fetch('/api/admin/transfer-stems', { method: 'POST', body: fd });
-                                        if (!res.ok) throw new Error(await res.text());
-                                        alert("Stems transferred successfully!");
-                                        router.refresh();
-                                    } catch (e: any) {
-                                        alert("Transfer failed: " + e.message);
-                                    } finally {
-                                        setLoading(false);
-                                    }
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    setShowCancelConfirm(true);
                                 }}
-                                disabled={loading}
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all text-xs font-semibold w-full justify-center"
+                                title="Cancel (Force Fail)"
                             >
-                                <Upload size={14} className="group-hover/btn:scale-110 transition-transform" />
-                                {loading ? "Transferring..." : "Transfer Stems"}
+                                <X size={14} /> Cancel Processing
                             </button>
-                            <button
-                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all text-xs font-semibold w-full justify-center group/btn"
-                                onClick={() => setShowRemoveStemsConfirm(true)}
-                                disabled={loading}
-                            >
-                                <Trash2 size={14} className="group-hover/btn:scale-110 transition-transform" />
-                                Remove Stems
-                            </button>
-                        </div>
-                    ) : procStatus === 'failed' ? (
-                        <ProcessingUploadButton videoId={video.id} onUploadStart={() => router.refresh()} />
-                    ) : procStatus === 'processing' ? (
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                setShowCancelConfirm(true);
-                            }}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all text-xs font-semibold w-full justify-center"
-                            title="Cancel (Force Fail)"
-                        >
-                            <X size={14} /> Cancel Processing
-                        </button>
-                    ) : (
-                        // Only show Start Processing if Approved
-                        video.approval_status === 'approved' ? (
-                            process.env.NODE_ENV === 'development' ? (
-                                <ProcessingUploadButton videoId={video.id} onUploadStart={() => router.refresh()} />
-                            ) : (
-                                <span className="text-xs text-muted-foreground/50 italic">Local Dev Only</span>
-                            )
                         ) : (
-                            <span className="text-xs text-muted-foreground/50 italic">Approve to Process</span>
-                        )
-                    )}
+                            // Only show Start Processing if Approved
+                            video.approval_status === 'approved' ? (
+                                isDev ? (
+                                    <ProcessingUploadButton videoId={video.id} onUploadStart={() => router.refresh()} />
+                                ) : (
+                                    <span className="text-xs text-muted-foreground/50 italic">Local Dev Only</span>
+                                )
+                            ) : (
+                                <span className="text-xs text-muted-foreground/50 italic">Approve to Process</span>
+                            )
+                        )}
 
-                    {/* Remove Stems Confirmation Modal */}
-                    {showRemoveStemsConfirm && typeof document !== 'undefined' && createPortal(
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                            <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl max-w-sm w-full p-6 relative animate-in zoom-in-95 duration-200 text-left">
-                                <div className="absolute top-4 right-4">
-                                    <button
-                                        onClick={() => setShowRemoveStemsConfirm(false)}
-                                        className="text-muted-foreground hover:text-white transition-colors"
-                                    >
-                                        <X size={20} />
-                                    </button>
-                                </div>
-
-                                <div className="flex flex-col items-center text-center gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500">
-                                        <AlertTriangle size={24} />
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-xl font-bold text-white mb-2">Remove Stems?</h3>
-                                        <p className="text-muted-foreground text-sm">
-                                            Are you sure you want to remove the separated stems AND the specific audio file uploaded for this video? This will revert the processing status to 'Pending' so you can re-upload/re-process.
-                                        </p>
-                                    </div>
-
-                                    <div className="flex gap-3 w-full mt-2">
+                        {/* Remove Stems Confirmation Modal */}
+                        {showRemoveStemsConfirm && typeof document !== 'undefined' && createPortal(
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                                <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl max-w-sm w-full p-6 relative animate-in zoom-in-95 duration-200 text-left">
+                                    <div className="absolute top-4 right-4">
                                         <button
                                             onClick={() => setShowRemoveStemsConfirm(false)}
-                                            className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-colors border border-white/5"
+                                            className="text-muted-foreground hover:text-white transition-colors"
                                         >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            onClick={handleRemoveStems}
-                                            disabled={loading}
-                                            className="flex-1 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-medium transition-colors shadow-lg shadow-orange-500/20"
-                                        >
-                                            {loading ? "Removing..." : "Yes, Remove"}
+                                            <X size={20} />
                                         </button>
                                     </div>
-                                </div>
-                            </div>
-                        </div>,
-                        document.body
-                    )}
 
-                    {/* Cancel Processing Confirmation Modal */}
-                    {showCancelConfirm && typeof document !== 'undefined' && createPortal(
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                            <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl max-w-sm w-full p-6 relative animate-in zoom-in-95 duration-200 text-left">
-                                <div className="absolute top-4 right-4">
-                                    <button
-                                        onClick={() => setShowCancelConfirm(false)}
-                                        className="text-muted-foreground hover:text-white transition-colors"
-                                    >
-                                        <X size={20} />
-                                    </button>
-                                </div>
+                                    <div className="flex flex-col items-center text-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500">
+                                            <AlertTriangle size={24} />
+                                        </div>
 
-                                <div className="flex flex-col items-center text-center gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-500">
-                                        <AlertTriangle size={24} />
+                                        <div>
+                                            <h3 className="text-xl font-bold text-white mb-2">Remove Stems?</h3>
+                                            <p className="text-muted-foreground text-sm">
+                                                Are you sure you want to remove the separated stems AND the specific audio file uploaded for this video? This will revert the processing status to 'Pending' so you can re-upload/re-process.
+                                            </p>
+                                        </div>
+
+                                        <div className="flex gap-3 w-full mt-2">
+                                            <button
+                                                onClick={() => setShowRemoveStemsConfirm(false)}
+                                                className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-colors border border-white/5"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                onClick={handleRemoveStems}
+                                                disabled={loading}
+                                                className="flex-1 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-medium transition-colors shadow-lg shadow-orange-500/20"
+                                            >
+                                                {loading ? "Removing..." : "Yes, Remove"}
+                                            </button>
+                                        </div>
                                     </div>
+                                </div>
+                            </div>,
+                            document.body
+                        )}
 
-                                    <div>
-                                        <h3 className="text-xl font-bold text-white mb-2">Cancel Processing?</h3>
-                                        <p className="text-muted-foreground text-sm">
-                                            This will force the status to 'Failed' and reset progress to 0. This is useful if the process is stuck. It will NOT stop a running background process if one is active.
-                                        </p>
-                                    </div>
-
-                                    <div className="flex gap-3 w-full mt-2">
+                        {/* Cancel Processing Confirmation Modal */}
+                        {showCancelConfirm && typeof document !== 'undefined' && createPortal(
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                                <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl max-w-sm w-full p-6 relative animate-in zoom-in-95 duration-200 text-left">
+                                    <div className="absolute top-4 right-4">
                                         <button
                                             onClick={() => setShowCancelConfirm(false)}
-                                            className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-colors border border-white/5"
+                                            className="text-muted-foreground hover:text-white transition-colors"
                                         >
-                                            Go Back
-                                        </button>
-                                        <button
-                                            onClick={async () => {
-                                                setLoading(true);
-                                                try {
-                                                    await cancelProcessing(video.id);
-                                                    setShowCancelConfirm(false);
-                                                } finally {
-                                                    setLoading(false);
-                                                }
-                                            }}
-                                            disabled={loading}
-                                            className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition-colors shadow-lg shadow-red-500/20"
-                                        >
-                                            {loading ? "Canceling..." : "Yes, Cancel"}
+                                            <X size={20} />
                                         </button>
                                     </div>
+
+                                    <div className="flex flex-col items-center text-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-500">
+                                            <AlertTriangle size={24} />
+                                        </div>
+
+                                        <div>
+                                            <h3 className="text-xl font-bold text-white mb-2">Cancel Processing?</h3>
+                                            <p className="text-muted-foreground text-sm">
+                                                This will force the status to 'Failed' and reset progress to 0. This is useful if the process is stuck. It will NOT stop a running background process if one is active.
+                                            </p>
+                                        </div>
+
+                                        <div className="flex gap-3 w-full mt-2">
+                                            <button
+                                                onClick={() => setShowCancelConfirm(false)}
+                                                className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-colors border border-white/5"
+                                            >
+                                                Go Back
+                                            </button>
+                                            <button
+                                                onClick={async () => {
+                                                    setLoading(true);
+                                                    try {
+                                                        await cancelProcessing(video.id);
+                                                        setShowCancelConfirm(false);
+                                                    } finally {
+                                                        setLoading(false);
+                                                    }
+                                                }}
+                                                disabled={loading}
+                                                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition-colors shadow-lg shadow-red-500/20"
+                                            >
+                                                {loading ? "Canceling..." : "Yes, Cancel"}
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>,
-                        document.body
-                    )}
-                </div>
-            </td>
+                            </div>,
+                            document.body
+                        )}
+
+                        {/* Transfer Success Modal */}
+                        {showTransferSuccess && typeof document !== 'undefined' && createPortal(
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                                <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl max-w-sm w-full p-6 relative animate-in zoom-in-95 duration-200 text-left">
+                                    <div className="absolute top-4 right-4">
+                                        <button
+                                            onClick={() => setShowTransferSuccess(false)}
+                                            className="text-muted-foreground hover:text-white transition-colors"
+                                        >
+                                            <X size={20} />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex flex-col items-center text-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center text-green-500">
+                                            <CheckCircle size={24} />
+                                        </div>
+
+                                        <div>
+                                            <h3 className="text-xl font-bold text-white mb-2">Transfer Complete!</h3>
+                                            <p className="text-muted-foreground text-sm">
+                                                All stems have been successfully uploaded to Vercel Blob Storage and linked to this submission.
+                                            </p>
+                                        </div>
+
+                                        <div className="flex gap-3 w-full mt-2">
+                                            <button
+                                                onClick={() => setShowTransferSuccess(false)}
+                                                className="flex-1 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium transition-colors shadow-lg shadow-green-500/20"
+                                            >
+                                                Done
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>,
+                            document.body
+                        )}
+                    </div>
+                </td>
+            )}
         </tr >
     );
 }

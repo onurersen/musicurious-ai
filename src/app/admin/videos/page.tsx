@@ -8,13 +8,15 @@ export default async function AdminVideosPage() {
 
     const videos = await getVideos();
 
+    const isDev = process.env.NODE_ENV === 'development';
+
     return (
         <div className="container mx-auto px-6 py-12">
             <div className="flex items-center justify-between mb-8">
                 <h1 className="text-3xl font-bold tracking-tight">Submission Console</h1>
             </div>
 
-            <VideosTable videos={videos} />
+            <VideosTable videos={videos} isDev={isDev} />
         </div>
     );
 }
