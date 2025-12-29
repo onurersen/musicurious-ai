@@ -292,6 +292,18 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
             setWarningMessage("Please set a valid loop first");
             return;
         }
+
+        // Check for duplicates
+        const isDuplicate = extractedSections.some(s =>
+            Math.abs(s.start_time - loopStart) < 0.1 &&
+            Math.abs(s.end_time - loopEnd) < 0.1
+        );
+
+        if (isDuplicate) {
+            setWarningMessage("This section is already extracted!");
+            return;
+        }
+
         const title = `Section ${extractedSections.length + 1}`;
         try {
             const res = await saveExtractedSection(videoId, loopStart, loopEnd, title);
