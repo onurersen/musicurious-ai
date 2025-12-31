@@ -86,3 +86,24 @@ export async function createExtractedSectionsTable() {
   }
 }
 
+export async function createMusicalFlowCanvasesTable() {
+  try {
+    const result = await sql`
+        CREATE TABLE IF NOT EXISTS musical_flow_canvases (
+          id SERIAL PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          video_id INTEGER NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+          canvas_state JSONB NOT NULL DEFAULT '{}'::jsonb,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(video_id)
+        );
+      `;
+    console.log(`Created "musical_flow_canvases" table`);
+    return result;
+  } catch (error) {
+    console.error('Error creating "musical_flow_canvases" table:', error);
+    throw error;
+  }
+}
+

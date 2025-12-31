@@ -64,11 +64,15 @@ async function run() {
                 log(`Analysis warning: ${analysisResult.error}`);
             } else {
                 log(`Analysis success: BPM=${analysisResult.bpm}, Key=${analysisResult.key} ${analysisResult.scale}`);
+                // Ensure chords is valid JSON
+                const chordsJson = JSON.stringify(analysisResult.chords || []);
                 await sql`
                     UPDATE videos 
                     SET bpm = ${analysisResult.bpm},
                         key_tonic = ${analysisResult.key},
-                        key_scale = ${analysisResult.scale}
+                        key_scale = ${analysisResult.scale},
+                        time_signature = ${analysisResult.time_signature || '4/4'},
+                        chords = ${chordsJson}::jsonb
                     WHERE id = ${videoId}
                 `;
             }
@@ -78,18 +82,44 @@ async function run() {
         }
         // --------------------------------
 
+        let demucs = null;
+        let mixer = null;
+
+        // --- Cancellation Check Loop ---
+        const checkInterval = setInterval(async () => {
+            try {
+                const res = await sql`SELECT processing_status FROM videos WHERE id = ${videoId}`;
+                if (res.rows.length > 0 && res.rows[0].processing_status === 'failed') {
+                    log('Detected cancellation (status=failed). Terminating processes...');
+                    if (demucs) {
+                        demucs.kill('SIGTERM');
+                        // Force kill if needed
+                        setTimeout(() => { if (demucs && !demucs.killed) demucs.kill('SIGKILL'); }, 5000);
+                    }
+                    if (mixer) {
+                        mixer.kill('SIGTERM');
+                        setTimeout(() => { if (mixer && !mixer.killed) mixer.kill('SIGKILL'); }, 5000);
+                    }
+                    clearInterval(checkInterval);
+                    process.exit(0); // Exit gracefully as we handled the cancellation
+                }
+            } catch (e) {
+                // Ignore DB errors during check, just continue
+            }
+        }, 3000);
+
         // Use the custom wrapper script that monkeypatches torchaudio.save
         const runnerScript = path.join(process.cwd(), 'scripts', 'run_demucs.py');
         log(`Spawning Demucs Wrapper: python3 ${runnerScript} -m demucs.separate ...`);
 
-        const demucs = spawn('python3', [
+        demucs = spawn('python3', [
             runnerScript,
             '-o', outputDir,
-            '-n', 'htdemucs_6s', // Use 6-stem model
-            '--mp3',
-            '--mp3-bitrate', '320',
+            '-n', 'htdemucs', // Use 4-stem model (best stability)
+            // Output WAV by default (no --mp3 flag) for lossless intermediate
             '--segment', '7',
             '--overlap', '0.5',
+            '--shifts', '1', // Standard quality (faster)
             filePath
         ], {
             env: {
@@ -129,6 +159,7 @@ async function run() {
         });
 
         demucs.on('close', (code) => {
+            if (code === null) return; // Killed by us
             if (code !== 0) {
                 const failureMsg = `Demucs process exited with code ${code}`;
                 log(failureMsg);
@@ -146,48 +177,67 @@ async function run() {
                 sql`UPDATE videos SET processing_progress = 80 WHERE id = ${videoId}`.catch(() => { });
             }
 
-            // Expected output path for htdemucs_6s model
-            const modelName = 'htdemucs_6s';
+            // Expected output path for htdemucs model
+            const modelName = 'htdemucs';
             const trackName = path.parse(filePath).name;
             const stemsPath = path.join(outputDir, modelName, trackName);
 
             log(`Running mix generation on: ${stemsPath}`);
-            const mixer = spawn('python3', [
+            mixer = spawn('python3', [
+                '-u', // Unbuffered output
                 path.join(process.cwd(), 'scripts', 'create_mixes.py'),
                 stemsPath
             ], {
                 env: { ...process.env, PATH: `${path.join(process.cwd(), 'bin')}:${process.env.PATH}` }
             });
 
-            // We expect 5 mixes. We have 20% progress left (80 -> 100).
-            // So each mix is worth ~4%.
+            // We expect 5 mixes + 4 conversions.
+            // Mixes: 80 -> 96
+            // Conversions: 96 -> 100
             let mixCount = 0;
+            let conversionCount = 0;
 
             mixer.stdout.on('data', (data) => {
                 const msg = data.toString();
                 log(`Mixer STDOUT: ${msg}`);
 
                 // Check for "Creating {mix_name}..."
-                // Data chunk might contain multiple lines, so we count all occurrences
                 const matches = msg.match(/Creating /g);
                 if (matches && matches.length > 0) {
                     mixCount += matches.length;
-
-                    // Base 80% + 4% per mix
-                    const nextProgress = Math.min(99, 80 + (mixCount * 4));
-
+                    // Cap at 96%
+                    const nextProgress = Math.min(96, 80 + (mixCount * 4));
                     if (nextProgress > currentProgress) {
                         currentProgress = nextProgress;
-                        log(`Mixer progress: ${currentProgress}%`);
-                        sql`UPDATE videos SET processing_progress = ${currentProgress} WHERE id = ${videoId}`
-                            .catch(err => log(`DB Update Error (Mixer): ${err.message}`));
+                        updateProgress(currentProgress);
+                    }
+                }
+
+                // Check for "Converting {stem}..."
+                const convMatches = msg.match(/Converting /g);
+                if (convMatches && convMatches.length > 0) {
+                    conversionCount += convMatches.length;
+                    // Map 0-4 conversions to 96-99%
+                    const nextProgress = Math.min(99, 96 + conversionCount);
+                    if (nextProgress > currentProgress) {
+                        currentProgress = nextProgress;
+                        updateProgress(currentProgress);
                     }
                 }
             });
 
+            function updateProgress(prog) {
+                log(`Mixer progress: ${prog}%`);
+                sql`UPDATE videos SET processing_progress = ${prog} WHERE id = ${videoId}`
+                    .catch(err => log(`DB Update Error (Mixer): ${err.message}`));
+            }
+
             mixer.stderr.on('data', (data) => log(`Mixer STDERR: ${data}`));
 
             mixer.on('close', async (mixerCode) => {
+                clearInterval(checkInterval);
+                if (mixerCode === null) return; // Killed by us
+
                 if (mixerCode !== 0) {
                     log(`Mixer process exited with code ${mixerCode}. Continuing anyway as stems might be fine.`);
                 } else {
@@ -222,3 +272,5 @@ async function run() {
 }
 
 run();
+
+

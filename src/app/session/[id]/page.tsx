@@ -1,5 +1,7 @@
 import { getJam } from "@/app/actions";
 import { SessionPlayer } from "@/components/session-player";
+import { MusicalFlowCanvas } from "@/components/musical-flow-canvas";
+import { QuickNav } from "@/components/quick-nav";
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
@@ -39,6 +41,11 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
 
     return (
         <div className="container mx-auto px-4 py-8">
+            {/* Sticky Nav */}
+            <div className="sticky top-4 z-[100] mb-6 flex justify-center">
+                <QuickNav />
+            </div>
+
             <Link href="/videos" className="inline-flex items-center text-muted-foreground hover:text-white mb-8 transition-colors">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Gallery
@@ -47,7 +54,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
             <div className="max-w-4xl mx-auto">
                 <div className="flex flex-col gap-8">
                     {/* Video Header */}
-                    <div>
+                    <div id="track-section" className="scroll-mt-32">
                         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
                             {video.title || "Untitled Jam"}
                         </h1>
@@ -64,7 +71,17 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
                         baseScale={video.key_scale}
                         videoId={jamId}
                         initialSettings={userSettings}
+                        timeSignature={video.time_signature}
+                        chordsTimeline={video.chords}
                     />
+
+                    <div id="musical-flow-canvas" className="mt-8 mb-4 scroll-mt-[480px]">
+                        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Musical Flow Canvas</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/60 font-medium">BETA</span>
+                        </h2>
+                        <MusicalFlowCanvas videoId={jamId} />
+                    </div>
 
                     {/* Original Source Link */}
                     {video.youtube_url && (

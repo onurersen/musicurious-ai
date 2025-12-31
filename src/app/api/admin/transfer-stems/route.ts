@@ -39,13 +39,13 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Invalid video ID' }, { status: 400 });
     }
 
-    // Find the latest processing folder for this video (MP3s in htdemucs_6s)
-    const stemsRoot = join(process.cwd(), 'public', 'stems', 'htdemucs_6s');
+    // Find the latest processing folder for this video (MP3s in htdemucs)
+    const stemsRoot = join(process.cwd(), 'public', 'stems', 'htdemucs');
     let entries;
     try {
         entries = await readdir(stemsRoot, { withFileTypes: true });
     } catch (e) {
-        return NextResponse.json({ error: 'Stems directory (htdemucs_6s) not found. Process likely not started.' }, { status: 404 });
+        return NextResponse.json({ error: 'Stems directory (htdemucs) not found. Process likely not started.' }, { status: 404 });
     }
 
     // Filter directories starting with videoId_
