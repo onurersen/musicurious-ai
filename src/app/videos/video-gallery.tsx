@@ -135,7 +135,7 @@ export default function VideoGallery({ videos, isAdmin }: { videos: Video[], isA
 
                 {filteredVideos.length === 0 && searchQuery.length > 0 && (
                     <div className="col-span-full py-20 text-center text-muted-foreground">
-                        <p className="text-lg">No videos found matching "{searchQuery}"</p>
+                        <p className="text-lg">No videos found matching &quot;{searchQuery}&quot;</p>
                         <button onClick={() => setSearchQuery("")} className="mt-2 text-primary hover:underline">Clear Search</button>
                     </div>
                 )}

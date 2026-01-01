@@ -1,5 +1,6 @@
 import { getJam, getSessionFiles } from "@/app/actions";
 import { SessionPlayer } from "@/components/session-player";
+import { MusicalFlowCanvas } from "@/components/musical-flow-canvas";
 import { notFound } from "next/navigation";
 
 export default async function SessionPage({ params }: { params: Promise<{ id: string }> }) {
@@ -38,7 +39,17 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
                         baseScale={video.key_scale}
                         videoId={videoId}
                         initialSettings={userSettings}
+                        timeSignature={video.time_signature}
+                        chordsTimeline={video.chords}
                     />
+                </div>
+
+                <div className="mt-8 mb-4">
+                    <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                        <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Musical Flow Canvas</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/60 font-medium">BETA</span>
+                    </h2>
+                    <MusicalFlowCanvas videoId={videoId} />
                 </div>
             </div>
         </div>

@@ -7,10 +7,10 @@ import subprocess
 
 def create_mixes(input_dir):
     """
-    Reads 6-stem MP3/WAV files from input_dir, creates "minus one" mixes, and saves them as MP3.
-    Assumes htdemucs_6s output: vocals, drums, bass, guitar, piano, other
+    Reads 4-stem MP3/WAV files from input_dir, creates "minus one" mixes, and saves them as MP3.
+    Assumes htdemucs output: vocals, drums, bass, other
     """
-    stems = ['vocals', 'drums', 'bass', 'guitar', 'piano', 'other']
+    stems = ['vocals', 'drums', 'bass', 'other']
     loaded_audio = {}
     sample_rate = None
     
@@ -44,11 +44,6 @@ def create_mixes(input_dir):
     # Formula: No X = Sum(All) - X
     # Or cleaner: Sum(All except X)
     
-    # First, let's verify shapes
-    # (Some stems might be slightly different length due to MP3 padding? Usually Demucs aligns them)
-    # We truncate to min length to be safe or pad? 
-    # Demucs output should be aligned.
-    
     min_len = min(len(a) for a in loaded_audio.values())
     
     # Create Full Mix (optional reference)
@@ -57,11 +52,10 @@ def create_mixes(input_dir):
         full_mix += data[:min_len]
 
     mixes_to_create = {
-        'no_vocals': ['drums', 'bass', 'guitar', 'piano', 'other'],
-        'no_drums': ['vocals', 'bass', 'guitar', 'piano', 'other'],
-        'no_bass': ['vocals', 'drums', 'guitar', 'piano', 'other'],
-        'no_guitar': ['vocals', 'drums', 'bass', 'piano', 'other'],
-        'no_piano': ['vocals', 'drums', 'bass', 'guitar', 'other'],
+        'no_vocals': ['drums', 'bass', 'other'],
+        'no_drums': ['vocals', 'bass', 'other'],
+        'no_bass': ['vocals', 'drums', 'other'],
+        'no_guitar_other': ['vocals', 'drums', 'bass'], # User requested name
     }
 
     print("Generating mixes...")
@@ -89,6 +83,24 @@ def create_mixes(input_dir):
         # Cleanup WAV
         if os.path.exists(wav_out):
             os.remove(wav_out)
+
+    # NEW: Convert original stems to MP3 (since Demucs output WAV now)
+    print("Converting original stems to MP3...")
+    for stem in stems:
+        wav_path = os.path.join(input_dir, f"{stem}.wav")
+        mp3_path = os.path.join(input_dir, f"{stem}.mp3")
+        
+        if os.path.exists(wav_path):
+            print(f"Converting {stem}...")
+            # Convert
+            subprocess.run([
+                'ffmpeg', '-y', '-i', wav_path, 
+                '-b:a', '320k', 
+                mp3_path
+            ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            
+            # Remove WAV
+            os.remove(wav_path)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import { Play, Pause, Loader2, Volume2, Music, RotateCcw, Repeat, Scissors, Trash2, Pencil, Save, X } from "lucide-react";
+import { Play, Pause, Loader2, Volume2, Music, Music2, RotateCcw, Repeat, Scissors, Trash2, Pencil, Save, X } from "lucide-react";
 import * as Tone from "tone";
 import { saveJamSettings, type UserJamSettings, saveExtractedSection, getExtractedSections, deleteExtractedSection, renameExtractedSection, type ExtractedSection } from "@/app/actions";
+import { ChordDisplay } from "./chord-display";
 
 interface SessionTrack {
     name: string;
@@ -17,9 +18,11 @@ interface SessionPlayerProps {
     baseScale?: string;
     videoId: number;
     initialSettings?: UserJamSettings | null;
+    timeSignature?: string;
+    chordsTimeline?: { chord: string; start: number; end: number }[];
 }
 
-export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, initialSettings }: SessionPlayerProps) {
+export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, initialSettings, timeSignature, chordsTimeline = [] }: SessionPlayerProps) {
     const [selectedTrack, setSelectedTrack] = useState<SessionTrack | null>(() => {
         if (initialSettings?.active_track) {
             const found = tracks.find(t => t.name === initialSettings.active_track);
@@ -88,6 +91,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                 pitchShiftEffectRef.current.dispose();
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Load Track logic
@@ -106,16 +110,16 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                 if (playerRef.current) {
                     try {
                         playerRef.current.stop();
-                    } catch (e) { /* ignore stop error */ }
+                    } catch { /* ignore stop error */ }
                     try {
                         playerRef.current.dispose();
-                    } catch (e) { /* ignore dispose error */ }
+                    } catch { /* ignore dispose error */ }
                     playerRef.current = null;
                 }
                 if (pitchShiftEffectRef.current) {
                     try {
                         pitchShiftEffectRef.current.dispose();
-                    } catch (e) { /* ignore dispose error */ }
+                    } catch { /* ignore dispose error */ }
                     pitchShiftEffectRef.current = null;
                 }
 
@@ -288,8 +292,8 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
     };
 
     const handleExtractSection = async () => {
-        if (!isLoopActive || loopEnd <= loopStart) {
-            setWarningMessage("Please set a valid loop first");
+        if (loopEnd <= loopStart) {
+            setWarningMessage("Invalid loop range: End must be after Start");
             return;
         }
 
@@ -310,10 +314,18 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
             if (res.success && res.section) {
                 setExtractedSections(prev => [res.section as ExtractedSection, ...prev]);
                 setWarningMessage("Section extracted!");
+
+                // Auto-scroll to section list
+                setTimeout(() => {
+                    const el = document.getElementById('extracted-sections');
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
             } else {
                 setWarningMessage("Failed to extract section");
             }
-        } catch (e) {
+        } catch {
             setWarningMessage("Error extracting section");
         }
     };
@@ -466,7 +478,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
             }, 100);
         }
         return () => clearInterval(interval);
-    }, [isPlaying, targetBpm, baseBpm, duration]);
+    }, [isPlaying, targetBpm, baseBpm, duration, isLoopActive, loopEnd, loopStart]);
 
     // Save Settings Debounced
     useEffect(() => {
@@ -482,6 +494,20 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
 
         return () => clearTimeout(timer);
     }, [pitchShift, targetBpm, selectedTrack, videoId]);
+
+    // Auto-scroll to Chords when Loop is activated
+    useEffect(() => {
+        if (isLoopActive && loopEnd > loopStart && chordsTimeline.length > 0) {
+            const timer = setTimeout(() => {
+                const el = document.getElementById('chords-display');
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isLoopActive]); // Only trigger when active state changes to true
 
 
 
@@ -740,7 +766,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                         {/* Extract Button */}
                         <button
                             onClick={handleExtractSection}
-                            disabled={!isLoopActive || loopEnd <= loopStart}
+                            disabled={loopEnd <= loopStart}
                             className="flex flex-col items-center justify-center text-xs gap-1 px-4 text-muted-foreground hover:text-white disabled:opacity-50 disabled:cursor-not-allowed group"
                             title="Extract current loop as a section"
                         >
@@ -749,12 +775,19 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                         </button>
                     </div>
 
-                    {/* Key Info Badge */}
-                    {(baseKey || baseScale) && (
-                        <div className="absolute top-2 right-4 px-2 py-0.5 rounded bg-white/5 border border-white/5 text-[10px] text-muted-foreground font-mono">
-                            {baseKey} {baseScale} • {baseBpm} BPM
-                        </div>
-                    )}
+                    {/* Key Info Badge & Time Sig */}
+                    <div className="absolute top-2 right-4 flex gap-2">
+                        {timeSignature && (
+                            <div className="px-2 py-0.5 rounded bg-white/5 border border-white/5 text-[10px] text-muted-foreground font-mono">
+                                {timeSignature}
+                            </div>
+                        )}
+                        {(baseKey || baseScale) && (
+                            <div className="px-2 py-0.5 rounded bg-white/5 border border-white/5 text-[10px] text-muted-foreground font-mono">
+                                {baseKey} {baseScale} • {baseBpm} BPM
+                            </div>
+                        )}
+                    </div>
                 </div> {/* Closing Controls Area properly */}
             </div>
 
@@ -837,7 +870,12 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
 
                                     <div className="space-y-1">
                                         <div className={`font-medium text-sm truncate capitalize ${selectedTrack?.name === track.name ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
-                                            {track.name.replace(/^no_/, 'No ').replace('.mp3', '').replace(/_/g, ' ')}
+                                            {track.name
+                                                .replace('no_guitar_other', 'No Guitar & Other')
+                                                .replace(/^no_/, 'No ')
+                                                .replace('.mp3', '')
+                                                .replace(/_/g, ' ')
+                                            }
                                         </div>
                                         <div className="text-[10px] text-muted-foreground uppercase">
                                             Filter
@@ -850,9 +888,29 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                 )}
             </div>
 
+            {/* Chord Display Area */}
+            {chordsTimeline.length > 0 && (
+                <div id="chords-display" className="w-full animate-in fade-in slide-in-from-top-4 duration-500 scroll-mt-[560px]">
+                    {isLoopActive && loopEnd > loopStart ? (
+                        <ChordDisplay
+                            chords={Array.from(new Set(
+                                chordsTimeline
+                                    .filter(c => c.end > loopStart && c.start < loopEnd)
+                                    .map(c => c.chord)
+                            ))}
+                        />
+                    ) : (
+                        <div className="bg-white/5 border border-white/5 rounded-xl p-8 text-center text-muted-foreground">
+                            <Music2 className="mx-auto w-8 h-8 mb-3 opacity-50" />
+                            <p className="text-sm font-medium">Select a loop or extract a section to view detected chords in that range.</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Extracted Sections List */}
             {extractedSections.length > 0 && (
-                <div className="flex flex-col gap-3">
+                <div id="extracted-sections" className="flex flex-col gap-3 scroll-mt-[480px]">
                     <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1">Extracted Sections</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                         {extractedSections.map((section) => (

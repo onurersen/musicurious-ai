@@ -18,8 +18,8 @@ export async function deleteUser(userId: string) {
             const client = await clerkClient();
             await client.users.deleteUser(userId);
             console.log(`[deleteUser] Deleted user ${userId} from Clerk`);
-        } catch (e) {
-            console.error(`[deleteUser] Failed to delete user ${userId} from Clerk (proceeding with DB delete):`, e);
+        } catch {
+            console.error(`[deleteUser] Failed to delete user ${userId} from Clerk (proceeding with DB delete)`);
         }
 
         // 2. Delete from App DB
@@ -46,8 +46,8 @@ export async function banUser(userId: string, email: string) {
             const client = await clerkClient();
             await client.users.deleteUser(userId);
             console.log(`[banUser] Deleted user ${userId} from Clerk`);
-        } catch (e) {
-            console.error(`[banUser] Failed to delete user ${userId} from Clerk:`, e);
+        } catch {
+            console.error(`[banUser] Failed to delete user ${userId} from Clerk`);
         }
 
         // 3. Delete from App DB
@@ -99,6 +99,8 @@ export interface Video {
     bpm?: number;
     key_tonic?: string;
     key_scale?: string;
+    time_signature?: string;
+    chords?: { chord: string; start: number; end: number }[];
 }
 
 export interface User {
@@ -303,6 +305,7 @@ export async function getVideos(): Promise<Video[]> {
             rows = result.rows;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return rows.map((row: any) => ({
             ...row,
             created_at: new Date(row.created_at).toISOString(),
@@ -387,7 +390,7 @@ export async function getUserStatus() {
             return 'blocked';
         }
 
-        let res = await sql`SELECT status, role FROM users WHERE id = ${user.id}`;
+        const res = await sql`SELECT status, role FROM users WHERE id = ${user.id}`;
 
         // If user record doesn't exist, create it as pending
         if (res.rows.length === 0) {
@@ -557,7 +560,7 @@ export async function getVideoStatus(videoId: number) {
             FROM videos WHERE id = ${videoId}
         `;
         return result.rows[0] as { processing_status: 'pending' | 'processing' | 'completed' | 'failed', processing_progress: number };
-    } catch (e) {
+    } catch {
         return null;
     }
 }
@@ -593,7 +596,7 @@ export async function removeStems(videoId: number) {
         // Find folders starting with videoId_
         for (const stemsRoot of stemRoots) {
             try {
-                let entries = await readdir(stemsRoot, { withFileTypes: true });
+                const entries = await readdir(stemsRoot, { withFileTypes: true });
                 const folders = entries
                     .filter(e => e.isDirectory() && e.name.startsWith(`${videoId}_`))
                     .map(e => join(stemsRoot, e.name));
@@ -602,7 +605,7 @@ export async function removeStems(videoId: number) {
                     console.log(`Removing stem folder: ${folder}`);
                     await rm(folder, { recursive: true, force: true });
                 }
-            } catch (e) {
+            } catch {
                 // Ignore missing dirs
             }
         }
@@ -636,6 +639,7 @@ export async function removeStems(videoId: number) {
         revalidatePath('/admin/videos');
         return { success: true };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
         console.error("Error removing stems:", err);
         return { success: false, error: err.message };
@@ -647,6 +651,26 @@ export async function cancelProcessing(videoId: number) {
     if (!admin) return { success: false, error: "Forbidden" };
 
     try {
+        const { join } = await import('path');
+        const { readdir, rm } = await import('fs/promises');
+
+        // 1. Delete Original Audio from local_uploads
+        try {
+            const uploadsRoot = join(process.cwd(), 'local_uploads');
+            const uploadEntries = await readdir(uploadsRoot, { withFileTypes: true });
+            const uploadFiles = uploadEntries
+                .filter(e => e.isFile() && e.name.startsWith(`${videoId}_`))
+                .map(e => join(uploadsRoot, e.name));
+
+            for (const file of uploadFiles) {
+                console.log(`[cancelProcessing] Removing local upload: ${file}`);
+                await rm(file, { force: true });
+            }
+        } catch (e) {
+            console.warn("Error cleaning up local_uploads (might not exist):", e);
+        }
+
+        // 2. Update DB
         await sql`
             UPDATE videos 
             SET processing_status = 'failed', processing_progress = 0 
@@ -733,6 +757,7 @@ export async function getExtractedSections(videoId: number) {
             WHERE user_id = ${user.id} AND video_id = ${videoId}
             ORDER BY created_at DESC
         `;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return result.rows.map((row: any) => ({
             ...row,
             created_at: new Date(row.created_at).toISOString(),
@@ -780,6 +805,48 @@ export async function renameExtractedSection(sectionId: number, newTitle: string
         return { success: true };
     } catch (err) {
         console.error("Error renaming extracted section:", err);
+        return { success: false, error: "Database error" };
+    }
+}
+
+// Musical Flow Canvas Actions
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function saveFlowCanvas(videoId: number, state: any) {
+    const user = await currentUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    try {
+        await sql`
+            INSERT INTO musical_flow_canvases (user_id, video_id, canvas_state, updated_at)
+            VALUES (${user.id}, ${videoId}, ${state}, NOW())
+            ON CONFLICT (video_id) 
+            DO UPDATE SET 
+                canvas_state = EXCLUDED.canvas_state,
+                updated_at = NOW();
+        `;
+        return { success: true };
+    } catch (err) {
+        console.error("Error saving flow canvas:", err);
+        return { success: false, error: "Database error" };
+    }
+}
+
+export async function getFlowCanvas(videoId: number) {
+    const user = await currentUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    try {
+        const result = await sql`
+            SELECT canvas_state FROM musical_flow_canvases 
+            WHERE video_id = ${videoId}
+        `;
+        if (result.rows.length > 0) {
+            return { success: true, state: result.rows[0].canvas_state };
+        }
+        return { success: true, state: null };
+    } catch (err) {
+        console.error("Error fetching flow canvas:", err);
         return { success: false, error: "Database error" };
     }
 }

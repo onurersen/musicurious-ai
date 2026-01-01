@@ -15,6 +15,7 @@ async function main() {
         try {
             await sql`ALTER TABLE users ADD COLUMN status VARCHAR(50) DEFAULT 'pending'`;
             console.log("Added status column to users.");
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
             if (e.message.includes('already exists')) {
                 console.log("Status column already exists.");

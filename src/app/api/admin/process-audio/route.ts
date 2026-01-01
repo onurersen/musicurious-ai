@@ -4,13 +4,13 @@ import { sql } from '@vercel/postgres';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { spawn } from 'child_process';
-import fs from 'fs';
+// import fs from 'fs'; // removed unused
 
 // Helper to ensure directory exists
 async function ensureDir(dir: string) {
     try {
         await mkdir(dir, { recursive: true });
-    } catch (e) {
+    } catch {
         // ignore if exists
     }
 }
