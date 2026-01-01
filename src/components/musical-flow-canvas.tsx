@@ -125,7 +125,7 @@ function CanvasInternal({ videoId, initialState }: { videoId: number, initialSta
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialState?.edges || INITIAL_EDGES);
 
     // Auto-save debounce
-    const timeoutRef = useRef<NodeJS.Timeout>();
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Note Modal
     const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
