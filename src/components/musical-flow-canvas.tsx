@@ -84,20 +84,23 @@ const nodeTypes = {
 
 // --- Components ---
 
-export function MusicalFlowCanvas({ videoId }: { videoId: number }) {
+// Update Props
+interface MusicalFlowCanvasProps {
+    videoId: number;
+    extractedSections?: { id: number; title: string; start_time: number; end_time: number }[];
+}
+
+export function MusicalFlowCanvas({ videoId, extractedSections = [] }: MusicalFlowCanvasProps) {
     const [initialState, setInitialState] = useState<ReactFlowJsonObject | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        async function loadCanvas() {
-            const res = await getFlowCanvas(videoId);
+        getFlowCanvas(videoId).then((res) => {
             if (res.success && res.state) {
-                // React Flow stores { nodes: [], edges: [], viewport: {} }
                 setInitialState(res.state as ReactFlowJsonObject);
             }
             setIsLoading(false);
-        }
-        loadCanvas();
+        });
     }, [videoId]);
 
     if (isLoading) {
@@ -111,13 +114,13 @@ export function MusicalFlowCanvas({ videoId }: { videoId: number }) {
     return (
         <ReactFlowProvider>
             <div className="flex flex-col h-[700px] border border-white/10 rounded-xl overflow-hidden bg-[#1a1a1a]">
-                <CanvasInternal videoId={videoId} initialState={initialState} />
+                <CanvasInternal videoId={videoId} initialState={initialState} extractedSections={extractedSections} />
             </div>
         </ReactFlowProvider>
     );
 }
 
-function CanvasInternal({ videoId, initialState }: { videoId: number, initialState: ReactFlowJsonObject | null }) {
+function CanvasInternal({ videoId, initialState, extractedSections }: { videoId: number, initialState: ReactFlowJsonObject | null, extractedSections: { id: number; title: string; start_time: number; end_time: number }[] }) {
     const reactFlowInstance = useReactFlow();
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -211,12 +214,20 @@ function CanvasInternal({ videoId, initialState }: { videoId: number, initialSta
         [reactFlowInstance, setNodes],
     );
 
-    const onNodeDoubleClick = useCallback((event: React.MouseEvent, node: Node) => {
-        setEditingNodeId(node.id);
-        setNodeLabel(node.data.label as string);
-        setNoteContent((node.data.note as string) || "");
+    const startEditingNode = useCallback((id: string, label: string) => {
+        setEditingNodeId(id);
+        setNodeLabel(label);
+        // Find existing note
+        const node = nodes.find(n => n.id === id);
+        setNoteContent((node?.data?.note as string) || "");
+
+        // Open modal
         setIsNoteModalOpen(true);
-    }, []);
+    }, [nodes]);
+
+    const onNodeDoubleClick = useCallback((event: React.MouseEvent, node: Node) => {
+        startEditingNode(node.id, node.data.label as string);
+    }, [startEditingNode]);
 
     const saveNote = () => {
         setNodes((nds) =>
@@ -396,6 +407,53 @@ function CanvasInternal({ videoId, initialState }: { videoId: number, initialSta
                                     {noteContent.length}/200
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2 mt-4"> {/* Added mt-4 for spacing */}
+                            <label className="text-xs font-semibold text-white/50 uppercase tracking-wider">Associated Audio</label>
+                            <select
+                                value={(nodes.find(n => n.id === editingNodeId)?.data?.extractedSectionId as string) || ""}
+                                onChange={(e) => {
+                                    const sectionId = e.target.value ? parseInt(e.target.value) : null;
+                                    setNodes((nds) =>
+                                        nds.map((node) => {
+                                            if (node.id === editingNodeId) {
+                                                const section = extractedSections.find(s => s.id === sectionId);
+                                                return {
+                                                    ...node,
+                                                    data: {
+                                                        ...node.data,
+                                                        extractedSectionId: sectionId,
+                                                        // Optional: Auto-update label if generic or empty? 
+                                                        // Maybe better to verify with user, but let's stick to just linking for now.
+                                                        // actually updating label is nice UX.
+                                                        label: section ? section.title : node.data.label
+                                                    },
+                                                };
+                                            }
+                                            return node;
+                                        })
+                                    );
+                                }}
+                                className="w-full bg-black/40 border border-white/10 rounded-md p-2 text-white text-sm focus:outline-none focus:border-purple-500"
+                            >
+                                <option value="">None</option>
+                                {extractedSections.map(section => {
+                                    // Check if used by ANY other node
+                                    const isUsed = nodes.some(n =>
+                                        n.id !== editingNodeId &&
+                                        Number(n.data.extractedSectionId) === section.id
+                                    );
+
+                                    if (isUsed) return null; // Don't show used ones
+
+                                    return (
+                                        <option key={section.id} value={section.id}>
+                                            {section.title} ({Math.floor(section.start_time / 60)}:{(section.start_time % 60).toFixed(0).padStart(2, '0')} - {Math.floor(section.end_time / 60)}:{(section.end_time % 60).toFixed(0).padStart(2, '0')})
+                                        </option>
+                                    );
+                                })}
+                            </select>
                         </div>
 
                         <div className="flex justify-end gap-2 mt-6">

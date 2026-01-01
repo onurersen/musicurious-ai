@@ -1,4 +1,4 @@
-import { getJam } from "@/app/actions";
+import { getJam, getExtractedSections } from "@/app/actions";
 import { SessionPlayer } from "@/components/session-player";
 import { MusicalFlowCanvas } from "@/components/musical-flow-canvas";
 import { QuickNav } from "@/components/quick-nav";
@@ -14,6 +14,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
     }
 
     const data = await getJam(jamId);
+    const extractedSections = await getExtractedSections(jamId);
 
     if (!data) {
         return (
@@ -80,7 +81,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
                             <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Musical Flow Canvas</span>
                             <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/60 font-medium">BETA</span>
                         </h2>
-                        <MusicalFlowCanvas videoId={jamId} />
+                        <MusicalFlowCanvas videoId={jamId} extractedSections={extractedSections} />
                     </div>
 
                     {/* Original Source Link */}

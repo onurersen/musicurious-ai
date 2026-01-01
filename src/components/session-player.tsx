@@ -563,6 +563,12 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
         const progress = Math.max(0, Math.min(1, x / rect.width));
         const seekTime = duration * progress;
 
+        // Auto-disable loop if clicking outside range
+        if (isLoopActive && (seekTime < loopStart || seekTime > loopEnd)) {
+            setIsLoopActive(false);
+            playerRef.current.loop = false;
+        }
+
         setCurrentTime(seekTime); // Update UI
 
         // If playing, we need to restart at new time
@@ -895,9 +901,13 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                         <ChordDisplay
                             chords={Array.from(new Set(
                                 chordsTimeline
-                                    .filter(c => c.end > loopStart && c.start < loopEnd)
+                                    .filter(c => c.end > loopStart && c.start < loopEnd) // Within loop
+                                    .filter(c => (c.end - c.start) > 2) // Filter noise (short detections <= 2s)
                                     .map(c => c.chord)
                             ))}
+                            activeChord={
+                                chordsTimeline.find(c => currentTime >= c.start && currentTime < c.end)?.chord || null
+                            }
                         />
                     ) : (
                         <div className="bg-white/5 border border-white/5 rounded-xl p-8 text-center text-muted-foreground">

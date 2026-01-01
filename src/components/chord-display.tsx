@@ -188,10 +188,10 @@ const getChordShape = (name: string) => {
 
 interface ChordDisplayProps {
     chords: string[];
-    currentTime?: number;
+    activeChord?: string | null;
 }
 
-export function ChordDisplay({ chords }: ChordDisplayProps) {
+export function ChordDisplay({ chords, activeChord }: ChordDisplayProps) {
     if (chords.length === 0) return null;
 
     return (
@@ -203,11 +203,12 @@ export function ChordDisplay({ chords }: ChordDisplayProps) {
             <div className="flex flex-wrap gap-6 justify-center sm:justify-start">
                 {chords.map((chordName, idx) => {
                     const shape = getChordShape(chordName);
+                    const isActive = chordName === activeChord;
 
                     return (
-                        <div key={`${chordName}-${idx}`} className="flex flex-col items-center gap-2 group relative z-0 hover:z-50">
+                        <div key={`${chordName}-${idx}`} className={`flex flex-col items-center gap-2 group relative z-0 hover:z-50 transition-transform duration-300 ${isActive ? 'scale-110' : ''}`}>
                             {/* Chord Diagram with Hover Effect */}
-                            <div className="bg-white rounded-lg p-2 shadow-sm transition-all duration-200">
+                            <div className={`bg-white rounded-lg p-2 shadow-sm transition-all duration-300 ${isActive ? 'ring-4 ring-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)]' : ''}`}>
 
                                 {/* Normal Size */}
                                 <div className="w-[80px]">
@@ -243,7 +244,7 @@ export function ChordDisplay({ chords }: ChordDisplayProps) {
                             </div>
 
                             {/* Chord Name Label */}
-                            <div className="px-3 py-1 bg-white/10 rounded-full border border-white/10 text-white font-bold text-sm">
+                            <div className={`px-3 py-1 rounded-full border text-sm font-bold transition-colors ${isActive ? 'bg-purple-500 border-purple-500 text-white' : 'bg-white/10 border-white/10 text-white'}`}>
                                 {chordName}
                             </div>
                         </div>
