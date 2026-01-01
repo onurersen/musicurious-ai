@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import Chord from '@techies23/react-chords';
 
 const guitar = {
@@ -15,6 +15,7 @@ const guitar = {
 
 // Simplified dictionary for standard chords
 // In a real app, use a dedicated library like 'tonal' or a larger JSON database
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CHORD_SHAPES: Record<string, any> = {
     // Majors
     "C": { frets: [-1, 3, 2, 0, 1, 0], fingers: [0, 3, 2, 0, 1, 0] },
@@ -120,13 +121,10 @@ const CHORD_SHAPES: Record<string, any> = {
 
     // Major 7ths (Sharp/Flat keys)
     "C#maj7": { frets: [-1, 4, 6, 5, 6, 4], fingers: [0, 1, 3, 2, 4, 1], baseFret: 4, barres: [4] },
-    "Dmaj7": { frets: [-1, -1, 0, 2, 2, 2], fingers: [0, 0, 0, 1, 2, 3] },
     "D#maj7": { frets: [-1, 6, 8, 7, 8, 6], fingers: [0, 1, 3, 2, 4, 1], baseFret: 6, barres: [6] },
-    "Emaj7": { frets: [0, 2, 1, 1, 0, 0], fingers: [0, 2, 1, 1, 0, 0] },
     "F#maj7": { frets: [2, 4, 3, 3, 2, 2], fingers: [1, 3, 2, 2, 1, 1], baseFret: 2, barres: [2] },
     "G#maj7": { frets: [4, 6, 5, 5, 4, 4], fingers: [1, 3, 2, 2, 1, 1], baseFret: 4, barres: [4] },
     "A#maj7": { frets: [-1, 1, 3, 2, 3, 1], fingers: [0, 1, 3, 2, 4, 1], baseFret: 1, barres: [1] },
-    "Bmaj7": { frets: [-1, 2, 4, 3, 4, 2], fingers: [0, 1, 3, 2, 4, 1], baseFret: 2, barres: [2] },
 
     // Minor 7ths (Sharp/Flat keys)
     "C#m7": { frets: [-1, 4, 6, 4, 5, 4], fingers: [0, 1, 3, 1, 2, 1], baseFret: 4, barres: [4] },
@@ -151,11 +149,11 @@ const CHORD_SHAPES: Record<string, any> = {
 };
 
 // Helper to normalize chord names for lookup
-const normalizeChordName = (name: string) => {
-    // Replace flats 'b' with sharps '#' if needed, or handle alias
-    // Simple normalization for now
-    return name;
-}
+// const normalizeChordName = (name: string) => {
+//     // Replace flats 'b' with sharps '#' if needed, or handle alias
+//     // Simple normalization for now
+//     return name;
+// }
 
 const getChordShape = (name: string) => {
     // 1. Direct match

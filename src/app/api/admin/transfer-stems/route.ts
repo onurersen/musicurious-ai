@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     let entries;
     try {
         entries = await readdir(stemsRoot, { withFileTypes: true });
-    } catch (e) {
+    } catch {
         return NextResponse.json({ error: 'Stems directory (htdemucs) not found. Process likely not started.' }, { status: 404 });
     }
 
@@ -113,6 +113,7 @@ export async function POST(request: Request) {
                         const progress = Math.round((completed / totalFiles) * 100);
                         send(JSON.stringify({ type: 'progress', percent: progress, message: `Uploaded ${type}` }));
 
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     } catch (e: any) {
                         console.error(`Failed to upload ${type}:`, e);
                         throw new Error(`Failed to upload ${type}: ${e.message}`);
@@ -125,6 +126,7 @@ export async function POST(request: Request) {
                 send(JSON.stringify({ type: 'complete', message: 'Transfer successful!' }));
                 controller.close();
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
                 console.error("Stream error:", err);
                 await sql`ROLLBACK`; // Try to rollback if connection still open (might fail if concurrent)

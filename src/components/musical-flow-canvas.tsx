@@ -17,12 +17,13 @@ import {
     Node,
     Handle,
     Position,
+    type ReactFlowJsonObject,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import { saveFlowCanvas, getFlowCanvas } from "@/app/actions";
 import { ConfirmationModal } from "./confirmation-modal";
-import { Loader2, Trash2, StickyNote, X as XIcon, Edit2 } from "lucide-react";
+import { Loader2, Trash2, X as XIcon, Edit2 } from "lucide-react";
 
 // --- Constants ---
 
@@ -42,7 +43,7 @@ const INITIAL_EDGES: Edge[] = [];
 
 // --- Custom Node ---
 
-const CustomSongNode = ({ data, isConnectable }: any) => {
+const CustomSongNode = ({ data, isConnectable }: { data: { label: string; color: string; note?: string }; isConnectable: boolean }) => {
     return (
         <div style={{
             backgroundColor: '#1a1a1a',
@@ -84,7 +85,7 @@ const nodeTypes = {
 // --- Components ---
 
 export function MusicalFlowCanvas({ videoId }: { videoId: number }) {
-    const [initialState, setInitialState] = useState<any>(null);
+    const [initialState, setInitialState] = useState<ReactFlowJsonObject | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -92,7 +93,7 @@ export function MusicalFlowCanvas({ videoId }: { videoId: number }) {
             const res = await getFlowCanvas(videoId);
             if (res.success && res.state) {
                 // React Flow stores { nodes: [], edges: [], viewport: {} }
-                setInitialState(res.state);
+                setInitialState(res.state as ReactFlowJsonObject);
             }
             setIsLoading(false);
         }
@@ -116,7 +117,7 @@ export function MusicalFlowCanvas({ videoId }: { videoId: number }) {
     );
 }
 
-function CanvasInternal({ videoId, initialState }: { videoId: number, initialState: any }) {
+function CanvasInternal({ videoId, initialState }: { videoId: number, initialState: ReactFlowJsonObject | null }) {
     const reactFlowInstance = useReactFlow();
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -245,13 +246,13 @@ function CanvasInternal({ videoId, initialState }: { videoId: number, initialSta
     // Hover Note State
     const [hoveredNote, setHoveredNote] = useState<string | null>(null);
 
-    const onNodeMouseEnter = useCallback((event: React.MouseEvent, node: Node) => {
+    const onNodeMouseEnter = useCallback((_: React.MouseEvent, node: Node) => {
         if (node.data.note) {
             setHoveredNote(node.data.note as string);
         }
     }, []);
 
-    const onNodeMouseLeave = useCallback((event: React.MouseEvent, node: Node) => {
+    const onNodeMouseLeave = useCallback(() => {
         setHoveredNote(null);
     }, []);
 

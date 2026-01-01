@@ -23,7 +23,7 @@ export default function Home() {
     // Check status on mount
     console.log("Checking user status...");
     getUserStatus()
-      .then((status: any) => {
+      .then((status: 'pending' | 'approved' | 'blocked' | null) => {
         console.log("Received status:", status);
         // If status is null (e.g. server thinks logged out) but client is SignedIn,
         // we default to 'pending' (locked) to be safe and avoid hanging.
@@ -90,7 +90,7 @@ export default function Home() {
           setError(result.error || "Failed to create session. Database might not be connected.");
         }
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred.");
     }
 
@@ -228,7 +228,7 @@ export default function Home() {
                     <div className="space-y-2">
                       <h3 className="text-2xl font-bold text-white">Video Already Exists</h3>
                       <p className="text-muted-foreground">
-                        You have already submitted this video. Please check your "My Videos" list to view your previous jam.
+                        You have already submitted this video. Please check your &quot;My Videos&quot; list to view your previous jam.
                       </p>
                     </div>
                     <div className="flex flex-col gap-3 w-full">
@@ -267,7 +267,7 @@ export default function Home() {
                     <div className="space-y-2">
                       <h3 className="text-2xl font-bold text-white">Music Video Check</h3>
                       <p className="text-muted-foreground">
-                        This video doesn't appear to be categorized as Music on YouTube. Are you sure you want to proceed?
+                        This video doesn&apos;t appear to be categorized as Music on YouTube. Are you sure you want to proceed?
                       </p>
                     </div>
                     <div className="flex flex-col gap-3 w-full">

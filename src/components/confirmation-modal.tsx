@@ -28,14 +28,19 @@ export function ConfirmationModal({
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line 
         setMounted(true);
+    }, []);
+
+    useEffect(() => {
         // Lock body scroll when open
         if (isOpen) {
             document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
         }
         return () => {
             document.body.style.overflow = 'unset';
-            setMounted(false);
         };
     }, [isOpen]);
 
@@ -79,8 +84,8 @@ export function ConfirmationModal({
                     <button
                         onClick={onConfirm}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isDestructive
-                                ? "bg-red-500 hover:bg-red-600 text-white"
-                                : "bg-white text-black hover:bg-gray-200"
+                            ? "bg-red-500 hover:bg-red-600 text-white"
+                            : "bg-white text-black hover:bg-gray-200"
                             }`}
                     >
                         {confirmLabel}

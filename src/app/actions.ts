@@ -18,8 +18,8 @@ export async function deleteUser(userId: string) {
             const client = await clerkClient();
             await client.users.deleteUser(userId);
             console.log(`[deleteUser] Deleted user ${userId} from Clerk`);
-        } catch (e) {
-            console.error(`[deleteUser] Failed to delete user ${userId} from Clerk (proceeding with DB delete):`, e);
+        } catch {
+            console.error(`[deleteUser] Failed to delete user ${userId} from Clerk (proceeding with DB delete)`);
         }
 
         // 2. Delete from App DB
@@ -46,8 +46,8 @@ export async function banUser(userId: string, email: string) {
             const client = await clerkClient();
             await client.users.deleteUser(userId);
             console.log(`[banUser] Deleted user ${userId} from Clerk`);
-        } catch (e) {
-            console.error(`[banUser] Failed to delete user ${userId} from Clerk:`, e);
+        } catch {
+            console.error(`[banUser] Failed to delete user ${userId} from Clerk`);
         }
 
         // 3. Delete from App DB
@@ -305,6 +305,7 @@ export async function getVideos(): Promise<Video[]> {
             rows = result.rows;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return rows.map((row: any) => ({
             ...row,
             created_at: new Date(row.created_at).toISOString(),
@@ -389,7 +390,7 @@ export async function getUserStatus() {
             return 'blocked';
         }
 
-        let res = await sql`SELECT status, role FROM users WHERE id = ${user.id}`;
+        const res = await sql`SELECT status, role FROM users WHERE id = ${user.id}`;
 
         // If user record doesn't exist, create it as pending
         if (res.rows.length === 0) {
@@ -559,7 +560,7 @@ export async function getVideoStatus(videoId: number) {
             FROM videos WHERE id = ${videoId}
         `;
         return result.rows[0] as { processing_status: 'pending' | 'processing' | 'completed' | 'failed', processing_progress: number };
-    } catch (e) {
+    } catch {
         return null;
     }
 }
@@ -595,7 +596,7 @@ export async function removeStems(videoId: number) {
         // Find folders starting with videoId_
         for (const stemsRoot of stemRoots) {
             try {
-                let entries = await readdir(stemsRoot, { withFileTypes: true });
+                const entries = await readdir(stemsRoot, { withFileTypes: true });
                 const folders = entries
                     .filter(e => e.isDirectory() && e.name.startsWith(`${videoId}_`))
                     .map(e => join(stemsRoot, e.name));
@@ -604,7 +605,7 @@ export async function removeStems(videoId: number) {
                     console.log(`Removing stem folder: ${folder}`);
                     await rm(folder, { recursive: true, force: true });
                 }
-            } catch (e) {
+            } catch {
                 // Ignore missing dirs
             }
         }
@@ -638,6 +639,7 @@ export async function removeStems(videoId: number) {
         revalidatePath('/admin/videos');
         return { success: true };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
         console.error("Error removing stems:", err);
         return { success: false, error: err.message };
@@ -755,6 +757,7 @@ export async function getExtractedSections(videoId: number) {
             WHERE user_id = ${user.id} AND video_id = ${videoId}
             ORDER BY created_at DESC
         `;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return result.rows.map((row: any) => ({
             ...row,
             created_at: new Date(row.created_at).toISOString(),
@@ -808,6 +811,7 @@ export async function renameExtractedSection(sectionId: number, newTitle: string
 
 // Musical Flow Canvas Actions
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function saveFlowCanvas(videoId: number, state: any) {
     const user = await currentUser();
     if (!user) return { success: false, error: "Unauthorized" };

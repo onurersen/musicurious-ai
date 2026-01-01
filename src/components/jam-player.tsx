@@ -72,9 +72,10 @@ export default function JamPlayer({ stems, title, youtubeUrl }: JamPlayerProps) 
             howlRefs.current[stem.type] = sound;
         });
 
+        const refs = howlRefs.current;
         return () => {
             // Cleanup on unmount
-            Object.values(howlRefs.current).forEach(h => h.unload());
+            Object.values(refs).forEach(h => h.unload());
         };
     }, [playbackStems]);
 

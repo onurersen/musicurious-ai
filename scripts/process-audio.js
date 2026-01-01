@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { spawn } = require('child_process');
 const { sql } = require('@vercel/postgres');
 const fs = require('fs');
@@ -103,7 +104,7 @@ async function run() {
                     clearInterval(checkInterval);
                     process.exit(0); // Exit gracefully as we handled the cancellation
                 }
-            } catch (e) {
+            } catch {
                 // Ignore DB errors during check, just continue
             }
         }, 3000);

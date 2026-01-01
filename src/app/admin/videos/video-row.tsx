@@ -1,12 +1,12 @@
 "use client";
 
-import { updateVideoApproval, getVideoStatus, cancelProcessing } from "@/app/actions";
+import { updateVideoApproval, getVideoStatus, cancelProcessing, type Video } from "@/app/actions";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, X, Upload, Trash2, CheckCircle, Play } from "lucide-react";
 import { createPortal } from "react-dom";
 
-export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
+export function VideoRow({ video, isDev }: { video: Video, isDev: boolean }) {
     const [loading, setLoading] = useState(false);
     const [transferProgress, setTransferProgress] = useState(0);
     const [showRejectConfirm, setShowRejectConfirm] = useState(false);
@@ -15,7 +15,7 @@ export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
     const [showTransferConfirm, setShowTransferConfirm] = useState(false);
     const [showTransferSuccess, setShowTransferSuccess] = useState(false);
     const [progress, setProgress] = useState(video.processing_progress || 0);
-    const [procStatus, setProcStatus] = useState<string>(video.processing_status);
+    const [procStatus, setProcStatus] = useState<string>(video.processing_status || 'pending');
     const router = useRouter();
 
     // ... (useEffect hooks remain same)
@@ -23,7 +23,7 @@ export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
     // Sync state if prop changes (e.g. after refresh)
     useEffect(() => {
         setProgress(video.processing_progress || 0);
-        setProcStatus(video.processing_status);
+        setProcStatus(video.processing_status || 'pending');
     }, [video.processing_progress, video.processing_status]);
 
     // Poll status if processing
@@ -65,6 +65,7 @@ export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
             if (!res.success) throw new Error(res.error);
             router.refresh();
             setShowRemoveStemsConfirm(false);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
             alert("Removal failed: " + e.message);
         } finally {
@@ -103,7 +104,7 @@ export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
                         } else if (data.type === 'error') {
                             throw new Error(data.message);
                         }
-                    } catch (e) {
+                    } catch {
                         // ignore non-json or partial lines
                     }
                 }
@@ -113,6 +114,7 @@ export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
             setProcStatus('completed');
             setProgress(100);
             router.refresh();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
             alert("Transfer failed: " + e.message);
         } finally {
@@ -350,7 +352,7 @@ export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
                                         <div>
                                             <h3 className="text-xl font-bold text-white mb-2">Remove Stems?</h3>
                                             <p className="text-muted-foreground text-sm">
-                                                Are you sure you want to remove the separated stems AND the specific audio file uploaded for this video? This will revert the processing status to 'Pending' so you can re-upload/re-process.
+                                                Are you sure you want to remove the separated stems AND the specific audio file uploaded for this video? This will revert the processing status to &apos;Pending&apos; so you can re-upload/re-process.
                                             </p>
                                         </div>
 
@@ -396,7 +398,7 @@ export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
                                         <div>
                                             <h3 className="text-xl font-bold text-white mb-2">Cancel Processing?</h3>
                                             <p className="text-muted-foreground text-sm">
-                                                This will force the status to 'Failed' and reset progress to 0. This is useful if the process is stuck. It will NOT stop a running background process if one is active.
+                                                This will force the status to &apos;Failed&apos; and reset progress to 0. This is useful if the process is stuck. It will NOT stop a running background process if one is active.
                                             </p>
                                         </div>
 
@@ -489,7 +491,7 @@ export function VideoRow({ video, isDev }: { video: any, isDev: boolean }) {
                                         <div>
                                             <h3 className="text-xl font-bold text-white mb-2">Transfer to Cloud?</h3>
                                             <p className="text-muted-foreground text-sm">
-                                                This will upload the processed audio stems to Vercel Blob Storage. This action consumes blob bandwidth and updates the submission status to "Processed".
+                                                This will upload the processed audio stems to Vercel Blob Storage. This action consumes blob bandwidth and updates the submission status to &quot;Processed&quot;.
                                             </p>
                                         </div>
 
@@ -554,6 +556,7 @@ function ProcessingUploadButton({ videoId, onUploadStart }: { videoId: number, o
             // Immediately refresh to show processing state
             onUploadStart();
             // alert("Processing started!"); // Removed alert as polling will likely show it
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.error("Upload error:", err);
             alert(`Failed to start processing: ${err.message}`);

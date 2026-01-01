@@ -91,6 +91,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                 pitchShiftEffectRef.current.dispose();
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Load Track logic
@@ -109,16 +110,16 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                 if (playerRef.current) {
                     try {
                         playerRef.current.stop();
-                    } catch (e) { /* ignore stop error */ }
+                    } catch { /* ignore stop error */ }
                     try {
                         playerRef.current.dispose();
-                    } catch (e) { /* ignore dispose error */ }
+                    } catch { /* ignore dispose error */ }
                     playerRef.current = null;
                 }
                 if (pitchShiftEffectRef.current) {
                     try {
                         pitchShiftEffectRef.current.dispose();
-                    } catch (e) { /* ignore dispose error */ }
+                    } catch { /* ignore dispose error */ }
                     pitchShiftEffectRef.current = null;
                 }
 
@@ -324,7 +325,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
             } else {
                 setWarningMessage("Failed to extract section");
             }
-        } catch (e) {
+        } catch {
             setWarningMessage("Error extracting section");
         }
     };
@@ -477,7 +478,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
             }, 100);
         }
         return () => clearInterval(interval);
-    }, [isPlaying, targetBpm, baseBpm, duration]);
+    }, [isPlaying, targetBpm, baseBpm, duration, isLoopActive, loopEnd, loopStart]);
 
     // Save Settings Debounced
     useEffect(() => {
@@ -505,6 +506,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
             }, 100);
             return () => clearTimeout(timer);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isLoopActive]); // Only trigger when active state changes to true
 
 
