@@ -278,7 +278,7 @@ export function VideoRow({ video, isDev }: { video: Video, isDev: boolean }) {
                                         {procStatus === 'completed' && (
                                             <button
                                                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 border border-purple-500/20 transition-all text-xs font-semibold w-full justify-center group/btn"
-                                                onClick={() => router.push(`/admin/videos/${video.id}/session`)}
+                                                onClick={() => router.push(`/session/${video.id}`)}
                                             >
                                                 <Play size={14} className="group-hover/btn:scale-110 transition-transform" />
                                                 View Session

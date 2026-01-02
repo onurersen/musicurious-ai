@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { Play, Pause, Loader2, Volume2, Music, Music2, RotateCcw, Repeat, Scissors, Trash2, Pencil, Save, X } from "lucide-react";
 import * as Tone from "tone";
-import { saveJamSettings, type UserJamSettings, saveExtractedSection, getExtractedSections, deleteExtractedSection, renameExtractedSection, type ExtractedSection } from "@/app/actions";
+import { saveJamSettings, type UserJamSettings, saveExtractedSection, getExtractedSections, deleteExtractedSection, renameExtractedSection, updateSectionChordAdjustments, resetSectionChordAdjustments, addSectionChord, removeSectionChord, type ExtractedSection } from "@/app/actions";
 import { ChordDisplay } from "./chord-display";
+import { ConfirmationModal } from "@/components/confirmation-modal";
 
 interface SessionTrack {
     name: string;
@@ -20,9 +21,10 @@ interface SessionPlayerProps {
     initialSettings?: UserJamSettings | null;
     timeSignature?: string;
     chordsTimeline?: { chord: string; start: number; end: number }[];
+    extractedSections?: ExtractedSection[];
 }
 
-export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, initialSettings, timeSignature, chordsTimeline = [] }: SessionPlayerProps) {
+export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, initialSettings, timeSignature, chordsTimeline = [], extractedSections: propsExtractedSections = [] }: SessionPlayerProps) {
     const [selectedTrack, setSelectedTrack] = useState<SessionTrack | null>(() => {
         if (initialSettings?.active_track) {
             const found = tracks.find(t => t.name === initialSettings.active_track);
@@ -47,10 +49,126 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
     const [warningMessage, setWarningMessage] = useState<string | null>(null);
 
     // Extracted Sections State
-    const [extractedSections, setExtractedSections] = useState<ExtractedSection[]>([]);
+
+    const [extractedSections, setExtractedSections] = useState<ExtractedSection[]>(propsExtractedSections);
+
+    // Sync if prop changes (e.g. revalidate from server)
+    useEffect(() => {
+        setExtractedSections(propsExtractedSections);
+    }, [propsExtractedSections]);
+
     const [editingSectionId, setEditingSectionId] = useState<number | null>(null);
     const [deletingSectionId, setDeletingSectionId] = useState<number | null>(null);
     const [editingTitle, setEditingTitle] = useState("");
+
+    // Chord Customization State
+    const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+    const [currentSectionIdForReset, setCurrentSectionIdForReset] = useState<number | null>(null);
+
+    // Helper to find valid section matching current loop
+    // Use a bit of tolerance (e.g., 0.5s) to match loop bounds to section bounds
+    const activeExtractedSection = extractedSections.find(
+        s => Math.abs(s.start_time - loopStart) < 0.5 && Math.abs(s.end_time - loopEnd) < 0.5
+    );
+
+    const handleChordRename = async (original: string, newName: string) => {
+        if (!activeExtractedSection) return;
+
+        const currentAdjustments = activeExtractedSection.chord_adjustments || {};
+        const newAdjustments = {
+            ...currentAdjustments,
+            [original]: { action: 'rename', to: newName }
+        } as Record<string, { action: 'rename' | 'hide', to?: string }>; // Explicit cast to satisfy TS if needed
+
+        // Optimistic update
+        const updatedSections = extractedSections.map(s =>
+            s.id === activeExtractedSection.id
+                ? { ...s, chord_adjustments: newAdjustments }
+                : s
+        );
+        setExtractedSections(updatedSections);
+
+        await updateSectionChordAdjustments(activeExtractedSection.id, newAdjustments);
+    };
+
+    const handleChordHide = async (original: string) => {
+        if (!activeExtractedSection) return;
+
+        // Check if it's an added chord
+        const addedChords = activeExtractedSection.added_chords || [];
+        if (addedChords.includes(original)) {
+            // Remove from added_chords
+            const newAdded = addedChords.filter(c => c !== original);
+
+            // Optimistic update
+            const updatedSections = extractedSections.map(s =>
+                s.id === activeExtractedSection.id
+                    ? { ...s, added_chords: newAdded }
+                    : s
+            );
+            setExtractedSections(updatedSections);
+
+            await removeSectionChord(activeExtractedSection.id, original);
+        } else {
+            // It's a detected chord, use Hide logic
+            const currentAdjustments = activeExtractedSection.chord_adjustments || {};
+            const newAdjustments = {
+                ...currentAdjustments,
+                [original]: { action: 'hide' }
+            } as Record<string, { action: 'rename' | 'hide', to?: string }>;
+
+            // Optimistic update
+            const updatedSections = extractedSections.map(s =>
+                s.id === activeExtractedSection.id
+                    ? { ...s, chord_adjustments: newAdjustments }
+                    : s
+            );
+            setExtractedSections(updatedSections);
+
+            await updateSectionChordAdjustments(activeExtractedSection.id, newAdjustments);
+        }
+    };
+
+    const handleResetChords = () => {
+        if (activeExtractedSection) {
+            setCurrentSectionIdForReset(activeExtractedSection.id);
+            setIsResetModalOpen(true);
+        }
+    };
+
+    const handleChordAdd = async (chord: string) => {
+        if (!activeExtractedSection) return;
+
+        // Optimistic update
+        const currentAdded = activeExtractedSection.added_chords || [];
+        const newAdded = [...currentAdded, chord];
+
+        const updatedSections = extractedSections.map(s =>
+            s.id === activeExtractedSection.id
+                ? { ...s, added_chords: newAdded }
+                : s
+        );
+        setExtractedSections(updatedSections);
+
+        await addSectionChord(activeExtractedSection.id, chord);
+    };
+
+    const confirmResetChords = async () => {
+        if (currentSectionIdForReset) {
+            // Optimistic update
+            const updatedSections = extractedSections.map(s =>
+                s.id === currentSectionIdForReset
+                    ? { ...s, chord_adjustments: {}, added_chords: [] }
+                    : s
+            );
+            setExtractedSections(updatedSections);
+
+            await resetSectionChordAdjustments(currentSectionIdForReset);
+            setIsResetModalOpen(false);
+            setCurrentSectionIdForReset(null);
+        }
+    };
+
 
     // Tone Refs
     const playerRef = useRef<Tone.Player | null>(null);
@@ -563,6 +681,12 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
         const progress = Math.max(0, Math.min(1, x / rect.width));
         const seekTime = duration * progress;
 
+        // Auto-disable loop if clicking outside range
+        if (isLoopActive && (seekTime < loopStart || seekTime > loopEnd)) {
+            setIsLoopActive(false);
+            playerRef.current.loop = false;
+        }
+
         setCurrentTime(seekTime); // Update UI
 
         // If playing, we need to restart at new time
@@ -888,17 +1012,62 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                 )}
             </div>
 
+
+
+
+
+
             {/* Chord Display Area */}
             {chordsTimeline.length > 0 && (
                 <div id="chords-display" className="w-full animate-in fade-in slide-in-from-top-4 duration-500 scroll-mt-[560px]">
                     {isLoopActive && loopEnd > loopStart ? (
-                        <ChordDisplay
-                            chords={Array.from(new Set(
-                                chordsTimeline
-                                    .filter(c => c.end > loopStart && c.start < loopEnd)
-                                    .map(c => c.chord)
-                            ))}
-                        />
+                        <div className="relative">
+                            {/* Reset Button moved to ChordDisplay */}
+
+                            <ChordDisplay
+                                chords={
+                                    Array.from(new Set([
+                                        ...chordsTimeline
+                                            .filter(c => c.end > loopStart && c.start < loopEnd) // Within loop
+                                            .filter(c => (c.end - c.start) > 2) // Filter noise
+                                            .map(c => c.chord)
+                                            // Apply filtering/renaming for DISPLAY list
+                                            .filter(chord => {
+                                                const adj = activeExtractedSection?.chord_adjustments?.[chord];
+                                                return !adj || adj.action !== 'hide';
+                                            })
+                                            .map(chord => {
+                                                const adj = activeExtractedSection?.chord_adjustments?.[chord];
+                                                return (adj?.action === 'rename' && adj.to) ? adj.to : chord;
+                                            }),
+                                        ...(activeExtractedSection?.added_chords || [])
+                                    ]))
+                                }
+                                activeChord={
+                                    (() => {
+                                        const rawChord = chordsTimeline.find(c => currentTime >= c.start && currentTime < c.end)?.chord;
+                                        if (!rawChord) return null;
+
+                                        if (!activeExtractedSection?.chord_adjustments) return rawChord;
+
+                                        const adj = activeExtractedSection.chord_adjustments[rawChord];
+                                        if (adj?.action === 'hide') return null; // Hidden chord shouldn't highlight anything? Or just don't show info?
+                                        if (adj?.action === 'rename' && adj.to) return adj.to;
+
+                                        return rawChord;
+                                    })()
+                                }
+                                isEditable={!!activeExtractedSection}
+                                onRename={handleChordRename}
+                                onHide={handleChordHide}
+                                onReset={
+                                    ((activeExtractedSection?.chord_adjustments && Object.keys(activeExtractedSection.chord_adjustments).length > 0) || (activeExtractedSection?.added_chords && activeExtractedSection.added_chords.length > 0))
+                                        ? handleResetChords
+                                        : undefined
+                                }
+                                onAdd={handleChordAdd}
+                            />
+                        </div>
                     ) : (
                         <div className="bg-white/5 border border-white/5 rounded-xl p-8 text-center text-muted-foreground">
                             <Music2 className="mx-auto w-8 h-8 mb-3 opacity-50" />
@@ -907,6 +1076,17 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                     )}
                 </div>
             )}
+
+            <ConfirmationModal
+                isOpen={isResetModalOpen}
+                title="Reset Chord Adjustments"
+                message="Are you sure you want to reset all custom chord changes for this section? This action cannot be undone."
+                confirmLabel="Reset"
+                isDestructive
+                onConfirm={confirmResetChords}
+                onCancel={() => setIsResetModalOpen(false)}
+            />
+
 
             {/* Extracted Sections List */}
             {extractedSections.length > 0 && (

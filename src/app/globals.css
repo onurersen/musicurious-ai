@@ -45,3 +45,13 @@
 .glass-panel {
   @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl transition-all duration-300;
 }
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
