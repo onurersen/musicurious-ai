@@ -74,6 +74,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
                         initialSettings={userSettings}
                         timeSignature={video.time_signature}
                         chordsTimeline={video.chords}
+                        extractedSections={extractedSections}
                     />
 
                     <div id="musical-flow-canvas" className="mt-8 mb-4 scroll-mt-[480px]">
@@ -81,7 +82,12 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
                             <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Musical Flow Canvas</span>
                             <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/60 font-medium">BETA</span>
                         </h2>
-                        <MusicalFlowCanvas videoId={jamId} extractedSections={extractedSections} />
+                        <MusicalFlowCanvas
+                            videoId={jamId}
+                            extractedSections={extractedSections}
+                            jamTitle={video.title || "Untitled Jam"}
+                            chordsTimeline={video.chords || []}
+                        />
                     </div>
 
                     {/* Original Source Link */}

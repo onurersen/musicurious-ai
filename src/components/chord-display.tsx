@@ -16,7 +16,7 @@ const guitar = {
 // Simplified dictionary for standard chords
 // In a real app, use a dedicated library like 'tonal' or a larger JSON database
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const CHORD_SHAPES: Record<string, any> = {
+export const CHORD_SHAPES: Record<string, any> = {
     // Majors
     "C": { frets: [-1, 3, 2, 0, 1, 0], fingers: [0, 3, 2, 0, 1, 0] },
     "D": { frets: [-1, -1, 0, 2, 3, 2], fingers: [0, 0, 0, 1, 3, 2] },
@@ -155,7 +155,7 @@ const CHORD_SHAPES: Record<string, any> = {
 //     return name;
 // }
 
-const getChordShape = (name: string) => {
+export const getChordShape = (name: string) => {
     // 1. Direct match
     if (CHORD_SHAPES[name]) return CHORD_SHAPES[name];
 
@@ -186,18 +186,34 @@ const getChordShape = (name: string) => {
     return null;
 };
 
+
 interface ChordDisplayProps {
     chords: string[];
     activeChord?: string | null;
+    isEditable?: boolean;
+    onRename?: (original: string, newName: string) => void;
+    onHide?: (original: string) => void;
+    onReset?: () => void;
 }
 
-export function ChordDisplay({ chords, activeChord }: ChordDisplayProps) {
+export function ChordDisplay({ chords, activeChord, isEditable = false, onRename, onHide, onReset }: ChordDisplayProps) {
     if (chords.length === 0) return null;
 
     return (
         <div className="flex flex-col gap-4 w-full p-6 bg-white/5 border border-white/5 rounded-xl">
-            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1">
-                Detected Chords in Section
+            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1 flex justify-between items-center min-h-[28px]">
+                <span>Detected Chords in Section</span>
+                <div className="flex items-center gap-2">
+                    {onReset && (
+                        <button
+                            onClick={onReset}
+                            className="text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-2 py-1 rounded transition-colors"
+                        >
+                            Reset
+                        </button>
+                    )}
+                    {isEditable && <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded border border-purple-500/20">EDIT MODE</span>}
+                </div>
             </h3>
 
             <div className="flex flex-wrap gap-6 justify-center sm:justify-start">
@@ -208,7 +224,20 @@ export function ChordDisplay({ chords, activeChord }: ChordDisplayProps) {
                     return (
                         <div key={`${chordName}-${idx}`} className={`flex flex-col items-center gap-2 group relative z-0 hover:z-50 transition-transform duration-300 ${isActive ? 'scale-110' : ''}`}>
                             {/* Chord Diagram with Hover Effect */}
-                            <div className={`bg-white rounded-lg p-2 shadow-sm transition-all duration-300 ${isActive ? 'ring-4 ring-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)]' : ''}`}>
+                            <div className={`bg-white rounded-lg p-2 shadow-sm transition-all duration-300 relative ${isActive ? 'ring-4 ring-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)]' : ''}`}>
+
+                                {isEditable && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onHide?.(chordName);
+                                        }}
+                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-[60] shadow-md hover:scale-110"
+                                        title="Hide Chord"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                    </button>
+                                )}
 
                                 {/* Normal Size */}
                                 <div className="w-[80px]">
@@ -243,10 +272,30 @@ export function ChordDisplay({ chords, activeChord }: ChordDisplayProps) {
 
                             </div>
 
-                            {/* Chord Name Label */}
-                            <div className={`px-3 py-1 rounded-full border text-sm font-bold transition-colors ${isActive ? 'bg-purple-500 border-purple-500 text-white' : 'bg-white/10 border-white/10 text-white'}`}>
-                                {chordName}
-                            </div>
+                            {/* Chord Name Label / Input */}
+                            {isEditable ? (
+                                <input
+                                    className={`px-2 py-1 w-20 text-center rounded-full border text-sm font-bold bg-black/50 border-white/20 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all`}
+                                    defaultValue={chordName}
+                                    onBlur={(e) => {
+                                        const newVal = e.target.value.trim();
+                                        if (newVal && newVal !== chordName) {
+                                            onRename?.(chordName, newVal);
+                                        } else {
+                                            e.target.value = chordName; // Reset if empty
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.currentTarget.blur();
+                                        }
+                                    }}
+                                />
+                            ) : (
+                                <div className={`px-3 py-1 rounded-full border text-sm font-bold transition-colors ${isActive ? 'bg-purple-500 border-purple-500 text-white' : 'bg-white/10 border-white/10 text-white'}`}>
+                                    {chordName}
+                                </div>
+                            )}
                         </div>
                     );
                 })}
@@ -257,3 +306,4 @@ export function ChordDisplay({ chords, activeChord }: ChordDisplayProps) {
         </div>
     );
 }
+

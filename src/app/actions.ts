@@ -727,6 +727,7 @@ export interface ExtractedSection {
     start_time: number;
     end_time: number;
     created_at: string;
+    chord_adjustments?: Record<string, { action: 'rename' | 'hide', to?: string }>;
 }
 
 export async function saveExtractedSection(videoId: number, start: number, end: number, title: string) {
@@ -750,22 +751,46 @@ export async function saveExtractedSection(videoId: number, start: number, end: 
 export async function getExtractedSections(videoId: number) {
     const user = await currentUser();
     if (!user) return [];
-
     try {
         const result = await sql`
             SELECT * FROM extracted_sections 
-            WHERE user_id = ${user.id} AND video_id = ${videoId}
+            WHERE video_id = ${videoId} 
             ORDER BY created_at DESC
         `;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return result.rows.map((row: any) => ({
-            ...row,
-            created_at: new Date(row.created_at).toISOString(),
-            updated_at: row.updated_at ? new Date(row.updated_at).toISOString() : null
-        })) as ExtractedSection[];
+        return result.rows as ExtractedSection[];
     } catch (err) {
         console.error("Error fetching extracted sections:", err);
         return [];
+    }
+}
+
+export async function updateSectionChordAdjustments(sectionId: number, adjustments: Record<string, { action: 'rename' | 'hide', to?: string }>) {
+    try {
+        await sql`
+            UPDATE extracted_sections 
+            SET chord_adjustments = ${JSON.stringify(adjustments)} 
+            WHERE id = ${sectionId}
+        `;
+        revalidatePath('/session/[id]', 'page');
+        return { success: true };
+    } catch (err) {
+        console.error("Error updating chord adjustments:", err);
+        return { success: false, error: "Failed to update adjustments" };
+    }
+}
+
+export async function resetSectionChordAdjustments(sectionId: number) {
+    try {
+        await sql`
+            UPDATE extracted_sections 
+            SET chord_adjustments = '{}'::jsonb 
+            WHERE id = ${sectionId}
+        `;
+        revalidatePath('/session/[id]', 'page');
+        return { success: true };
+    } catch (err) {
+        console.error("Error resetting chord adjustments:", err);
+        return { success: false, error: "Failed to reset adjustments" };
     }
 }
 
