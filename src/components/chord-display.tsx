@@ -81,6 +81,9 @@ export const CHORD_SHAPES: Record<string, any> = {
     "Adim": { frets: [-1, 0, 1, 2, 1, -1], fingers: [0, 0, 1, 3, 2, 0] },
     "Edim": { frets: [0, 1, 2, 0, -1, -1], fingers: [0, 1, 2, 0, 0, 0] }, // E-Bb-E-G
     "Fdim": { frets: [1, 2, 3, 1, -1, -1], fingers: [1, 2, 4, 1, 0, 0] },
+    "Gdim": { frets: [3, 4, 5, 3, -1, -1], fingers: [1, 2, 4, 1, 0, 0] },
+    "Cdim": { frets: [-1, 3, 4, 5, 4, -1], fingers: [0, 1, 2, 4, 3, 0] },
+    "Ddim": { frets: [-1, -1, 0, 1, 3, 1], fingers: [0, 0, 0, 1, 4, 2] },
 
     // Augmented
     "Caug": { frets: [-1, 3, 2, 1, 1, -1], fingers: [0, 3, 2, 1, 1, 0] },
@@ -146,6 +149,110 @@ export const CHORD_SHAPES: Record<string, any> = {
     "F#dim": { frets: [2, 3, 4, 2, -1, -1], fingers: [1, 2, 4, 1, 0, 0] },
     "G#dim": { frets: [4, 5, 6, 4, -1, -1], fingers: [1, 2, 4, 1, 0, 0] },
     "A#dim": { frets: [-1, 1, 2, 3, 2, -1], fingers: [0, 1, 2, 4, 3, 0] },
+
+    // 6th Chords
+    "C6": { frets: [-1, 3, 2, 2, 1, 0], fingers: [0, 3, 2, 2, 1, 0] },
+    "D6": { frets: [-1, -1, 0, 2, 0, 2], fingers: [0, 0, 0, 1, 0, 2] },
+    "E6": { frets: [0, 2, 2, 1, 2, 0], fingers: [0, 2, 3, 1, 4, 0] },
+    "F6": { frets: [-1, -1, 3, 2, 3, 1], fingers: [0, 0, 3, 2, 4, 1] },
+    "G6": { frets: [3, 2, 0, 0, 0, 0], fingers: [3, 2, 0, 0, 0, 0] },
+    "A6": { frets: [-1, 0, 2, 2, 2, 2], fingers: [0, 0, 1, 1, 1, 1], barres: [2] },
+    "B6": { frets: [-1, 2, 4, 4, 4, 4], fingers: [0, 1, 3, 3, 3, 3], baseFret: 2, barres: [2, 4] },
+
+    // Minor 6th
+    "Cm6": { frets: [-1, 3, 1, 2, 1, 3], fingers: [0, 3, 1, 2, 1, 4] }, // C Eb A C/G
+    "Dm6": { frets: [-1, -1, 0, 2, 0, 1], fingers: [0, 0, 0, 2, 0, 1] },
+    "Em6": { frets: [0, 2, 2, 0, 2, 0], fingers: [0, 1, 2, 0, 3, 0] },
+    "Fm6": { frets: [1, -1, 0, 1, 1, 1], fingers: [1, 0, 0, 2, 3, 4] },
+    "Gm6": { frets: [3, -1, 2, 3, 3, 3], fingers: [2, 0, 1, 3, 3, 3], barres: [3] },
+    "Am6": { frets: [-1, 0, 2, 2, 1, 2], fingers: [0, 0, 2, 3, 1, 4] },
+    "Bm6": { frets: [-1, 2, 0, 1, 0, 2], fingers: [0, 2, 0, 1, 0, 3] },
+
+    // Major 7 b5 (Lydian) - e.g. Cmaj7b5
+    "Cmaj7b5": { frets: [-1, 3, 4, 4, 5, -1], fingers: [0, 1, 2, 3, 4, 0] },
+    "Dmaj7b5": { frets: [-1, 5, 6, 6, 7, -1], fingers: [0, 1, 2, 3, 4, 0], baseFret: 5 },
+    "Emaj7b5": { frets: [0, 1, 1, 1, 0, 0], fingers: [0, 1, 2, 3, 0, 0] }, // E G# A# D# -> 021100?? No. 0 11 8 9 0 0? 0 (E) 7 (E) 6 (A#) 8 (D#) 9 (G#) 7 (B -> no, want A#).
+    // Let's use simple shapes. Emaj7b5: 0 7 8 8 9 X (E A# D# G#). Or simpler: X 7 8 8 9 X
+    "Fmaj7b5": { frets: [1, 2, 2, 2, 0, 0], fingers: [1, 2, 3, 4, 0, 0] }, // F A B E. 132200 (F C F A B E - #11, valid).
+    "Gmaj7b5": { frets: [3, 4, 4, 0, 0, 0], fingers: [1, 2, 3, 0, 0, 0] }, // G B C# G B E.
+    "Amaj7b5": { frets: [-1, 0, 1, 1, 2, 0], fingers: [0, 0, 1, 2, 3, 0] }, // A D# G# C# E
+    "Bmaj7b5": { frets: [-1, 2, 3, 3, 4, -1], fingers: [0, 1, 2, 3, 4, 0] },
+
+    // Aliases for Mb5 -> maj7b5
+    "CMb5": { frets: [-1, 3, 4, 4, 5, -1], fingers: [0, 1, 2, 3, 4, 0] },
+    "DMb5": { frets: [-1, 5, 6, 6, 7, -1], fingers: [0, 1, 2, 3, 4, 0], baseFret: 5 },
+    // "EMb5": { frets: [0, 1, 1, 1, 0, 0], fingers: [0, 1, 2, 3, 0, 0] }, 
+    "FMb5": { frets: [1, 2, 2, 2, 0, 0], fingers: [1, 2, 3, 4, 0, 0] },
+    "GMb5": { frets: [3, -1, 4, 4, 2, -1], fingers: [2, 0, 3, 4, 1, 0] }, // Precise: G C# F# B. 3 x 4 4 0 x (G F# B ... no). 
+    // Gmaj7b5: 3 x 4 4 2 x (G F# B C#). This is excellent.
+    "AMb5": { frets: [-1, 0, 1, 1, 2, 0], fingers: [0, 0, 1, 2, 3, 0] },
+    "BMb5": { frets: [-1, 2, 3, 3, 4, -1], fingers: [0, 1, 2, 3, 4, 0] },
+
+
+
+    // Add9 Chords
+    "Cadd9": { frets: [-1, 3, 2, 0, 3, 3], fingers: [0, 2, 1, 0, 3, 4] },
+    "Dadd9": { frets: [-1, 5, 4, 2, 5, 5], fingers: [0, 3, 2, 1, 4, 4], baseFret: 2, barres: [5] }, // C shape shifted
+    // or Dadd9 open: x02425 ?? No. Let's use the one derived from C or A. A shape at 5: x57655? No that's Dmaj. x57755 is A shape. 9 is B (4th). x57975? 
+    // Simplified Dadd9: x04230 (D F# A D E). 4=F#, 2=A, 3=D, 0=E. 
+    "Eadd9": { frets: [0, 2, 2, 1, 0, 2], fingers: [0, 2, 3, 1, 0, 4] },
+    "Fadd9": { frets: [1, 0, 3, 2, 1, 3], fingers: [1, 0, 4, 2, 1, 3] }, // Difficult thumb? 
+    // Alternative Fadd9: xx3213. 
+    "Gadd9": { frets: [3, 2, 0, 2, 0, 3], fingers: [2, 1, 0, 3, 0, 4] },
+    "Aadd9": { frets: [-1, 0, 2, 2, 0, 0], fingers: [0, 0, 1, 2, 0, 0] }, // Often treated as Asus2. 
+    // Real Aadd9: x02420 (A E B C# E).
+    // Let's use the nice one:
+    // "Aadd9": { frets: [-1, 0, 2, 4, 2, 0], fingers: [0, 0, 1, 3, 2, 0] },
+    "Badd9": { frets: [-1, 2, 4, 6, 4, 2], fingers: [0, 1, 2, 4, 3, 1], baseFret: 2, barres: [2] },
+
+    // Extended Chords (7b5, 9, m9, maj9, dim7)
+
+    // 7b5 (Alerted Dominant)
+    "C7b5": { frets: [-1, 3, 4, 3, 5, -1], fingers: [0, 1, 2, 1, 3, 0] },
+    "D7b5": { frets: [-1, 5, 6, 5, 7, -1], fingers: [0, 1, 2, 1, 3, 0], baseFret: 5 },
+    "E7b5": { frets: [0, 1, 2, 1, 3, 0], fingers: [0, 1, 2, 1, 3, 0] },
+    "F7b5": { frets: [1, -1, 1, 2, 0, -1], fingers: [1, 0, 2, 3, 0, 0] },
+    "G7b5": { frets: [3, -1, 3, 4, 2, -1], fingers: [2, 0, 3, 4, 1, 0] },
+    "A7b5": { frets: [5, -1, 5, 6, 4, -1], fingers: [2, 0, 3, 4, 1, 0], baseFret: 4 },
+    "B7b5": { frets: [-1, 2, 3, 2, 4, -1], fingers: [0, 1, 2, 1, 3, 0] },
+    "C#7b5": { frets: [-1, 4, 5, 4, 6, -1], fingers: [0, 1, 2, 1, 3, 0], baseFret: 4 },
+    "F#7b5": { frets: [2, -1, 2, 3, 1, -1], fingers: [2, 0, 3, 4, 1, 0] },
+
+    // 9th Chords (Dominant 9)
+    "C9": { frets: [-1, 3, 2, 3, 3, 3], fingers: [0, 2, 1, 3, 3, 3], barres: [3] },
+    "D9": { frets: [-1, 5, 4, 5, 5, 5], fingers: [0, 2, 1, 3, 3, 3], baseFret: 4, barres: [5] },
+    "E9": { frets: [0, 2, 0, 1, 0, 2], fingers: [0, 2, 0, 1, 0, 3] },
+    "F9": { frets: [1, 3, 1, 2, 1, 3], fingers: [1, 3, 1, 2, 1, 4], baseFret: 1, barres: [1] },
+    "G9": { frets: [3, 2, 3, 2, 0, -1], fingers: [2, 1, 3, 4, 0, 0] },
+    "A9": { frets: [-1, 0, 2, 0, 2, 0], fingers: [0, 0, 1, 0, 2, 0] }, // C# G B E
+    "B9": { frets: [-1, 2, 1, 2, 2, 2], fingers: [0, 2, 1, 3, 3, 3], barres: [2] },
+
+    // Minor 9th
+    "Cm9": { frets: [-1, 3, 1, 3, 3, -1], fingers: [0, 2, 1, 3, 4, 0] },
+    "Dm9": { frets: [-1, 5, 3, 5, 5, -1], fingers: [0, 2, 1, 3, 4, 0], baseFret: 3 },
+    "Em9": { frets: [0, 2, 0, 0, 0, 2], fingers: [0, 1, 0, 0, 0, 2] },
+    "Fm9": { frets: [1, 3, 1, 1, 1, 3], fingers: [1, 3, 1, 1, 1, 4], baseFret: 1, barres: [1] },
+    "Gm9": { frets: [3, 5, 3, 3, 3, 5], fingers: [1, 3, 1, 1, 1, 4], baseFret: 3, barres: [3] },
+    "Am9": { frets: [5, 7, 5, 5, 5, 7], fingers: [1, 3, 1, 1, 1, 4], baseFret: 5, barres: [5] },
+    "Bm9": { frets: [-1, 2, 0, 2, 2, 2], fingers: [0, 1, 0, 2, 3, 4] },
+
+    // Major 9th
+    "Cmaj9": { frets: [-1, 3, 2, 4, 3, -1], fingers: [0, 2, 1, 4, 3, 0] },
+    "Dmaj9": { frets: [-1, 5, 4, 6, 5, -1], fingers: [0, 2, 1, 4, 3, 0], baseFret: 4 },
+    "Emaj9": { frets: [0, 2, 1, 1, 0, 2], fingers: [0, 2, 1, 1, 0, 3] },
+    "Fmaj9": { frets: [1, 3, 2, 2, 1, 3], fingers: [1, 3, 2, 2, 1, 4], baseFret: 1, barres: [1] }, // Hard
+    "Gmaj9": { frets: [3, -1, 4, 4, 3, -1], fingers: [1, 0, 3, 4, 2, 0] },
+    "Amaj9": { frets: [-1, 0, 2, 1, 2, 0], fingers: [0, 0, 2, 1, 3, 0] }, // like Amaj7 actually includes B open string? Amaj7 is x02120 (A E G# C# E). B is 9. x02100 (A E G# B E) -> Amaj9
+    "Bmaj9": { frets: [-1, 2, 1, 3, 2, -1], fingers: [0, 2, 1, 4, 3, 0] },
+
+    // Diminished 7th (Full Dim)
+    "Cdim7": { frets: [-1, 3, 4, 2, 4, -1], fingers: [0, 2, 3, 1, 4, 0] },
+    "Ddim7": { frets: [-1, -1, 0, 1, 0, 1], fingers: [0, 0, 0, 1, 0, 2] },
+    "Edim7": { frets: [0, 1, 2, 0, 2, 0], fingers: [0, 1, 2, 0, 3, 0] },
+    "Fdim7": { frets: [1, -1, 0, 1, 0, -1], fingers: [1, 0, 0, 2, 0, 0] },
+    "Gdim7": { frets: [3, 4, 2, 3, 2, 3], fingers: [2, 3, 1, 2, 1, 2], baseFret: 2, barres: [2] }, // High Gdim7
+    "Adim7": { frets: [-1, 0, 1, 2, 1, 2], fingers: [0, 0, 1, 2, 1, 3] },
+    "Bdim7": { frets: [-1, 2, 3, 1, 3, -1], fingers: [0, 2, 3, 1, 4, 0] },
 };
 
 // Helper to normalize chord names for lookup

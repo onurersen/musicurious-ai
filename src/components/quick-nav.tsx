@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Music2, Scissors, Network, Disc } from "lucide-react";
+import { Music2, Scissors, Network, Disc, ExternalLink } from "lucide-react";
 
-export function QuickNav() {
+export function QuickNav({ youtubeUrl }: { youtubeUrl?: string | null }) {
     const [activeSection, setActiveSection] = useState<string>('track-section');
 
     const scrollTo = (id: string) => {
@@ -101,6 +101,21 @@ export function QuickNav() {
                     <Network size={12} />
                     Musical Flow
                 </button>
+
+                {youtubeUrl && (
+                    <>
+                        <div className="w-px h-3 bg-white/10 mx-1" />
+                        <a
+                            href={youtubeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all text-red-400 hover:text-red-300 hover:bg-white/10"
+                        >
+                            <ExternalLink size={12} />
+                            Watch on Youtube
+                        </a>
+                    </>
+                )}
             </div>
         </div>
     );

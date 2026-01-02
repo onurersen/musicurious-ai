@@ -44,7 +44,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
         <div className="container mx-auto px-4 py-8">
             {/* Sticky Nav */}
             <div className="sticky top-4 z-[100] mb-6 flex justify-center">
-                <QuickNav />
+                <QuickNav youtubeUrl={video.youtube_url} />
             </div>
 
             <Link href="/videos" className="inline-flex items-center text-muted-foreground hover:text-white mb-8 transition-colors">
@@ -92,20 +92,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
                 </div>
 
                 <div className="flex flex-col gap-8">
-
-                    {/* Original Source Link */}
-                    {video.youtube_url && (
-                        <div className="text-center mt-4">
-                            <a
-                                href={video.youtube_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-primary hover:underline opacity-80 hover:opacity-100"
-                            >
-                                Watch Original on YouTube
-                            </a>
-                        </div>
-                    )}
+                    {/* Original Source Link Removed (moved to Quick Nav) */}
                 </div>
             </div>
         </div>
