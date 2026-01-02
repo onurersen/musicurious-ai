@@ -728,6 +728,7 @@ export interface ExtractedSection {
     end_time: number;
     created_at: string;
     chord_adjustments?: Record<string, { action: 'rename' | 'hide', to?: string }>;
+    added_chords?: string[];
 }
 
 export async function saveExtractedSection(videoId: number, start: number, end: number, title: string) {
@@ -783,7 +784,8 @@ export async function resetSectionChordAdjustments(sectionId: number) {
     try {
         await sql`
             UPDATE extracted_sections 
-            SET chord_adjustments = '{}'::jsonb 
+            SET chord_adjustments = '{}'::jsonb,
+                added_chords = '[]'::jsonb
             WHERE id = ${sectionId}
         `;
         revalidatePath('/session/[id]', 'page');
@@ -791,6 +793,43 @@ export async function resetSectionChordAdjustments(sectionId: number) {
     } catch (err) {
         console.error("Error resetting chord adjustments:", err);
         return { success: false, error: "Failed to reset adjustments" };
+    }
+}
+
+export async function addSectionChord(sectionId: number, chord: string) {
+    try {
+        await sql`
+            UPDATE extracted_sections
+            SET added_chords = COALESCE(added_chords, '[]'::jsonb) || ${JSON.stringify([chord])}::jsonb
+            WHERE id = ${sectionId}
+        `;
+        revalidatePath('/session/[id]', 'page');
+        return { success: true };
+    } catch (err) {
+        console.error("Error adding section chord:", err);
+        return { success: false, error: "Failed to add chord" };
+    }
+}
+
+export async function removeSectionChord(sectionId: number, chord: string) {
+    try {
+        const sectionRes = await sql`SELECT added_chords FROM extracted_sections WHERE id = ${sectionId}`;
+        const current = (sectionRes.rows[0]?.added_chords || []) as string[];
+
+        const index = current.indexOf(chord);
+        if (index > -1) {
+            current.splice(index, 1);
+            await sql`
+                UPDATE extracted_sections
+                SET added_chords = ${JSON.stringify(current)}::jsonb
+                WHERE id = ${sectionId}
+            `;
+            revalidatePath('/session/[id]', 'page');
+        }
+        return { success: true };
+    } catch (err) {
+        console.error("Error removing section chord:", err);
+        return { success: false, error: "Failed to remove chord" };
     }
 }
 

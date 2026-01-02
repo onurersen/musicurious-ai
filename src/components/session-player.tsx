@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { Play, Pause, Loader2, Volume2, Music, Music2, RotateCcw, Repeat, Scissors, Trash2, Pencil, Save, X } from "lucide-react";
 import * as Tone from "tone";
-import { saveJamSettings, type UserJamSettings, saveExtractedSection, getExtractedSections, deleteExtractedSection, renameExtractedSection, updateSectionChordAdjustments, resetSectionChordAdjustments, type ExtractedSection } from "@/app/actions";
+import { saveJamSettings, type UserJamSettings, saveExtractedSection, getExtractedSections, deleteExtractedSection, renameExtractedSection, updateSectionChordAdjustments, resetSectionChordAdjustments, addSectionChord, removeSectionChord, type ExtractedSection } from "@/app/actions";
 import { ChordDisplay } from "./chord-display";
 import { ConfirmationModal } from "@/components/confirmation-modal";
 
@@ -94,21 +94,39 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
     const handleChordHide = async (original: string) => {
         if (!activeExtractedSection) return;
 
-        const currentAdjustments = activeExtractedSection.chord_adjustments || {};
-        const newAdjustments = {
-            ...currentAdjustments,
-            [original]: { action: 'hide' }
-        } as Record<string, { action: 'rename' | 'hide', to?: string }>;
+        // Check if it's an added chord
+        const addedChords = activeExtractedSection.added_chords || [];
+        if (addedChords.includes(original)) {
+            // Remove from added_chords
+            const newAdded = addedChords.filter(c => c !== original);
 
-        // Optimistic update
-        const updatedSections = extractedSections.map(s =>
-            s.id === activeExtractedSection.id
-                ? { ...s, chord_adjustments: newAdjustments }
-                : s
-        );
-        setExtractedSections(updatedSections);
+            // Optimistic update
+            const updatedSections = extractedSections.map(s =>
+                s.id === activeExtractedSection.id
+                    ? { ...s, added_chords: newAdded }
+                    : s
+            );
+            setExtractedSections(updatedSections);
 
-        await updateSectionChordAdjustments(activeExtractedSection.id, newAdjustments);
+            await removeSectionChord(activeExtractedSection.id, original);
+        } else {
+            // It's a detected chord, use Hide logic
+            const currentAdjustments = activeExtractedSection.chord_adjustments || {};
+            const newAdjustments = {
+                ...currentAdjustments,
+                [original]: { action: 'hide' }
+            } as Record<string, { action: 'rename' | 'hide', to?: string }>;
+
+            // Optimistic update
+            const updatedSections = extractedSections.map(s =>
+                s.id === activeExtractedSection.id
+                    ? { ...s, chord_adjustments: newAdjustments }
+                    : s
+            );
+            setExtractedSections(updatedSections);
+
+            await updateSectionChordAdjustments(activeExtractedSection.id, newAdjustments);
+        }
     };
 
     const handleResetChords = () => {
@@ -118,12 +136,29 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
         }
     };
 
+    const handleChordAdd = async (chord: string) => {
+        if (!activeExtractedSection) return;
+
+        // Optimistic update
+        const currentAdded = activeExtractedSection.added_chords || [];
+        const newAdded = [...currentAdded, chord];
+
+        const updatedSections = extractedSections.map(s =>
+            s.id === activeExtractedSection.id
+                ? { ...s, added_chords: newAdded }
+                : s
+        );
+        setExtractedSections(updatedSections);
+
+        await addSectionChord(activeExtractedSection.id, chord);
+    };
+
     const confirmResetChords = async () => {
         if (currentSectionIdForReset) {
             // Optimistic update
             const updatedSections = extractedSections.map(s =>
                 s.id === currentSectionIdForReset
-                    ? { ...s, chord_adjustments: {} }
+                    ? { ...s, chord_adjustments: {}, added_chords: [] }
                     : s
             );
             setExtractedSections(updatedSections);
@@ -991,23 +1026,22 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
 
                             <ChordDisplay
                                 chords={
-                                    Array.from(new Set(
-                                        chordsTimeline
+                                    Array.from(new Set([
+                                        ...chordsTimeline
                                             .filter(c => c.end > loopStart && c.start < loopEnd) // Within loop
                                             .filter(c => (c.end - c.start) > 2) // Filter noise
                                             .map(c => c.chord)
                                             // Apply filtering/renaming for DISPLAY list
                                             .filter(chord => {
-                                                if (!activeExtractedSection?.chord_adjustments) return true;
-                                                const adj = activeExtractedSection.chord_adjustments[chord];
-                                                return !(adj && adj.action === 'hide');
+                                                const adj = activeExtractedSection?.chord_adjustments?.[chord];
+                                                return !adj || adj.action !== 'hide';
                                             })
                                             .map(chord => {
-                                                if (!activeExtractedSection?.chord_adjustments) return chord;
-                                                const adj = activeExtractedSection.chord_adjustments[chord];
-                                                return (adj && adj.action === 'rename' && adj.to) ? adj.to : chord;
-                                            })
-                                    ))
+                                                const adj = activeExtractedSection?.chord_adjustments?.[chord];
+                                                return (adj?.action === 'rename' && adj.to) ? adj.to : chord;
+                                            }),
+                                        ...(activeExtractedSection?.added_chords || [])
+                                    ]))
                                 }
                                 activeChord={
                                     (() => {
@@ -1027,10 +1061,11 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                                 onRename={handleChordRename}
                                 onHide={handleChordHide}
                                 onReset={
-                                    (activeExtractedSection?.chord_adjustments && Object.keys(activeExtractedSection.chord_adjustments).length > 0)
+                                    ((activeExtractedSection?.chord_adjustments && Object.keys(activeExtractedSection.chord_adjustments).length > 0) || (activeExtractedSection?.added_chords && activeExtractedSection.added_chords.length > 0))
                                         ? handleResetChords
                                         : undefined
                                 }
+                                onAdd={handleChordAdd}
                             />
                         </div>
                     ) : (

@@ -90,7 +90,7 @@ const nodeTypes = {
 // Update Props
 interface MusicalFlowCanvasProps {
     videoId: number;
-    extractedSections?: { id: number; title: string; start_time: number; end_time: number; chord_adjustments?: Record<string, { action: 'rename' | 'hide', to?: string }> }[];
+    extractedSections?: { id: number; title: string; start_time: number; end_time: number; chord_adjustments?: Record<string, { action: 'rename' | 'hide', to?: string }>; added_chords?: string[] }[];
     jamTitle: string;
     chordsTimeline: { chord: string; start: number; end: number }[];
 }
@@ -135,7 +135,7 @@ export function MusicalFlowCanvas({ videoId, extractedSections = [], jamTitle, c
 function CanvasInternal({ videoId, initialState, extractedSections, jamTitle, chordsTimeline }: {
     videoId: number,
     initialState: ReactFlowJsonObject | null,
-    extractedSections: { id: number; title: string; start_time: number; end_time: number; chord_adjustments?: Record<string, { action: 'rename' | 'hide', to?: string }> }[],
+    extractedSections: { id: number; title: string; start_time: number; end_time: number; chord_adjustments?: Record<string, { action: 'rename' | 'hide', to?: string }>; added_chords?: string[] }[],
     jamTitle: string,
     chordsTimeline: { chord: string; start: number; end: number }[]
 }) {
@@ -313,7 +313,7 @@ function CanvasInternal({ videoId, initialState, extractedSections, jamTitle, ch
 
                     if (drawFret > 0 && drawFret <= numFrets) {
                         const yPos = originY + (drawFret * fretSpacing) - (fretSpacing / 2);
-                        doc.setFillColor(0);
+                        doc.setFillColor(0, 0, 0);
                         doc.circle(xPos, yPos, dotRadius, 'F');
                     }
                 }
@@ -405,6 +405,11 @@ function CanvasInternal({ videoId, initialState, extractedSections, jamTitle, ch
                     .filter(c => c.end > section.start_time && c.start < section.end_time)
                     .filter(c => (c.end - c.start) > 2)
                     .map(c => c.chord);
+
+                // Merge manually added chords
+                if (section.added_chords) {
+                    sectionChords.push(...section.added_chords);
+                }
 
                 // Adjustments
                 const adjustments = section.chord_adjustments || {};

@@ -194,10 +194,25 @@ interface ChordDisplayProps {
     onRename?: (original: string, newName: string) => void;
     onHide?: (original: string) => void;
     onReset?: () => void;
+    onAdd?: (chord: string) => void;
 }
 
-export function ChordDisplay({ chords, activeChord, isEditable = false, onRename, onHide, onReset }: ChordDisplayProps) {
-    if (chords.length === 0) return null;
+export function ChordDisplay({ chords, activeChord, isEditable = false, onRename, onHide, onReset, onAdd }: ChordDisplayProps) {
+    const [isAdding, setIsAdding] = React.useState(false);
+    const [newChordName, setNewChordName] = React.useState("");
+
+
+    if (chords.length === 0 && !isEditable) return null;
+
+    const handleAddSubmit = () => {
+        if (newChordName.trim()) {
+            onAdd?.(newChordName.trim());
+            setNewChordName("");
+            setIsAdding(false);
+        } else {
+            setIsAdding(false);
+        }
+    };
 
     return (
         <div className="flex flex-col gap-4 w-full p-6 bg-white/5 border border-white/5 rounded-xl">
@@ -299,8 +314,43 @@ export function ChordDisplay({ chords, activeChord, isEditable = false, onRename
                         </div>
                     );
                 })}
+
+                {/* Add Chord Button */}
+                {isEditable && onAdd && (
+                    <div className="flex flex-col items-center gap-2 justify-end pb-[26px]">
+                        {isAdding ? (
+                            <div className="w-[80px] h-[96px] flex flex-col items-center justify-center bg-white/5 border border-white/10 rounded-lg p-2 gap-2 animate-in fade-in zoom-in-95 duration-200">
+                                <input
+                                    autoFocus
+                                    className="w-full px-1 py-1 text-center bg-black/50 border border-white/20 rounded text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-purple-500"
+                                    placeholder="Name"
+                                    value={newChordName}
+                                    onChange={e => setNewChordName(e.target.value)}
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter') handleAddSubmit();
+                                        if (e.key === 'Escape') setIsAdding(false);
+                                    }}
+                                    onBlur={handleAddSubmit}
+                                />
+                                <span className="text-[10px] text-white/40">Enter</span>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => setIsAdding(true)}
+                                className="w-[80px] h-[96px] flex flex-col items-center justify-center bg-white/5 border border-dashed border-white/20 hover:border-purple-500/50 hover:bg-purple-500/10 rounded-lg transition-all group"
+                                title="Add Chord"
+                            >
+                                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </div>
+                                <span className="text-[10px] font-bold text-white/40 mt-2 group-hover:text-purple-400">Add</span>
+                            </button>
+                        )}
+                        <div className="h-[28px]"></div>{/* Spacer to match label height of other chords roughly */}
+                    </div>
+                )}
             </div>
-            {chords.length === 0 && (
+            {chords.length === 0 && !isEditable && (
                 <p className="text-muted-foreground text-sm italic">No significant chords detected in this section.</p>
             )}
         </div>
