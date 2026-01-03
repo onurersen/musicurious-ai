@@ -2,8 +2,7 @@ import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
 import { SignedIn, SignedOut, SignInButton, SignUpButton } from '@clerk/nextjs';
 import { currentUser } from '@clerk/nextjs/server';
-import { sql } from '@vercel/postgres';
-import { trackUserActivity } from '@/app/actions';
+import { syncUser } from '@/app/actions';
 
 export async function Navbar() {
     const user = await currentUser();
@@ -11,24 +10,16 @@ export async function Navbar() {
     let isAdmin = false;
 
     if (user) {
-        // Track activity on every navigation
-        await trackUserActivity(user.id);
+        // Sync user (upsert) and fetch roles
+        // This ensures the user exists in DB as soon as they visit any page
+        const userData = await syncUser();
 
-        try {
-            const email = user.emailAddresses[0]?.emailAddress;
-            if (email === 'onurersen@gmail.com') {
-                isAdmin = true;
-                userStatus = 'approved';
-            } else {
-                const res = await sql`SELECT role, status FROM users WHERE id = ${user.id}`;
-                isAdmin = res.rows[0]?.role === 'admin';
-                // If status is undefined (e.g. visiting first time), default to pending unless it's the admin email fallback
-                userStatus = res.rows[0]?.status || 'pending';
-                if (isAdmin) userStatus = 'approved'; // Double check
-            }
-        } catch (e) {
-            console.error("Failed to fetch user role for navbar", e);
-            userStatus = 'pending'; // Fail safe
+        if (userData) {
+            isAdmin = userData.role === 'admin';
+            userStatus = userData.status || 'pending';
+        } else {
+            // Fallback if sync failed but user is valid (shouldnt happen)
+            userStatus = 'pending';
         }
     }
 
