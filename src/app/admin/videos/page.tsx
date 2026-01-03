@@ -6,7 +6,7 @@ export default async function AdminVideosPage() {
     const admin = await isAdmin();
     if (!admin) redirect('/');
 
-    const videos = await getVideos();
+    const videos = await getVideos('all');
 
     const isDev = process.env.NODE_ENV === 'development';
 

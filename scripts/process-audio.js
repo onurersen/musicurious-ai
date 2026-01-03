@@ -251,8 +251,14 @@ async function run() {
                 try {
                     await sql`UPDATE videos SET processing_progress = 100 WHERE id = ${videoId}`;
                     log("Updated progress to 100.");
+
+                    // Cleanup source file
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                        log(`Cleaned up source file: ${filePath}`);
+                    }
                 } catch (e) {
-                    log(`Error updating progress: ${e}`);
+                    log(`Error finalizing/cleaning up: ${e}`);
                 }
 
                 // Exit the process after mix generation and progress update

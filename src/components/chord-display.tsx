@@ -297,6 +297,7 @@ export const getChordShape = (name: string) => {
 interface ChordDisplayProps {
     chords: string[];
     activeChord?: string | null;
+    nextChord?: string | null;
     isEditable?: boolean;
     onRename?: (original: string, newName: string) => void;
     onHide?: (original: string) => void;
@@ -304,7 +305,7 @@ interface ChordDisplayProps {
     onAdd?: (chord: string) => void;
 }
 
-export function ChordDisplay({ chords, activeChord, isEditable = false, onRename, onHide, onReset, onAdd }: ChordDisplayProps) {
+export function ChordDisplay({ chords, activeChord, nextChord, isEditable = false, onRename, onHide, onReset, onAdd }: ChordDisplayProps) {
     const [isAdding, setIsAdding] = React.useState(false);
     const [newChordName, setNewChordName] = React.useState("");
 
@@ -342,11 +343,16 @@ export function ChordDisplay({ chords, activeChord, isEditable = false, onRename
                 {chords.map((chordName, idx) => {
                     const shape = getChordShape(chordName);
                     const isActive = chordName === activeChord;
+                    const isNext = chordName === nextChord && !isActive; // Active takes precedence
 
                     return (
                         <div key={`${chordName}-${idx}`} className={`flex flex-col items-center gap-2 group relative z-0 hover:z-50 transition-transform duration-300 ${isActive ? 'scale-110' : ''}`}>
                             {/* Chord Diagram with Hover Effect */}
-                            <div className={`bg-white rounded-lg p-2 shadow-sm transition-all duration-300 relative ${isActive ? 'ring-4 ring-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.5)]' : ''}`}>
+                            <div className={`
+                                bg-white rounded-lg p-2 shadow-sm transition-all duration-300 relative 
+                                ${isActive ? 'ring-4 ring-green-500 shadow-[0_0_20px_rgba(34,197,94,0.6)]' : ''}
+                                ${isNext ? 'ring-4 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.5)]' : ''}
+                            `}>
 
                                 {isEditable && (
                                     <button
@@ -414,7 +420,15 @@ export function ChordDisplay({ chords, activeChord, isEditable = false, onRename
                                     }}
                                 />
                             ) : (
-                                <div className={`px-3 py-1 rounded-full border text-sm font-bold transition-colors ${isActive ? 'bg-purple-500 border-purple-500 text-white' : 'bg-white/10 border-white/10 text-white'}`}>
+                                <div className={`
+                                    px-3 py-1 rounded-full border text-sm font-bold transition-colors
+                                    ${isActive
+                                        ? 'bg-green-500 border-green-500 text-white'
+                                        : isNext
+                                            ? 'bg-yellow-400 border-yellow-400 text-black'
+                                            : 'bg-white/10 border-white/10 text-white'
+                                    }
+                                `}>
                                     {chordName}
                                 </div>
                             )}
