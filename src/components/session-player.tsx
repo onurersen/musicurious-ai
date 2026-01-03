@@ -706,6 +706,67 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
         return <div className="text-white text-center py-12">No audio tracks found for this session.</div>;
     }
 
+    // --- Chord Visualization Logic ---
+
+    // 1. Helper to resolve renaming/hiding
+    const deriveChordName = useCallback((rawName: string) => {
+        if (!activeExtractedSection?.chord_adjustments) return rawName;
+        const adj = activeExtractedSection.chord_adjustments[rawName];
+        if (adj?.action === 'hide') return null;
+        if (adj?.action === 'rename' && adj.to) return adj.to;
+        return rawName;
+    }, [activeExtractedSection]);
+
+    // 2. Filter timeline to current loop
+    const loopSegments = useMemo(() => {
+        if (!isLoopActive || loopEnd <= loopStart) return [];
+        // Use same filter criteria as display: > 2s duration to avoid flickering noise
+        return chordsTimeline
+            .filter(c => c.end > loopStart && c.start < loopEnd && (c.end - c.start) > 2)
+            .sort((a, b) => a.start - b.start);
+    }, [chordsTimeline, isLoopActive, loopStart, loopEnd]);
+
+    // 3. Calculate Active and Next chords
+    const { activeChordName, nextChordName } = useMemo(() => {
+        if (loopSegments.length === 0) return { activeChordName: null, nextChordName: null };
+
+        // Find strictly current segment
+        const currentIndex = loopSegments.findIndex(c => currentTime >= c.start && currentTime < c.end);
+
+        let currentRaw = null;
+        let nextRaw = null;
+
+        if (currentIndex !== -1) {
+            currentRaw = loopSegments[currentIndex].chord;
+            // Wrap around for next
+            const nextIndex = (currentIndex + 1) % loopSegments.length;
+            nextRaw = loopSegments[nextIndex].chord;
+        } else {
+            // We are "between" segments or outside range (but inside loop start/end)
+            // Find the *first* segment that starts after current time
+            const upcoming = loopSegments.find(c => c.start > currentTime);
+            if (upcoming) {
+                nextRaw = upcoming.chord;
+            } else {
+                // If no upcoming, we must be at the end, so wrap to start
+                nextRaw = loopSegments[0].chord;
+            }
+        }
+
+        return {
+            activeChordName: currentRaw ? deriveChordName(currentRaw) : null,
+            nextChordName: nextRaw ? deriveChordName(nextRaw) : null
+        };
+    }, [loopSegments, currentTime, deriveChordName]);
+
+    // 4. Unique set for the "Detected Chords" library view
+    const displayChords = useMemo(() => {
+        const timelineList = loopSegments.map(s => deriveChordName(s.chord)).filter(Boolean) as string[];
+        const addedList = activeExtractedSection?.added_chords || [];
+        // Set removes duplicates
+        return Array.from(new Set([...timelineList, ...addedList]));
+    }, [loopSegments, activeExtractedSection, deriveChordName]);
+
     return (
         <div className="flex flex-col gap-8 w-full">
             {/* Player Main Area - Increased height for extra controls */}
@@ -1025,38 +1086,9 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                             {/* Reset Button moved to ChordDisplay */}
 
                             <ChordDisplay
-                                chords={
-                                    Array.from(new Set([
-                                        ...chordsTimeline
-                                            .filter(c => c.end > loopStart && c.start < loopEnd) // Within loop
-                                            .filter(c => (c.end - c.start) > 2) // Filter noise
-                                            .map(c => c.chord)
-                                            // Apply filtering/renaming for DISPLAY list
-                                            .filter(chord => {
-                                                const adj = activeExtractedSection?.chord_adjustments?.[chord];
-                                                return !adj || adj.action !== 'hide';
-                                            })
-                                            .map(chord => {
-                                                const adj = activeExtractedSection?.chord_adjustments?.[chord];
-                                                return (adj?.action === 'rename' && adj.to) ? adj.to : chord;
-                                            }),
-                                        ...(activeExtractedSection?.added_chords || [])
-                                    ]))
-                                }
-                                activeChord={
-                                    (() => {
-                                        const rawChord = chordsTimeline.find(c => currentTime >= c.start && currentTime < c.end)?.chord;
-                                        if (!rawChord) return null;
-
-                                        if (!activeExtractedSection?.chord_adjustments) return rawChord;
-
-                                        const adj = activeExtractedSection.chord_adjustments[rawChord];
-                                        if (adj?.action === 'hide') return null; // Hidden chord shouldn't highlight anything? Or just don't show info?
-                                        if (adj?.action === 'rename' && adj.to) return adj.to;
-
-                                        return rawChord;
-                                    })()
-                                }
+                                chords={displayChords}
+                                activeChord={activeChordName}
+                                nextChord={nextChordName}
                                 isEditable={!!activeExtractedSection}
                                 onRename={handleChordRename}
                                 onHide={handleChordHide}
