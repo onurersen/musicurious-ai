@@ -148,6 +148,28 @@ function CanvasInternal({ videoId, initialState, extractedSections, jamTitle, ch
     // Auto-save debounce
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+    // Sync Node Labels with Renamed Sections
+    useEffect(() => {
+        setNodes((nds) =>
+            nds.map((node) => {
+                if (node.data.extractedSectionId) {
+                    const section = extractedSections.find(s => s.id === Number(node.data.extractedSectionId));
+                    // Only update if label differs (renamed)
+                    if (section && section.title !== node.data.label) {
+                        return {
+                            ...node,
+                            data: {
+                                ...node.data,
+                                label: section.title
+                            }
+                        };
+                    }
+                }
+                return node;
+            })
+        );
+    }, [extractedSections, setNodes]);
+
     // Note Modal
     const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
     const [editingNodeId, setEditingNodeId] = useState<string | null>(null);

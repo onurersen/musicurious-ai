@@ -950,6 +950,7 @@ export async function renameExtractedSection(sectionId: number, newTitle: string
         if (result.rowCount === 0) {
             return { success: false, error: "Section not found or unauthorized" };
         }
+        revalidatePath('/session/[id]', 'page');
         return { success: true };
     } catch (err) {
         console.error("Error renaming extracted section:", err);
