@@ -627,6 +627,18 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isLoopActive]); // Only trigger when active state changes to true
 
+    // Listen for External Pause Events (e.g. from QuickNav)
+    useEffect(() => {
+        const handlePause = () => {
+            if (playerRef.current && isPlaying) {
+                playerRef.current.stop();
+                setIsPlaying(false);
+            }
+        };
+        window.addEventListener('musicurious:pause-playback', handlePause);
+        return () => window.removeEventListener('musicurious:pause-playback', handlePause);
+    }, [isPlaying]);
+
 
 
     const drawWaveform = (buffer: AudioBuffer) => {
@@ -681,8 +693,8 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
         const progress = Math.max(0, Math.min(1, x / rect.width));
         const seekTime = duration * progress;
 
-        // Auto-disable loop if clicking outside range
-        if (isLoopActive && (seekTime < loopStart || seekTime > loopEnd)) {
+        // Always disable loop on manual seek
+        if (isLoopActive) {
             setIsLoopActive(false);
             playerRef.current.loop = false;
         }
