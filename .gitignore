@@ -50,3 +50,4 @@ public/stems/
 __pycache__/
 *.py[cod]
 *.mp3
+demucs-debug.log
