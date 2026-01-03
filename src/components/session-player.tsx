@@ -946,7 +946,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
 
                                     <div className="space-y-1">
                                         <div className={`font-medium text-sm truncate capitalize ${selectedTrack?.name === track.name ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
-                                            {track.name.replace('.mp3', '').replace(/_/g, ' ')}
+                                            {track.name.replace('other', 'Guitar & Other').replace('.mp3', '').replace(/_/g, ' ')}
                                         </div>
                                         <div className="text-[10px] text-muted-foreground uppercase">
                                             Instrument

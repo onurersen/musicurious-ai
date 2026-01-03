@@ -684,6 +684,28 @@ export async function cancelProcessing(videoId: number) {
     }
 }
 
+export async function deleteJam(videoId: number) {
+    const admin = await isAdmin();
+    if (!admin) return { success: false, error: "Forbidden" };
+
+    try {
+        // 1. Clean up physical files (blobs and local) using removeStems
+        // We ignore the DB side-effects of removeStems (resetting status) since we are deleting the row anyway
+        console.log(`[deleteJam] Cleaning up files for video ${videoId}...`);
+        await removeStems(videoId);
+
+        // 2. Delete the video Record
+        // Cascading deletes will handle: stems, user_jam_settings, extracted_sections
+        await sql`DELETE FROM videos WHERE id = ${videoId}`;
+
+        revalidatePath('/admin/videos');
+        return { success: true };
+    } catch (err) {
+        console.error("Error deleting jam:", err);
+        return { success: false, error: "Deletion failed" };
+    }
+}
+
 export interface UserJamSettings {
     pitch: number;
     tempo: number;

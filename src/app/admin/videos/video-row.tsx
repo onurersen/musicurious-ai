@@ -1,10 +1,11 @@
 "use client";
 
-import { updateVideoApproval, getVideoStatus, cancelProcessing, type Video } from "@/app/actions";
+import { updateVideoApproval, getVideoStatus, cancelProcessing, deleteJam, type Video } from "@/app/actions";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, X, Upload, Trash2, CheckCircle, Play } from "lucide-react";
 import { createPortal } from "react-dom";
+import { LoadingSpinner } from "@/components/loading-spinner";
 
 export function VideoRow({ video, isDev }: { video: Video, isDev: boolean }) {
     const [loading, setLoading] = useState(false);
@@ -14,6 +15,7 @@ export function VideoRow({ video, isDev }: { video: Video, isDev: boolean }) {
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [showTransferConfirm, setShowTransferConfirm] = useState(false);
     const [showTransferSuccess, setShowTransferSuccess] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [progress, setProgress] = useState(video.processing_progress || 0);
     const [procStatus, setProcStatus] = useState<string>(video.processing_status || 'pending');
     const router = useRouter();
@@ -218,6 +220,75 @@ export function VideoRow({ video, isDev }: { video: Video, isDev: boolean }) {
                     >
                         Reject
                     </button>
+                    {(video.approval_status === 'approved' && (procStatus === 'pending' || procStatus === 'failed')) && (
+                        <button
+                            onClick={() => setShowDeleteConfirm(true)}
+                            disabled={loading}
+                            className="px-3 py-1.5 rounded-lg bg-red-600/20 hover:bg-red-600 hover:text-white border border-red-600/30 text-red-400 text-xs font-semibold disabled:opacity-30 disabled:pointer-events-none transition-all"
+                            title="Remove Jam"
+                        >
+                            <Trash2 size={14} className="mr-1.5 inline" />
+                            Remove
+                        </button>
+                    )}
+
+                    {/* Delete Confirmation Modal */}
+                    {showDeleteConfirm && typeof document !== 'undefined' && createPortal(
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                            <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl max-w-sm w-full p-6 relative animate-in zoom-in-95 duration-200 text-left">
+                                <div className="absolute top-4 right-4">
+                                    <button
+                                        onClick={() => setShowDeleteConfirm(false)}
+                                        className="text-muted-foreground hover:text-white transition-colors"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                </div>
+
+                                <div className="flex flex-col items-center text-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-500">
+                                        <Trash2 size={24} />
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-xl font-bold text-white mb-2">Remove Jam?</h3>
+                                        <p className="text-muted-foreground text-sm">
+                                            This will permanently delete this jam and all associated data. This action cannot be undone.
+                                        </p>
+                                    </div>
+
+                                    <div className="flex gap-3 w-full mt-2">
+                                        <button
+                                            onClick={() => setShowDeleteConfirm(false)}
+                                            className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-colors border border-white/5"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                setShowDeleteConfirm(false); // Close modal first to show full screen loader
+                                                setLoading(true);
+                                                try {
+                                                    const res = await deleteJam(video.id);
+                                                    if (!res.success) throw new Error(res.error);
+                                                    router.refresh();
+                                                } catch (e: any) {
+                                                    alert("Deletion failed: " + e.message);
+                                                } finally {
+                                                    setLoading(false);
+                                                }
+                                            }}
+                                            disabled={loading}
+                                            className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition-colors shadow-lg shadow-red-500/20"
+                                        >
+                                            Yes, Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>,
+                        document.body
+                    )}
 
                     {/* Reject Confirmation Modal */}
                     {showRejectConfirm && typeof document !== 'undefined' && createPortal(
@@ -364,11 +435,14 @@ export function VideoRow({ video, isDev }: { video: Video, isDev: boolean }) {
                                                 Cancel
                                             </button>
                                             <button
-                                                onClick={handleRemoveStems}
+                                                onClick={async () => {
+                                                    setShowRemoveStemsConfirm(false);
+                                                    await handleRemoveStems();
+                                                }}
                                                 disabled={loading}
                                                 className="flex-1 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-medium transition-colors shadow-lg shadow-orange-500/20"
                                             >
-                                                {loading ? "Removing..." : "Yes, Remove"}
+                                                Yes, Remove
                                             </button>
                                         </div>
                                     </div>
@@ -518,6 +592,19 @@ export function VideoRow({ video, isDev }: { video: Video, isDev: boolean }) {
                     </div>
                 </td>
             )}
+            {/* Global Loading Overlay for this Video Action */}
+            {loading && typeof document !== 'undefined' && createPortal(
+                <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+                    <LoadingSpinner size="xl" />
+                    <div className="flex flex-col items-center gap-2 mt-6">
+                        <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary animate-pulse">
+                            Processing...
+                        </h3>
+                        <p className="text-muted-foreground text-sm">Please wait while we update the jam</p>
+                    </div>
+                </div>,
+                document.body
+            )}
         </tr >
     );
 }
@@ -549,17 +636,23 @@ function ProcessingUploadButton({ videoId, onUploadStart }: { videoId: number, o
             });
 
             if (!res.ok) {
-                const text = await res.text();
-                throw new Error(text || 'Upload failed');
+                const data = await res.json().catch(() => null);
+                const errorMsg = data?.error || res.statusText || 'Upload failed';
+                if (data?.debug) {
+                    console.error("Upload Debug Info:", data.debug);
+                    alert(`Failed: ${errorMsg}\n\nDEBUG INFO:\nExpected: ${data.debug.expectedBytes}\nSee console for more.`);
+                } else {
+                    alert(`Failed: ${errorMsg}`);
+                }
+                return; // Stop execution, error already handled
             }
 
             // Immediately refresh to show processing state
             onUploadStart();
-            // alert("Processing started!"); // Removed alert as polling will likely show it
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         } catch (err: any) {
             console.error("Upload error:", err);
-            alert(`Failed to start processing: ${err.message}`);
+            alert(`Network/Client Error: ${err.message}`);
         } finally {
             setUploading(false);
         }
