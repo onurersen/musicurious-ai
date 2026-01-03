@@ -109,6 +109,7 @@ export function QuickNav({ youtubeUrl }: { youtubeUrl?: string | null }) {
                             href={youtubeUrl}
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={() => typeof window !== 'undefined' && window.dispatchEvent(new CustomEvent('musicurious:pause-playback'))}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all text-red-400 hover:text-red-300 hover:bg-white/10"
                         >
                             <ExternalLink size={12} />

@@ -51,7 +51,7 @@ export default function VideoGallery({ videos, isAdmin }: { videos: Video[], isA
                         </div>
                         <input
                             type="text"
-                            placeholder="Search videos..."
+                            placeholder="Search Your Jams..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="block w-full pl-10 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-xl leading-5 bg-opacity-20 text-white placeholder-gray-400 focus:outline-none focus:bg-white/10 focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-all duration-300"

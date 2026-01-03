@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Search, Plus, Check } from "lucide-react";
 import { searchJams, saveJam } from "@/app/actions";
 import { useRouter } from "next/navigation";
@@ -22,6 +22,23 @@ export default function JamSearch() {
     const [isSearching, setIsSearching] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     const router = useRouter();
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // Click Outside Listener
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setIsExpanded(false);
+            }
+        }
+
+        if (isExpanded) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isExpanded]);
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,7 +69,7 @@ export default function JamSearch() {
     };
 
     return (
-        <div className="w-full max-w-2xl mx-auto mb-8">
+        <div ref={containerRef} className="w-full max-w-2xl mx-auto mb-8">
             <form onSubmit={handleSearch} className="relative">
                 <input
                     type="text"
