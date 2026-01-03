@@ -107,3 +107,22 @@ export async function createMusicalFlowCanvasesTable() {
   }
 }
 
+
+export async function createSavedJamsTable() {
+  try {
+    const result = await sql`
+        CREATE TABLE IF NOT EXISTS saved_jams (
+          id SERIAL PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          video_id INTEGER NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(user_id, video_id)
+        );
+      `;
+    console.log(`Created "saved_jams" table`);
+    return result;
+  } catch (error) {
+    console.error('Error creating "saved_jams" table:', error);
+    throw error;
+  }
+}

@@ -101,6 +101,7 @@ export interface Video {
     key_scale?: string;
     time_signature?: string;
     chords?: { chord: string; start: number; end: number }[];
+    is_saved?: boolean;
 }
 
 export interface User {
@@ -271,7 +272,60 @@ export async function createVideoRecord(url: string, title?: string) {
     }
 }
 
-export async function getVideos(): Promise<Video[]> {
+export async function searchJams(query: string): Promise<Video[]> {
+    const user = await currentUser();
+    if (!user) return [];
+
+    const searchTerm = `%${query}%`;
+
+    try {
+        const result = await sql`
+            SELECT v.*, u.first_name, u.last_name 
+            FROM videos v
+            JOIN users u ON v.user_id = u.id
+            WHERE 
+                v.approval_status = 'approved' AND
+                v.user_id != ${user.id} AND
+                (v.title ILIKE ${searchTerm} OR u.first_name ILIKE ${searchTerm} OR u.last_name ILIKE ${searchTerm})
+            LIMIT 20
+        `;
+
+        // Check which ones are already saved
+        const savedRes = await sql`SELECT video_id FROM saved_jams WHERE user_id = ${user.id}`;
+        const savedIds = new Set(savedRes.rows.map(r => r.video_id));
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return result.rows.map((row: any) => ({
+            ...row,
+            created_at: new Date(row.created_at).toISOString(),
+            is_saved: savedIds.has(row.id)
+        })) as Video[];
+
+    } catch (err) {
+        console.error("Error searching jams:", err);
+        return [];
+    }
+}
+
+export async function saveJam(videoId: number) {
+    const user = await currentUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    try {
+        await sql`
+            INSERT INTO saved_jams (user_id, video_id)
+            VALUES (${user.id}, ${videoId})
+            ON CONFLICT (user_id, video_id) DO NOTHING
+        `;
+        revalidatePath('/videos');
+        return { success: true };
+    } catch (err) {
+        console.error("Error saving jam:", err);
+        return { success: false, error: "Failed to save jam" };
+    }
+}
+
+export async function getVideos(scope: 'personal' | 'all' = 'personal'): Promise<Video[]> {
     const user = await currentUser();
     if (!user) return [];
 
@@ -288,7 +342,7 @@ export async function getVideos(): Promise<Video[]> {
         }
 
         let rows;
-        if (role === 'admin') {
+        if (role === 'admin' && scope === 'all') {
             const result = await sql`
                 SELECT v.*, u.email as user_email, u.first_name, u.last_name 
                 FROM videos v 
@@ -297,10 +351,18 @@ export async function getVideos(): Promise<Video[]> {
             `;
             rows = result.rows;
         } else {
+            // Personal Scope (Everyone, including admins on their 'My Jams' page)
+            // Returns OWNED videos + SAVED videos
             const result = await sql`
-                SELECT * FROM videos 
-                WHERE user_id = ${user.id} 
-                ORDER BY created_at DESC
+                SELECT v.*, u.first_name, u.last_name,
+                       CASE WHEN v.user_id = ${user.id} THEN false ELSE true END as is_saved
+                FROM videos v
+                LEFT JOIN users u ON v.user_id = u.id
+                WHERE 
+                    v.user_id = ${user.id}
+                    OR
+                    v.id IN (SELECT video_id FROM saved_jams WHERE user_id = ${user.id})
+                ORDER BY v.created_at DESC
             `;
             rows = result.rows;
         }
