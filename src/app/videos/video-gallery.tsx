@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
+import { encodeId } from '@/lib/id-obfuscation';
 
 interface Video {
     id: number;
@@ -124,7 +125,7 @@ export default function VideoGallery({ videos, isAdmin }: { videos: Video[], isA
 
                             <div className="mt-auto pt-2">
                                 {video.processing_status === 'completed' && (
-                                    <Link href={`/session/${video.id}`} className="block w-full py-3 bg-white/5 hover:bg-primary hover:text-white text-center rounded-xl transition-all duration-300 font-semibold text-sm">
+                                    <Link href={`/session/${encodeId(video.id)}`} className="block w-full py-3 bg-white/5 hover:bg-primary hover:text-white text-center rounded-xl transition-all duration-300 font-semibold text-sm">
                                         View Session
                                     </Link>
                                 )}
