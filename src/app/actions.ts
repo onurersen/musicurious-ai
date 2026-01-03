@@ -3,6 +3,7 @@
 import { sql } from '@vercel/postgres';
 import { currentUser, clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { encodeId } from "@/lib/id-obfuscation";
 
 // ... existing interfaces ...
 
@@ -922,14 +923,20 @@ export async function deleteExtractedSection(sectionId: number) {
     if (!user) return { success: false, error: "Unauthorized" };
 
     try {
-        // Ensure user owns the section
+        // Ensure user owns the section and return video_id for revalidation
         const result = await sql`
             DELETE FROM extracted_sections 
             WHERE id = ${sectionId} AND user_id = ${user.id}
+            RETURNING video_id
         `;
+
         if (result.rowCount === 0) {
             return { success: false, error: "Section not found or unauthorized" };
         }
+
+        const videoId = result.rows[0].video_id;
+        revalidatePath(`/session/${encodeId(videoId)}`);
+
         return { success: true };
     } catch (err) {
         console.error("Error deleting extracted section:", err);

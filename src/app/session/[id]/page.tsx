@@ -4,13 +4,32 @@ import { MusicalFlowCanvas } from "@/components/musical-flow-canvas";
 import { QuickNav } from "@/components/quick-nav";
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { decodeId, encodeId } from "@/lib/id-obfuscation";
+import { permanentRedirect } from "next/navigation";
 
 export default async function SessionPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const jamId = parseInt(id, 10);
 
-    if (isNaN(jamId)) {
-        return <div className="p-12 text-center">Invalid Jam ID</div>;
+    // 1. Check for legacy integer ID and redirect
+    if (/^\d+$/.test(id)) {
+        const numericId = parseInt(id, 10);
+        const encodedId = encodeId(numericId);
+        permanentRedirect(`/session/${encodedId}`);
+    }
+
+    // 2. Decode the ID
+    const jamId = decodeId(id);
+
+    if (jamId === null) {
+        return (
+            <div className="container mx-auto px-4 py-20 text-center">
+                <h1 className="text-3xl font-bold mb-4">Jam Not Found</h1>
+                <p className="text-muted-foreground mb-8">The requested jam ID is invalid.</p>
+                <Link href="/videos" className="text-primary hover:underline">
+                    Back to Gallery
+                </Link>
+            </div>
+        );
     }
 
     const data = await getJam(jamId);

@@ -154,15 +154,32 @@ function CanvasInternal({ videoId, initialState, extractedSections, jamTitle, ch
             nds.map((node) => {
                 if (node.data.extractedSectionId) {
                     const section = extractedSections.find(s => s.id === Number(node.data.extractedSectionId));
-                    // Only update if label differs (renamed)
-                    if (section && section.title !== node.data.label) {
-                        return {
-                            ...node,
-                            data: {
-                                ...node.data,
-                                label: section.title
-                            }
-                        };
+                    if (section) {
+                        const currentSynced = node.data.syncedSectionTitle as string | undefined;
+
+                        // Case 1: First time sync (legacy nodes or new link)
+                        if (currentSynced === undefined) {
+                            return {
+                                ...node,
+                                data: {
+                                    ...node.data,
+                                    syncedSectionTitle: section.title
+                                    // Do NOT touch label, preserve manual edits
+                                }
+                            };
+                        }
+
+                        // Case 2: Section was renamed on backend
+                        if (currentSynced !== section.title) {
+                            return {
+                                ...node,
+                                data: {
+                                    ...node.data,
+                                    label: section.title, // Sync label
+                                    syncedSectionTitle: section.title // Update sync tracker
+                                }
+                            };
+                        }
                     }
                 }
                 return node;
@@ -775,7 +792,9 @@ function CanvasInternal({ videoId, initialState, extractedSections, jamTitle, ch
                                                         // Optional: Auto-update label if generic or empty? 
                                                         // Maybe better to verify with user, but let's stick to just linking for now.
                                                         // actually updating label is nice UX.
-                                                        label: section ? section.title : node.data.label
+                                                        // actually updating label is nice UX.
+                                                        label: section ? section.title : node.data.label,
+                                                        syncedSectionTitle: section ? section.title : undefined
                                                     },
                                                 };
                                             }
@@ -787,13 +806,7 @@ function CanvasInternal({ videoId, initialState, extractedSections, jamTitle, ch
                             >
                                 <option value="">None</option>
                                 {extractedSections.map(section => {
-                                    // Check if used by ANY other node
-                                    const isUsed = nodes.some(n =>
-                                        n.id !== editingNodeId &&
-                                        Number(n.data.extractedSectionId) === section.id
-                                    );
 
-                                    if (isUsed) return null; // Don't show used ones
 
                                     return (
                                         <option key={section.id} value={section.id}>
