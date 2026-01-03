@@ -2,7 +2,7 @@
 import { sql } from '@vercel/postgres';
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from 'next/server';
-import { readdir, readFile } from 'fs/promises';
+import { readdir, readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { put } from '@vercel/blob';
 
@@ -124,6 +124,15 @@ export async function POST(request: Request) {
                 await sql`COMMIT`;
 
                 send(JSON.stringify({ type: 'complete', message: 'Transfer successful!' }));
+
+                // Cleanup local files
+                try {
+                    await rm(sourceDir, { recursive: true, force: true });
+                    send(JSON.stringify({ type: 'cleanup', message: 'Local files cleaned up.' }));
+                } catch (cleanupErr) {
+                    console.error("Cleanup failed:", cleanupErr);
+                    // Don't fail the whole request, just log it
+                }
                 controller.close();
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
