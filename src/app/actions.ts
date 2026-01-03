@@ -839,7 +839,7 @@ export async function getExtractedSections(videoId: number) {
     try {
         const result = await sql`
             SELECT * FROM extracted_sections 
-            WHERE video_id = ${videoId} 
+            WHERE video_id = ${videoId} AND user_id = ${user.id}
             ORDER BY created_at DESC
         `;
         return result.rows as ExtractedSection[];
@@ -968,7 +968,7 @@ export async function saveFlowCanvas(videoId: number, state: any) {
         await sql`
             INSERT INTO musical_flow_canvases (user_id, video_id, canvas_state, updated_at)
             VALUES (${user.id}, ${videoId}, ${state}, NOW())
-            ON CONFLICT (video_id) 
+            ON CONFLICT (user_id, video_id) 
             DO UPDATE SET 
                 canvas_state = EXCLUDED.canvas_state,
                 updated_at = NOW();
@@ -987,7 +987,7 @@ export async function getFlowCanvas(videoId: number) {
     try {
         const result = await sql`
             SELECT canvas_state FROM musical_flow_canvases 
-            WHERE video_id = ${videoId}
+            WHERE video_id = ${videoId} AND user_id = ${user.id}
         `;
         if (result.rows.length > 0) {
             return { success: true, state: result.rows[0].canvas_state };
