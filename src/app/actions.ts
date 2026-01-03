@@ -506,6 +506,41 @@ export async function getUsers(): Promise<User[]> {
     if (!admin) return [];
 
     try {
+        // 1. Fetch latest users from Clerk (limit to 50 for performance, or use pagination if needed)
+        // This ensures even users who haven't logged in are captured for the Admin
+        const client = await clerkClient();
+        const clerkUsers = await client.users.getUserList({ limit: 50, orderBy: '-created_at' });
+
+        // 2. Upsert each Clerk user to DB
+        for (const cUser of clerkUsers.data) {
+            const email = cUser.emailAddresses[0]?.emailAddress;
+            if (!email) continue;
+
+            // Default role logic
+            const isAdminEmail = email === 'onurersen@gmail.com';
+            const role = isAdminEmail ? 'admin' : 'user';
+
+            // NOTE: We don't overwrite 'blocked' status, but we sync new users as 'pending'
+            // We use ON CONFLICT to avoid errors, and DO NOTHING if they verify existence
+            // Actually, we should ensuring they exist.
+
+            const firstName = cUser.firstName || '';
+            const lastName = cUser.lastName || '';
+
+            // We use INSERT ... ON CONFLICT DO NOTHING to avoid overwriting existing statuses/roles casually
+            // UNLESS it's the admin fallback
+
+            await sql`
+                INSERT INTO users (id, email, first_name, last_name, role, status, created_at)
+                VALUES (${cUser.id}, ${email}, ${firstName}, ${lastName}, ${role}, ${isAdminEmail ? 'approved' : 'pending'}, ${new Date(cUser.createdAt).toISOString()})
+                ON CONFLICT (id) DO UPDATE SET
+                    email = EXCLUDED.email,
+                    first_name = EXCLUDED.first_name,
+                    last_name = EXCLUDED.last_name;
+            `;
+        }
+
+        // 3. Fetch from DB as usual
         const result = await sql`
             SELECT * FROM users 
             ORDER BY created_at DESC
@@ -1009,5 +1044,56 @@ export async function getFlowCanvas(videoId: number) {
     } catch (err) {
         console.error("Error fetching flow canvas:", err);
         return { success: false, error: "Database error" };
+    }
+}
+
+export async function syncUser() {
+    const user = await currentUser();
+    if (!user) return null;
+
+    const email = user.emailAddresses[0]?.emailAddress;
+    const firstName = user.firstName || '';
+    const lastName = user.lastName || '';
+
+    // Default role/status
+    let role = 'user';
+    let status = 'pending';
+
+    if (email === 'onurersen@gmail.com') {
+        role = 'admin';
+        status = 'approved';
+    }
+
+    try {
+        // Upsert user: Insert if missing, otherwise update metadata and last_login
+        // We use ON CONFLICT (id) to handle race conditions
+        const result = await sql`
+            INSERT INTO users (id, email, first_name, last_name, role, status, last_login)
+            VALUES (${user.id}, ${email}, ${firstName}, ${lastName}, ${role}, ${status}, NOW())
+            ON CONFLICT (id) DO UPDATE SET
+                email = EXCLUDED.email,
+                first_name = EXCLUDED.first_name,
+                last_name = EXCLUDED.last_name,
+                last_login = NOW()
+            RETURNING role, status;
+        `;
+
+        return {
+            role: result.rows[0].role,
+            status: result.rows[0].status
+        };
+
+    } catch (e) {
+        console.error("Failed to sync user:", e);
+        // Fallback catch - attempt to read existing if insert failed hard
+        // (though Upsert usually handles it)
+        try {
+            const res = await sql`SELECT role, status FROM users WHERE id = ${user.id}`;
+            if (res.rows.length > 0) {
+                return { role: res.rows[0].role, status: res.rows[0].status };
+            }
+        } catch { /* ignore */ }
+
+        return { role: 'user', status: 'pending' };
     }
 }
