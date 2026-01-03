@@ -3,8 +3,8 @@ import VideoGallery from "./video-gallery";
 import JamSearch from "./jam-search";
 
 export default async function VideosPage() {
-    const videos = await getVideos();
     const admin = await isAdmin();
+    const videos = await getVideos(admin ? 'all' : 'personal');
 
     return (
         <div className="container mx-auto px-4 py-12">
