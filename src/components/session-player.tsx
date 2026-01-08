@@ -22,9 +22,10 @@ interface SessionPlayerProps {
     timeSignature?: string;
     chordsTimeline?: { chord: string; start: number; end: number }[];
     extractedSections?: ExtractedSection[];
+    impersonatedUserId?: string;
 }
 
-export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, initialSettings, timeSignature, chordsTimeline = [], extractedSections: propsExtractedSections = [] }: SessionPlayerProps) {
+export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, initialSettings, timeSignature, chordsTimeline = [], extractedSections: propsExtractedSections = [], impersonatedUserId }: SessionPlayerProps) {
     const [selectedTrack, setSelectedTrack] = useState<SessionTrack | null>(() => {
         if (initialSettings?.active_track) {
             const found = tracks.find(t => t.name === initialSettings.active_track);
@@ -88,7 +89,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
         );
         setExtractedSections(updatedSections);
 
-        await updateSectionChordAdjustments(activeExtractedSection.id, newAdjustments);
+        await updateSectionChordAdjustments(activeExtractedSection.id, newAdjustments, impersonatedUserId);
     };
 
     const handleChordHide = async (original: string) => {
@@ -108,7 +109,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
             );
             setExtractedSections(updatedSections);
 
-            await removeSectionChord(activeExtractedSection.id, original);
+            await removeSectionChord(activeExtractedSection.id, original, impersonatedUserId);
         } else {
             // It's a detected chord, use Hide logic
             const currentAdjustments = activeExtractedSection.chord_adjustments || {};
@@ -125,7 +126,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
             );
             setExtractedSections(updatedSections);
 
-            await updateSectionChordAdjustments(activeExtractedSection.id, newAdjustments);
+            await updateSectionChordAdjustments(activeExtractedSection.id, newAdjustments, impersonatedUserId);
         }
     };
 
@@ -150,7 +151,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
         );
         setExtractedSections(updatedSections);
 
-        await addSectionChord(activeExtractedSection.id, chord);
+        await addSectionChord(activeExtractedSection.id, chord, impersonatedUserId);
     };
 
     const confirmResetChords = async () => {
@@ -163,7 +164,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
             );
             setExtractedSections(updatedSections);
 
-            await resetSectionChordAdjustments(currentSectionIdForReset);
+            await resetSectionChordAdjustments(currentSectionIdForReset, impersonatedUserId);
             setIsResetModalOpen(false);
             setCurrentSectionIdForReset(null);
         }
@@ -453,7 +454,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
 
         const title = `Section ${extractedSections.length + 1}`;
         try {
-            const res = await saveExtractedSection(videoId, loopStart, loopEnd, title);
+            const res = await saveExtractedSection(videoId, loopStart, loopEnd, title, impersonatedUserId);
             if (res.success && res.section) {
                 setExtractedSections(prev => [res.section as ExtractedSection, ...prev]);
                 setWarningMessage("Section extracted!");
@@ -500,7 +501,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
 
     const handleDeleteSection = async (id: number) => {
         // Optimistic UI update or wait? Let's wait for server.
-        const res = await deleteExtractedSection(id);
+        const res = await deleteExtractedSection(id, impersonatedUserId);
         if (res.success) {
             setExtractedSections(prev => prev.filter(s => s.id !== id));
             setDeletingSectionId(null);
@@ -513,7 +514,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
     };
 
     const saveEditing = async (id: number) => {
-        const res = await renameExtractedSection(id, editingTitle);
+        const res = await renameExtractedSection(id, editingTitle, impersonatedUserId);
         if (res.success) {
             setExtractedSections(prev => prev.map(s => s.id === id ? { ...s, title: editingTitle } : s));
             setEditingSectionId(null);
@@ -631,7 +632,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                     pitch: pitchShift,
                     tempo: targetBpm,
                     active_track: selectedTrack?.name || null
-                });
+                }, impersonatedUserId);
             }
         }, 2000); // 2 seconds debounce
 
