@@ -66,11 +66,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         let videoId = '';
         let fileSavedPath = '';
+        let originalFilename = '';
         const fileWritePromises: Promise<void>[] = [];
 
         await new Promise<void>((resolve, reject) => {
             bb.on('file', (name: string, file: IncomingMessage, info: any) => {
                 const { filename } = info;
+                originalFilename = filename;
                 log(`Busboy receiving file: ${filename}`);
 
                 const timestamp = Date.now();
@@ -121,8 +123,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
                     // Rename
                     const { rename } = require('fs/promises');
+                    const { extname } = require('path');
                     const timestamp = Date.now();
-                    const finalName = `${videoId}_${timestamp}_uploaded.wav`;
+                    const ext = extname(originalFilename) || '.wav'; // Fallback to .wav
+                    const finalName = `${videoId}_${timestamp}_uploaded${ext}`;
                     const finalPath = join(uploadDir, finalName);
 
                     await rename(fileSavedPath, finalPath);

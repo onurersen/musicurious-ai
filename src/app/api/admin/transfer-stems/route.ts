@@ -2,11 +2,19 @@
 import { sql } from '@vercel/postgres';
 import { currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from 'next/server';
-import { readdir, readFile, rm } from 'fs/promises';
+import { readdir, readFile, rm, appendFile } from 'fs/promises';
 import { join } from 'path';
 import { put } from '@vercel/blob';
 
+const logFile = join(process.cwd(), 'transfer-debug.log');
+const log = async (msg: string) => {
+    const time = new Date().toISOString();
+    await appendFile(logFile, `[${time}] ${msg}\n`).catch(() => { });
+    console.log(msg); // Keep console just in case
+};
+
 export async function POST(request: Request) {
+    await log("[Transfer API] Request received");
     // STRICTLY LOCAL ONLY
     if (process.env.NODE_ENV === 'production') {
         return NextResponse.json({ error: 'Stem transfer is disabled in production.' }, { status: 403 });
@@ -17,7 +25,9 @@ export async function POST(request: Request) {
 
     // Strict Admin Check
     let isAdmin = false;
-    if (email === 'onurersen@gmail.com') {
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+
+    if (adminEmail && email === adminEmail) {
         isAdmin = true;
     } else if (user) {
         const userRes = await sql`SELECT role FROM users WHERE id = ${user.id}`;
@@ -25,6 +35,7 @@ export async function POST(request: Request) {
     }
 
     if (!isAdmin) {
+        await log(`[Transfer API] Unauthorized access attempt by: ${email}`);
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -44,14 +55,18 @@ export async function POST(request: Request) {
     let entries;
     try {
         entries = await readdir(stemsRoot, { withFileTypes: true });
-    } catch {
+        await log(`[Transfer API] Found ${entries.length} entries in htdemucs`);
+    } catch (e: any) {
+        await log(`[Transfer API] htdemucs directory not found: ${e.message}`);
         return NextResponse.json({ error: 'Stems directory (htdemucs) not found. Process likely not started.' }, { status: 404 });
     }
 
     // Filter directories starting with videoId_
     const candidates = entries.filter(e => e.isDirectory() && e.name.startsWith(`${videoId}_`));
+    await log(`[Transfer API] Found ${candidates.length} candidate folders for video ${videoId}`);
 
     if (candidates.length === 0) {
+        await log(`[Transfer API] No processed stems found for video ${videoId}`);
         return NextResponse.json({ error: 'No processed stems found for this video.' }, { status: 404 });
     }
 
@@ -81,64 +96,57 @@ export async function POST(request: Request) {
                     .map(e => e.name);
 
                 const totalFiles = mp3Files.length;
+                await log(`[Transfer API] Found ${totalFiles} MP3 files to transfer in ${latestFolder}`);
 
                 // Transaction start
+                await log(`[Transfer API] Starting DB transaction`);
                 await sql`BEGIN`;
                 await sql`DELETE FROM stems WHERE video_id = ${videoId}`;
 
-                let completed = 0;
+                for (let i = 0; i < totalFiles; i++) {
+                    const file = mp3Files[i];
+                    await log("[Transfer API] Processing file " + (i + 1) + "/" + totalFiles + ": " + file);
+                    const filePath = join(sourceDir, file);
+                    const fileBuffer = await readFile(filePath);
 
-                for (const filename of mp3Files) {
-                    const type = filename.replace('.mp3', '');
-                    const filePath = join(sourceDir, filename);
+                    // Upload to Vercel Blob
+                    await log(`[Transfer API] Uploading ${file} to Vercel Blob...`);
+                    const blob = await put(`submissions/${videoId}/${file}`, fileBuffer, {
+                        access: 'public',
+                        addRandomSuffix: false
+                    });
+                    await log(`[Transfer API] Uploaded ${file} to ${blob.url}`);
 
-                    try {
-                        const fileBuffer = await readFile(filePath);
+                    // Save to DB
+                    await log(`[Transfer API] Inserting stem record for ${file}`);
+                    await sql`
+                        INSERT INTO stems (video_id, stem_type, url, created_at)
+                        VALUES (${videoId}, ${file.replace('.mp3', '')}, ${blob.url}, NOW())
+                    `;
 
-                        // Upload to Vercel Blob
-                        // Path: submissions/<videoId>/<filename>
-                        const blobPath = `submissions/${videoId}/${filename}`;
-                        const blob = await put(blobPath, fileBuffer, {
-                            access: 'public',
-                            addRandomSuffix: false // Keep clean URLs so we can predict them if needed
-                        });
-
-                        // Insert into Stems table
-                        await sql`
-                            INSERT INTO stems (video_id, type, blob_url)
-                            VALUES (${videoId}, ${type}, ${blob.url})
-                        `;
-
-                        completed++;
-                        const progress = Math.round((completed / totalFiles) * 100);
-                        send(JSON.stringify({ type: 'progress', percent: progress, message: `Uploaded ${type}` }));
-
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    } catch (e: any) {
-                        console.error(`Failed to upload ${type}:`, e);
-                        throw new Error(`Failed to upload ${type}: ${e.message}`);
-                    }
+                    // Report progress
+                    const percent = Math.round(((i + 1) / totalFiles) * 100);
+                    send(JSON.stringify({ type: 'progress', percent, message: `Uploaded ${file.replace('.mp3', '')}` }));
                 }
 
-                await sql`UPDATE videos SET processing_status = 'completed', processing_progress = 100 WHERE id = ${videoId}`;
+                await log(`[Transfer API] All files processed. Committing...`);
                 await sql`COMMIT`;
+                await log(`[Transfer API] Transaction committed.`);
 
-                send(JSON.stringify({ type: 'complete', message: 'Transfer successful!' }));
+                // Cleanup
+                await log(`[Transfer API] Cleaning up files...`);
+                await sql`UPDATE videos SET processing_status = 'completed', processing_progress = 100 WHERE id = ${videoId}`;
 
-                // Cleanup local files
-                try {
-                    await rm(sourceDir, { recursive: true, force: true });
-                    send(JSON.stringify({ type: 'cleanup', message: 'Local files cleaned up.' }));
-                } catch (cleanupErr) {
-                    console.error("Cleanup failed:", cleanupErr);
-                    // Don't fail the whole request, just log it
-                }
+                // Cleanup files
+                await rm(sourceDir, { recursive: true, force: true });
+                await log(`[Transfer API] Cleanup done. Sending success.`);
+
+                send(JSON.stringify({ type: 'done', message: 'Transfer successful!' }));
                 controller.close();
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
+                await log(`[Transfer API] Stream error: ${err.message}`);
                 console.error("Stream error:", err);
-                await sql`ROLLBACK`; // Try to rollback if connection still open (might fail if concurrent)
+                try { await sql`ROLLBACK`; } catch (e) { await log(`[Transfer API] Rollback failed: ${e}`); }
                 controller.enqueue(encoder.encode(JSON.stringify({ type: 'error', message: err.message }) + '\n'));
                 controller.close();
             }
