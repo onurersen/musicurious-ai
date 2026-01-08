@@ -1,9 +1,8 @@
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
-import { SignInButton, SignUpButton } from '@clerk/nextjs';
 import { currentUser } from '@clerk/nextjs/server';
 import { syncUser } from '@/app/actions';
 import { NavbarActions } from './navbar-actions';
+import { NavbarAuth } from './navbar-auth';
 
 export async function Navbar() {
     const user = await currentUser();
@@ -43,29 +42,7 @@ export async function Navbar() {
             </div>
 
             <div className="flex items-center gap-4">
-                {!user ? (
-                    <>
-                        <SignInButton mode="modal">
-                            <button className="text-sm font-medium text-muted-foreground hover:text-white transition-colors">
-                                Sign In
-                            </button>
-                        </SignInButton>
-                        <SignUpButton mode="modal">
-                            <button className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all">
-                                Sign Up
-                            </button>
-                        </SignUpButton>
-                    </>
-                ) : (
-                    <UserButton
-                        afterSignOutUrl="/"
-                        appearance={{
-                            elements: {
-                                avatarBox: "w-9 h-9 border-2 border-white/10"
-                            }
-                        }}
-                    />
-                )}
+                <NavbarAuth />
             </div>
         </nav>
     );

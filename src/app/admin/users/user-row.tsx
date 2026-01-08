@@ -3,13 +3,15 @@
 import { User, updateUserStatus, deleteUser, banUser, forceLogoutUser } from "@/app/actions";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, Ban, Trash2, ShieldAlert, X, Unlock, Lock, LogOut } from "lucide-react";
+import { Check, Loader2, Ban, Trash2, ShieldAlert, X, Unlock, Lock, LogOut, SquareLibrary } from "lucide-react";
 import { createPortal } from "react-dom";
+import { UserLibraryView } from "@/components/admin/user-library-view";
 
 export function UserRow({ user, currentUserEmail }: { user: User, currentUserEmail?: string }) {
     const [loading, setLoading] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showBanConfirm, setShowBanConfirm] = useState(false);
+    const [showLibrary, setShowLibrary] = useState(false);
     const router = useRouter();
 
     const isSelf = user.email === currentUserEmail;
@@ -100,6 +102,17 @@ export function UserRow({ user, currentUserEmail }: { user: User, currentUserEma
                         <span className="text-xs text-muted-foreground italic">Current Admin</span>
                     ) : (
                         <>
+
+                            {/* NEW: View Library Button */}
+                            <button
+                                onClick={() => setShowLibrary(true)}
+                                disabled={loading}
+                                title="View User's Library"
+                                className="p-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500 hover:text-white border border-cyan-500/30 text-cyan-400 transition-all"
+                            >
+                                <SquareLibrary className="w-4 h-4" />
+                            </button>
+
                             {user.status === 'pending' && (
                                 <button
                                     onClick={() => handleStatusUpdate('approved')}
@@ -204,10 +217,17 @@ export function UserRow({ user, currentUserEmail }: { user: User, currentUserEma
                                 </div>
                             </div>
                         )}
+                        {showLibrary && (
+                            <UserLibraryView
+                                userId={user.id}
+                                userName={(user.first_name || user.last_name) ? `${user.first_name} ${user.last_name}`.trim() : user.email}
+                                onClose={() => setShowLibrary(false)}
+                            />
+                        )}
                     </>,
                     document.body
                 )}
             </td>
-        </tr>
+        </tr >
     );
 }

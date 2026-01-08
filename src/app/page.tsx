@@ -10,7 +10,8 @@ export default function Home() {
 
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      router.push('/videos');
+      // Force a hard navigation to ensure Navbar (Server Component) updates
+      window.location.href = '/videos';
     }
   }, [isLoaded, isSignedIn, router]);
 

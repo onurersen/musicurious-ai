@@ -93,9 +93,10 @@ interface MusicalFlowCanvasProps {
     extractedSections?: { id: number; title: string; start_time: number; end_time: number; chord_adjustments?: Record<string, { action: 'rename' | 'hide', to?: string }>; added_chords?: string[] }[];
     jamTitle: string;
     chordsTimeline: { chord: string; start: number; end: number }[];
+    impersonatedUserId?: string;
 }
 
-export function MusicalFlowCanvas({ videoId, extractedSections = [], jamTitle, chordsTimeline = [] }: MusicalFlowCanvasProps) {
+export function MusicalFlowCanvas({ videoId, extractedSections = [], jamTitle, chordsTimeline = [], impersonatedUserId }: MusicalFlowCanvasProps) {
     const [initialState, setInitialState] = useState<ReactFlowJsonObject | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -126,18 +127,20 @@ export function MusicalFlowCanvas({ videoId, extractedSections = [], jamTitle, c
                     extractedSections={extractedSections}
                     jamTitle={jamTitle}
                     chordsTimeline={chordsTimeline}
+                    impersonatedUserId={impersonatedUserId}
                 />
             </div>
         </ReactFlowProvider>
     );
 }
 
-function CanvasInternal({ videoId, initialState, extractedSections, jamTitle, chordsTimeline }: {
+function CanvasInternal({ videoId, initialState, extractedSections, jamTitle, chordsTimeline, impersonatedUserId }: {
     videoId: number,
     initialState: ReactFlowJsonObject | null,
     extractedSections: { id: number; title: string; start_time: number; end_time: number; chord_adjustments?: Record<string, { action: 'rename' | 'hide', to?: string }>; added_chords?: string[] }[],
     jamTitle: string,
-    chordsTimeline: { chord: string; start: number; end: number }[]
+    chordsTimeline: { chord: string; start: number; end: number }[],
+    impersonatedUserId?: string
 }) {
     const reactFlowInstance = useReactFlow();
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -214,9 +217,9 @@ function CanvasInternal({ videoId, initialState, extractedSections, jamTitle, ch
 
         timeoutRef.current = setTimeout(() => {
             const flow = reactFlowInstance.toObject();
-            saveFlowCanvas(videoId, flow);
+            saveFlowCanvas(videoId, flow, impersonatedUserId);
         }, 1000);
-    }, [videoId, reactFlowInstance]);
+    }, [videoId, reactFlowInstance, impersonatedUserId]);
 
     useEffect(() => {
         saveData();

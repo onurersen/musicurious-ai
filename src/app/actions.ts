@@ -599,7 +599,57 @@ export interface Stem {
     created_at: string;
 }
 
-export async function getJam(id: number) {
+
+export interface LibraryJam extends Video {
+    saved_at: string;
+}
+
+export async function getUserLibrary(userId: string): Promise<LibraryJam[]> {
+    const admin = await isAdmin();
+    if (!admin) return [];
+
+    try {
+        // Fetch saved jams + owned jams for the target user
+        // 1. Saved Jams
+        const savedResult = await sql`
+            SELECT v.*, u.first_name, u.last_name, sj.created_at as saved_at
+            FROM videos v
+            JOIN saved_jams sj ON v.id = sj.video_id
+            JOIN users u ON v.user_id = u.id
+            WHERE sj.user_id = ${userId}
+            ORDER BY sj.created_at DESC
+        `;
+
+        // 2. Owned Jams
+        const ownedResult = await sql`
+            SELECT v.*, u.first_name, u.last_name, v.created_at as saved_at
+            FROM videos v
+            JOIN users u ON v.user_id = u.id
+            WHERE v.user_id = ${userId}
+            ORDER BY v.created_at DESC
+        `;
+
+        // Combine and dedup by ID (owned jams might be saved too? assume yes)
+        const allJamsMap = new Map();
+
+        ownedResult.rows.forEach(row => allJamsMap.set(row.id, row));
+        savedResult.rows.forEach(row => allJamsMap.set(row.id, row));
+
+        return Array.from(allJamsMap.values()).map((row) => ({
+            ...(row as Video),
+            created_at: new Date((row as Video).created_at).toISOString(),
+            updated_at: (row as Video).updated_at ? new Date((row as Video).updated_at!).toISOString() : null,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            saved_at: new Date((row as any).saved_at).toISOString()
+        })) as LibraryJam[];
+
+    } catch (err) {
+        console.error("Error fetching user library:", err);
+        return [];
+    }
+}
+
+export async function getJam(id: number, viewAsUserId?: string) {
     try {
         const currentUserObj = await currentUser();
         const currentEmail = currentUserObj?.emailAddresses[0]?.emailAddress;
@@ -652,20 +702,54 @@ export async function getJam(id: number) {
             created_at: new Date(row.created_at).toISOString()
         })) as Stem[];
 
-        // Fetch User Settings if logged in
+        let targetUserId = currentUserObj?.id;
+        let impersonatingUser: { first_name: string; last_name: string } | null = null;
+
+        // Handle Impersonation
+        if (viewAsUserId) {
+            if (!isUserAdmin) {
+                // If not admin, ignore the param (or throw, but ignoring is safer/quieter)
+                console.warn("Non-admin attempted to use viewAsUserId");
+            } else {
+                // Verify target user has this jam
+                const hasAccess = await sql`
+                    SELECT 1 
+                    FROM videos v
+                    LEFT JOIN saved_jams sj ON v.id = sj.video_id AND sj.user_id = ${viewAsUserId}
+                    WHERE v.id = ${id} AND (v.user_id = ${viewAsUserId} OR sj.user_id IS NOT NULL)
+                `;
+
+                if (hasAccess.rows.length === 0) {
+                    console.error(`Admin attempted to view jam ${id} as ${viewAsUserId} but user relies on library access which is missing.`);
+                    // Return null or specific error? For now, return null as if not found/unauthorized
+                    return null;
+                }
+
+                // If valid, switch targetUserId
+                targetUserId = viewAsUserId;
+
+                // Fetch impersonated user details for display
+                const uRes = await sql`SELECT first_name, last_name FROM users WHERE id = ${targetUserId}`;
+                if (uRes.rows.length > 0) {
+                    impersonatingUser = uRes.rows[0] as { first_name: string; last_name: string };
+                }
+            }
+        }
+
+        // Fetch User Settings if logged in (or acting as)
         let userSettings = null;
-        if (currentUserObj) {
+        if (targetUserId) {
             const settingsRes = await sql`
                 SELECT pitch, tempo, active_track 
                 FROM user_jam_settings 
-                WHERE user_id = ${currentUserObj.id} AND video_id = ${id}
+                WHERE user_id = ${targetUserId} AND video_id = ${id}
             `;
             if (settingsRes.rows.length > 0) {
                 userSettings = settingsRes.rows[0] as UserJamSettings;
             }
         }
 
-        return { video, stems, userSettings };
+        return { video, stems, userSettings, impersonatingUser };
 
     } catch (err) {
         console.error("Error fetching jam:", err);
@@ -836,18 +920,25 @@ export interface UserJamSettings {
     active_track: string | null;
 }
 
-export async function saveJamSettings(videoId: number, settings: UserJamSettings) {
+export async function saveJamSettings(videoId: number, settings: UserJamSettings, impersonatedUserId?: string) {
     const user = await currentUser();
     if (!user) {
         console.log("[saveJamSettings] No user logged in.");
         return { success: false, error: "Unauthorized" };
     }
-    console.log(`[saveJamSettings] Saving for user ${user.id}, video ${videoId}:`, settings);
+
+    if (impersonatedUserId && !(await isAdmin())) {
+        return { success: false, error: "Forbidden: Only admins can impersonate." };
+    }
+
+    const targetUserId = impersonatedUserId || user.id;
+
+    console.log(`[saveJamSettings] Saving for user ${targetUserId}, video ${videoId}:`, settings);
 
     try {
         await sql`
             INSERT INTO user_jam_settings (user_id, video_id, pitch, tempo, active_track, updated_at)
-            VALUES (${user.id}, ${videoId}, ${Math.round(settings.pitch)}, ${Math.round(settings.tempo)}, ${settings.active_track}, NOW())
+            VALUES (${targetUserId}, ${videoId}, ${Math.round(settings.pitch)}, ${Math.round(settings.tempo)}, ${settings.active_track}, NOW())
             ON CONFLICT (user_id, video_id) 
             DO UPDATE SET 
                 pitch = EXCLUDED.pitch,
@@ -877,14 +968,20 @@ export interface ExtractedSection {
     added_chords?: string[];
 }
 
-export async function saveExtractedSection(videoId: number, start: number, end: number, title: string) {
+export async function saveExtractedSection(videoId: number, start: number, end: number, title: string, impersonatedUserId?: string) {
     const user = await currentUser();
     if (!user) return { success: false, error: "Unauthorized" };
+
+    if (impersonatedUserId && !(await isAdmin())) {
+        return { success: false, error: "Forbidden: Only admins can impersonate." };
+    }
+
+    const targetUserId = impersonatedUserId || user.id;
 
     try {
         const result = await sql`
             INSERT INTO extracted_sections (user_id, video_id, title, start_time, end_time)
-            VALUES (${user.id}, ${videoId}, ${title}, ${start}, ${end})
+            VALUES (${targetUserId}, ${videoId}, ${title}, ${start}, ${end})
             RETURNING *;
         `;
         revalidatePath(`/jam/${videoId}`); // Assuming this is the path
@@ -911,12 +1008,22 @@ export async function getExtractedSections(videoId: number) {
     }
 }
 
-export async function updateSectionChordAdjustments(sectionId: number, adjustments: Record<string, { action: 'rename' | 'hide', to?: string }>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function updateSectionChordAdjustments(sectionId: number, adjustments: Record<string, { action: 'rename' | 'hide', to?: string }>, impersonatedUserId?: string) {
+    const user = await currentUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    if (impersonatedUserId && !(await isAdmin())) {
+        return { success: false, error: "Forbidden: Only admins can impersonate." };
+    }
+
+    const targetUserId = impersonatedUserId || user.id;
+
     try {
         await sql`
             UPDATE extracted_sections 
             SET chord_adjustments = ${JSON.stringify(adjustments)} 
-            WHERE id = ${sectionId}
+            WHERE id = ${sectionId} AND user_id = ${targetUserId}
         `;
         revalidatePath('/session/[id]', 'page');
         return { success: true };
@@ -926,13 +1033,22 @@ export async function updateSectionChordAdjustments(sectionId: number, adjustmen
     }
 }
 
-export async function resetSectionChordAdjustments(sectionId: number) {
+export async function resetSectionChordAdjustments(sectionId: number, impersonatedUserId?: string) {
+    const user = await currentUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    if (impersonatedUserId && !(await isAdmin())) {
+        return { success: false, error: "Forbidden: Only admins can impersonate." };
+    }
+
+    const targetUserId = impersonatedUserId || user.id;
+
     try {
         await sql`
             UPDATE extracted_sections 
             SET chord_adjustments = '{}'::jsonb,
                 added_chords = '[]'::jsonb
-            WHERE id = ${sectionId}
+            WHERE id = ${sectionId} AND user_id = ${targetUserId}
         `;
         revalidatePath('/session/[id]', 'page');
         return { success: true };
@@ -942,12 +1058,21 @@ export async function resetSectionChordAdjustments(sectionId: number) {
     }
 }
 
-export async function addSectionChord(sectionId: number, chord: string) {
+export async function addSectionChord(sectionId: number, chord: string, impersonatedUserId?: string) {
+    const user = await currentUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    if (impersonatedUserId && !(await isAdmin())) {
+        return { success: false, error: "Forbidden: Only admins can impersonate." };
+    }
+
+    const targetUserId = impersonatedUserId || user.id;
+
     try {
         await sql`
             UPDATE extracted_sections
             SET added_chords = COALESCE(added_chords, '[]'::jsonb) || ${JSON.stringify([chord])}::jsonb
-            WHERE id = ${sectionId}
+            WHERE id = ${sectionId} AND user_id = ${targetUserId}
         `;
         revalidatePath('/session/[id]', 'page');
         return { success: true };
@@ -957,9 +1082,20 @@ export async function addSectionChord(sectionId: number, chord: string) {
     }
 }
 
-export async function removeSectionChord(sectionId: number, chord: string) {
+export async function removeSectionChord(sectionId: number, chord: string, impersonatedUserId?: string) {
+    const user = await currentUser();
+    if (!user) return { success: false, error: "Unauthorized" };
+
+    if (impersonatedUserId && !(await isAdmin())) {
+        return { success: false, error: "Forbidden: Only admins can impersonate." };
+    }
+
+    const targetUserId = impersonatedUserId || user.id;
+
     try {
-        const sectionRes = await sql`SELECT added_chords FROM extracted_sections WHERE id = ${sectionId}`;
+        const sectionRes = await sql`SELECT added_chords FROM extracted_sections WHERE id = ${sectionId} AND user_id = ${targetUserId}`;
+        if (sectionRes.rows.length === 0) return { success: false, error: "Section not found" };
+
         const current = (sectionRes.rows[0]?.added_chords || []) as string[];
 
         const index = current.indexOf(chord);
@@ -968,7 +1104,7 @@ export async function removeSectionChord(sectionId: number, chord: string) {
             await sql`
                 UPDATE extracted_sections
                 SET added_chords = ${JSON.stringify(current)}::jsonb
-                WHERE id = ${sectionId}
+                WHERE id = ${sectionId} AND user_id = ${targetUserId}
             `;
             revalidatePath('/session/[id]', 'page');
         }
@@ -979,15 +1115,21 @@ export async function removeSectionChord(sectionId: number, chord: string) {
     }
 }
 
-export async function deleteExtractedSection(sectionId: number) {
+export async function deleteExtractedSection(sectionId: number, impersonatedUserId?: string) {
     const user = await currentUser();
     if (!user) return { success: false, error: "Unauthorized" };
+
+    if (impersonatedUserId && !(await isAdmin())) {
+        return { success: false, error: "Forbidden: Only admins can impersonate." };
+    }
+
+    const targetUserId = impersonatedUserId || user.id;
 
     try {
         // Ensure user owns the section and return video_id for revalidation
         const result = await sql`
             DELETE FROM extracted_sections 
-            WHERE id = ${sectionId} AND user_id = ${user.id}
+            WHERE id = ${sectionId} AND user_id = ${targetUserId}
             RETURNING video_id
         `;
 
@@ -1005,15 +1147,21 @@ export async function deleteExtractedSection(sectionId: number) {
     }
 }
 
-export async function renameExtractedSection(sectionId: number, newTitle: string) {
+export async function renameExtractedSection(sectionId: number, newTitle: string, impersonatedUserId?: string) {
     const user = await currentUser();
     if (!user) return { success: false, error: "Unauthorized" };
+
+    if (impersonatedUserId && !(await isAdmin())) {
+        return { success: false, error: "Forbidden: Only admins can impersonate." };
+    }
+
+    const targetUserId = impersonatedUserId || user.id;
 
     try {
         const result = await sql`
             UPDATE extracted_sections 
             SET title = ${newTitle}, updated_at = NOW()
-            WHERE id = ${sectionId} AND user_id = ${user.id}
+            WHERE id = ${sectionId} AND user_id = ${targetUserId}
         `;
         if (result.rowCount === 0) {
             return { success: false, error: "Section not found or unauthorized" };
@@ -1029,14 +1177,20 @@ export async function renameExtractedSection(sectionId: number, newTitle: string
 // Musical Flow Canvas Actions
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function saveFlowCanvas(videoId: number, state: any) {
+export async function saveFlowCanvas(videoId: number, state: any, impersonatedUserId?: string) {
     const user = await currentUser();
     if (!user) return { success: false, error: "Unauthorized" };
+
+    if (impersonatedUserId && !(await isAdmin())) {
+        return { success: false, error: "Forbidden: Only admins can impersonate." };
+    }
+
+    const targetUserId = impersonatedUserId || user.id;
 
     try {
         await sql`
             INSERT INTO musical_flow_canvases (user_id, video_id, canvas_state, updated_at)
-            VALUES (${user.id}, ${videoId}, ${state}, NOW())
+            VALUES (${targetUserId}, ${videoId}, ${state}, NOW())
             ON CONFLICT (user_id, video_id) 
             DO UPDATE SET 
                 canvas_state = EXCLUDED.canvas_state,
