@@ -219,9 +219,14 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
         let isActive = true;
 
         const loadTrack = async () => {
+            // Preserve current state before loading
+            const resumeTime = currentTime;
+            const resumePlay = isPlaying;
+
             setIsLoading(true);
-            setIsPlaying(false);
-            setCurrentTime(0);
+            // We set playing to false to show loading state if needed, but we track resumePlay
+            // setIsPlaying(false); // Removed to avoid UI flicker, let isLoading handle the visual state
+            // setCurrentTime(0);   // Removed to preserve time
             isReadyRef.current = false;
 
             try {
@@ -270,6 +275,26 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
 
                             // Apply initial tempo/pitch logic
                             updateAudioParams(targetBpm, pitchShift, player, pitchEffect);
+
+                            // Resume Playback Logic
+                            // Check if resumeTime is valid for new track duration
+                            const safeResumeTime = resumeTime < player.buffer.duration ? resumeTime : 0;
+
+                            // If it was playing, resume
+                            if (resumePlay) {
+                                if (Tone.context.state !== "running") Tone.start();
+                                // Start at the correct offset
+                                player.start(undefined, safeResumeTime);
+                                setIsPlaying(true);
+                            } else {
+                                // Just seek to position if paused
+                                // Note: Tone.Player doesn't support seeking while stopped in the same way.
+                                // But `currentTime` is preserved in state, so next Play will use it.
+                            }
+
+                            // Ensure UI is synced
+                            setCurrentTime(safeResumeTime);
+
                         } catch (e) {
                             console.error("Error in player onload:", e);
                         }
