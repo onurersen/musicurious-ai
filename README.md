@@ -89,3 +89,22 @@ The following key libraries use permissive licenses (MIT, ISC, Apache-2.0) which
 -   **Postgres / Vercel SDKs** (MIT/Apache-2.0)
 
 *(Disclaimer: This audit is for informational purposes only and does not constitute legal advice. Please consult with a legal professional for full compliance.)*
+
+## License
+
+This project's original source code is licensed under the **MIT License**.
+
+> [!NOTE]
+> See the [LICENSE](LICENSE) file for the full text of the MIT license covering the source code created for this project.
+
+### Comparison of Rights
+
+| Component                                | License          | Commercial Use?          |
+| :--------------------------------------- | :--------------- | :----------------------- |
+| **Project Source Code** (UI, logic, API) | **MIT**          | ✅ Yes                    |
+| **Demucs Library** (@facebookresearch)   | MIT              | ✅ Yes                    |
+| **Demucs Model Weights**                 | **CC-BY-NC 4.0** | ❌ **No** (Research Only) |
+| **React Flow** (Core)                    | MIT              | ✅ Yes (with attribution) |
+| **React Flow Pro** features              | Commercial       | ⚠️ Requires Subscription  |
+
+**Important**: The MIT license of this project **does not** extend to the pre-trained weights/models used by dependencies such as Demucs. You act as the licensee for satisfied dependencies. Please consult the "Commercial License Audit" section above for more details.
