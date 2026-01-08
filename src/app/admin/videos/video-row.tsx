@@ -85,6 +85,11 @@ export function VideoRow({ video, isDev }: { video: Video, isDev: boolean }) {
             fd.append('videoId', video.id.toString());
             const res = await fetch('/api/admin/transfer-stems', { method: 'POST', body: fd });
 
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || res.statusText || "Transfer failed");
+            }
+
             // Handle ReadableStream
             const reader = res.body?.getReader();
             if (!reader) throw new Error("No response body");
@@ -107,8 +112,12 @@ export function VideoRow({ video, isDev }: { video: Video, isDev: boolean }) {
                         } else if (data.type === 'error') {
                             throw new Error(data.message);
                         }
-                    } catch {
+                    } catch (err: any) {
                         // ignore non-json or partial lines
+                        // But strictly check for known error response from nextjs logic if it wasn't json
+                        if (line.includes("No processed stems found")) {
+                            throw new Error("No processed stems found for this video.");
+                        }
                     }
                 }
             }
@@ -120,6 +129,12 @@ export function VideoRow({ video, isDev }: { video: Video, isDev: boolean }) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (e: any) {
             alert("Transfer failed: " + e.message);
+
+            // Auto-recovery for Zombie State
+            if (e.message.includes("No processed stems found")) {
+                alert("It looks like the audio files are missing from the server. You should remove the jam to reset the status and try again.");
+                setShowRemoveStemsConfirm(true);
+            }
         } finally {
             setLoading(false);
             setTransferProgress(0);

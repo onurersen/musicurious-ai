@@ -69,7 +69,9 @@ export function UserRow({ user, currentUserEmail }: { user: User, currentUserEma
             </td>
             <td className="p-4">
                 <div className="flex flex-col">
-                    <span className="font-medium text-white">{user.first_name} {user.last_name}</span>
+                    <span className={`font-medium ${!user.first_name && !user.last_name ? 'text-muted-foreground italic' : 'text-white'}`}>
+                        {(user.first_name || user.last_name) ? `${user.first_name} ${user.last_name}`.trim() : 'No Name Provided'}
+                    </span>
                     <span className="text-xs text-muted-foreground">{user.email}</span>
                 </div>
             </td>

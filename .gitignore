@@ -51,3 +51,4 @@ __pycache__/
 *.py[cod]
 *.mp3
 demucs-debug.log
+transfer-debug.log

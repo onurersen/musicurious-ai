@@ -5,6 +5,8 @@ import { currentUser, clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { encodeId } from "@/lib/id-obfuscation";
 
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+
 // ... existing interfaces ...
 
 // ... (skip down to deleteUser and banUser) ...
@@ -133,6 +135,19 @@ export async function checkVideoCategory(url: string) {
 
         const html = await response.text();
 
+        // Fetch oEmbed data for reliable title
+        let oembedTitle = "";
+        try {
+            const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+            const oembedRes = await fetch(oembedUrl, { next: { revalidate: 3600 } });
+            if (oembedRes.ok) {
+                const oembedJson = await oembedRes.json();
+                oembedTitle = oembedJson.title;
+            }
+        } catch (e) {
+            console.error("Failed to fetch oembed:", e);
+        }
+
         // Check for <meta itemprop="genre" content="Music">
         const isMusicGenre = /<meta\s+itemprop="genre"\s+content="Music"/i.test(html);
 
@@ -142,7 +157,9 @@ export async function checkVideoCategory(url: string) {
         // Check title using regex for proper extraction
         const titleMatch = html.match(/<title>(.*?)<\/title>/) || html.match(/<meta property="og:title" content="(.*?)">/);
         const rawTitle = titleMatch ? titleMatch[1].replace(" - YouTube", "") : "";
-        const title = rawTitle || "Unknown Title";
+
+        // Prioritize oEmbed title, fall back to scraped title, then "Unknown Title"
+        const title = oembedTitle || rawTitle || "Unknown Title";
 
         console.log(`Checking URL: ${url}`);
         console.log(`isMusicGenre: ${isMusicGenre}, isMusicCategory: ${isMusicCategory}, title: ${title}`);
@@ -222,7 +239,7 @@ export async function createVideoRecord(url: string, title?: string) {
         }
 
         const email = user.emailAddresses[0]?.emailAddress || "unknown";
-        const role = email === 'onurersen@gmail.com' ? 'admin' : 'user';
+        const role = (ADMIN_EMAIL && email === ADMIN_EMAIL) ? 'admin' : 'user';
 
         // Check if user is banned
         const bannedCheck = await sql`SELECT * FROM banned_emails WHERE email = ${email}`;
@@ -340,7 +357,7 @@ export async function getVideos(scope: 'personal' | 'all' = 'personal'): Promise
         const email = user.emailAddresses[0]?.emailAddress;
         let role = 'user';
 
-        if (email === 'onurersen@gmail.com') {
+        if (ADMIN_EMAIL && email === ADMIN_EMAIL) {
             role = 'admin';
         } else {
             const userRes = await sql`SELECT role FROM users WHERE id = ${user.id}`;
@@ -393,7 +410,7 @@ export async function updateVideoApproval(videoId: number, status: 'approved' | 
     const email = user.emailAddresses[0]?.emailAddress;
     let isAdmin = false;
 
-    if (email === 'onurersen@gmail.com') {
+    if (ADMIN_EMAIL && email === ADMIN_EMAIL) {
         isAdmin = true;
     } else {
         const userRes = await sql`SELECT role FROM users WHERE id = ${user.id}`;
@@ -428,7 +445,7 @@ export async function isAdmin() {
     if (!user) return false;
 
     const email = user.emailAddresses[0]?.emailAddress;
-    if (email === 'onurersen@gmail.com') return true;
+    if (ADMIN_EMAIL && email === ADMIN_EMAIL) return true;
 
     const res = await sql`SELECT role FROM users WHERE id = ${user.id}`;
     return res.rows[0]?.role === 'admin';
@@ -488,7 +505,7 @@ export async function getUserStatus() {
 
         console.log(`[getUserStatus] DB result for ${user.id}: status=${status}, role=${role}`);
 
-        if (role === 'admin' || email === 'onurersen@gmail.com') return 'approved';
+        if (role === 'admin' || (ADMIN_EMAIL && email === ADMIN_EMAIL)) return 'approved';
         return status || 'pending';
     } catch (e) {
         console.error("Error getting user status:", e);
@@ -517,7 +534,7 @@ export async function getUsers(): Promise<User[]> {
             if (!email) continue;
 
             // Default role logic
-            const isAdminEmail = email === 'onurersen@gmail.com';
+            const isAdminEmail = ADMIN_EMAIL && email === ADMIN_EMAIL;
             const role = isAdminEmail ? 'admin' : 'user';
 
             // NOTE: We don't overwrite 'blocked' status, but we sync new users as 'pending'
@@ -584,7 +601,7 @@ export async function getJam(id: number) {
         const currentEmail = currentUserObj?.emailAddresses[0]?.emailAddress;
         let isUserAdmin = false;
 
-        if (currentEmail === 'onurersen@gmail.com') {
+        if (ADMIN_EMAIL && currentEmail === ADMIN_EMAIL) {
             isUserAdmin = true;
         } else if (currentUserObj) {
             // Ideally check DB role, but this is a lightweight server action
