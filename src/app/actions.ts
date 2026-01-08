@@ -137,11 +137,13 @@ export async function checkVideoCategory(url: string) {
 
         // Fetch oEmbed data for reliable title
         let oembedTitle = "";
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let oembedJson: any = null;
         try {
             const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
             const oembedRes = await fetch(oembedUrl, { next: { revalidate: 3600 } });
             if (oembedRes.ok) {
-                const oembedJson = await oembedRes.json();
+                oembedJson = await oembedRes.json();
                 oembedTitle = oembedJson.title;
             }
         } catch (e) {
@@ -160,6 +162,7 @@ export async function checkVideoCategory(url: string) {
 
         // Prioritize oEmbed title, fall back to scraped title, then "Unknown Title"
         const title = oembedTitle || rawTitle || "Unknown Title";
+        const thumbnailUrl = (typeof oembedJson?.thumbnail_url === 'string') ? oembedJson.thumbnail_url : null;
 
         console.log(`Checking URL: ${url}`);
         console.log(`isMusicGenre: ${isMusicGenre}, isMusicCategory: ${isMusicCategory}, title: ${title}`);
@@ -167,7 +170,8 @@ export async function checkVideoCategory(url: string) {
         return {
             isMusic: isMusicGenre || isMusicCategory,
             category: isMusicGenre || isMusicCategory ? "Music" : "Unknown",
-            title
+            title,
+            thumbnailUrl
         };
     } catch (error) {
         console.error("Failed to fetch video page:", error);
