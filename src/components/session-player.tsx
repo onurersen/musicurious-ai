@@ -58,6 +58,24 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
         setExtractedSections(propsExtractedSections);
     }, [propsExtractedSections]);
 
+    // Notify other components (QuickNav) about section count changes
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('musicurious:sections-update', {
+                detail: { count: extractedSections.length }
+            }));
+        }
+    }, [extractedSections]);
+
+    // Notify other components (QuickNav) about chords count changes
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('musicurious:chords-update', {
+                detail: { count: chordsTimeline?.length || 0 }
+            }));
+        }
+    }, [chordsTimeline]);
+
     const [editingSectionId, setEditingSectionId] = useState<number | null>(null);
     const [deletingSectionId, setDeletingSectionId] = useState<number | null>(null);
     const [editingTitle, setEditingTitle] = useState("");
@@ -808,7 +826,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
     return (
         <div className="flex flex-col gap-8 w-full">
             {/* Player Main Area - Increased height for extra controls */}
-            <div className={`sticky top-20 z-50 relative w-full h-[22rem] bg-black/60 backdrop-blur-xl rounded-xl overflow-hidden border border-white/10 shadow-2xl transition-all duration-500 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
+            <div className={`relative w-full h-[22rem] bg-black/60 backdrop-blur-xl rounded-xl overflow-hidden border border-white/10 shadow-2xl transition-all duration-500 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
 
                 {/* Visualizer Canvas */}
                 <div ref={containerRef} className="absolute inset-x-0 top-0 h-48 flex items-center justify-center border-b border-white/5">

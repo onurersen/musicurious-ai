@@ -89,7 +89,7 @@ export default async function SessionPage({
 
             {/* Sticky Nav */}
             <div className="sticky top-4 z-[100] mb-6 flex justify-center">
-                <QuickNav youtubeUrl={video.youtube_url} />
+                <QuickNav youtubeUrl={video.youtube_url} initialSectionCount={extractedSections.length} initialChordsCount={video.chords?.length || 0} />
             </div>
 
             <Link href="/videos" className="inline-flex items-center text-muted-foreground hover:text-white mb-8 transition-colors">
