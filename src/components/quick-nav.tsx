@@ -3,8 +3,31 @@
 import { useEffect, useState } from "react";
 import { Music2, Scissors, Network, Disc, ExternalLink } from "lucide-react";
 
-export function QuickNav({ youtubeUrl }: { youtubeUrl?: string | null }) {
+export function QuickNav({ youtubeUrl, initialSectionCount = 0, initialChordsCount = 0 }: { youtubeUrl?: string | null, initialSectionCount?: number, initialChordsCount?: number }) {
     const [activeSection, setActiveSection] = useState<string>('track-section');
+    const [sectionCount, setSectionCount] = useState(initialSectionCount);
+    const [chordsCount, setChordsCount] = useState(initialChordsCount);
+
+    useEffect(() => {
+        const handleSectionsUpdate = (e: CustomEvent) => {
+            if (e.detail && typeof e.detail.count === 'number') {
+                setSectionCount(e.detail.count);
+            }
+        };
+
+        const handleChordsUpdate = (e: CustomEvent) => {
+            if (e.detail && typeof e.detail.count === 'number') {
+                setChordsCount(e.detail.count);
+            }
+        };
+
+        window.addEventListener('musicurious:sections-update', handleSectionsUpdate as EventListener);
+        window.addEventListener('musicurious:chords-update', handleChordsUpdate as EventListener);
+        return () => {
+            window.removeEventListener('musicurious:sections-update', handleSectionsUpdate as EventListener);
+            window.removeEventListener('musicurious:chords-update', handleChordsUpdate as EventListener);
+        };
+    }, []);
 
     const scrollTo = (id: string) => {
         const el = document.getElementById(id);
@@ -79,16 +102,28 @@ export function QuickNav({ youtubeUrl }: { youtubeUrl?: string | null }) {
                 </button>
                 <div className="w-px h-3 bg-white/10 mx-1" />
                 <button
-                    onClick={() => scrollTo('chords-display')}
-                    className={buttonClass('chords-display')}
+                    onClick={() => chordsCount > 0 && scrollTo('chords-display')}
+                    disabled={chordsCount === 0}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${activeSection === 'chords-display'
+                            ? 'bg-purple-500 text-white shadow-md'
+                            : chordsCount === 0
+                                ? 'text-muted-foreground/30 cursor-not-allowed'
+                                : 'text-muted-foreground hover:text-white hover:bg-white/10'
+                        }`}
                 >
                     <Music2 size={12} />
                     Chords
                 </button>
                 <div className="w-px h-3 bg-white/10 mx-1" />
                 <button
-                    onClick={() => scrollTo('extracted-sections')}
-                    className={buttonClass('extracted-sections')}
+                    onClick={() => sectionCount > 0 && scrollTo('extracted-sections')}
+                    disabled={sectionCount === 0}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${activeSection === 'extracted-sections'
+                        ? 'bg-purple-500 text-white shadow-md'
+                        : sectionCount === 0
+                            ? 'text-muted-foreground/30 cursor-not-allowed'
+                            : 'text-muted-foreground hover:text-white hover:bg-white/10'
+                        }`}
                 >
                     <Scissors size={12} />
                     Sections
