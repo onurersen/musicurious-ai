@@ -21,7 +21,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { saveFlowCanvas, getFlowCanvas } from "@/app/actions";
+import { saveFlowCanvas, getFlowCanvas, logClientEvent } from "@/app/actions";
 import { getChordShape } from "./chord-display";
 import { ConfirmationModal } from "./confirmation-modal";
 import { DownloadOptionsModal } from "./download-options-modal";
@@ -249,6 +249,13 @@ function CanvasInternal({ videoId, initialState, extractedSections, jamTitle, ch
     }, []);
 
     const handleDownloadPDF = useCallback(async ({ showChordNames, showChordDiagrams }: { showChordNames: boolean; showChordDiagrams: boolean }) => {
+
+        await logClientEvent('DOWNLOAD_FLOW_PDF', {
+            videoId,
+            jamTitle,
+            options: { showChordNames, showChordDiagrams }
+        });
+
         const doc = new jsPDF();
 
         // Helper to draw a chord diagram
