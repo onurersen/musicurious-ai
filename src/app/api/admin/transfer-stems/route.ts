@@ -113,14 +113,17 @@ export async function POST(request: Request) {
                     await log(`[Transfer API] Uploading ${file} to Vercel Blob...`);
                     const blob = await put(`submissions/${videoId}/${file}`, fileBuffer, {
                         access: 'public',
-                        addRandomSuffix: false
+                        addRandomSuffix: false,
+                        token: process.env.BLOB_READ_WRITE_TOKEN,
+                        // @ts-ignore - allowOverwrite is valid but types might be old
+                        allowOverwrite: true
                     });
                     await log(`[Transfer API] Uploaded ${file} to ${blob.url}`);
 
                     // Save to DB
                     await log(`[Transfer API] Inserting stem record for ${file}`);
                     await sql`
-                        INSERT INTO stems (video_id, stem_type, url, created_at)
+                        INSERT INTO stems (video_id, type, blob_url, created_at)
                         VALUES (${videoId}, ${file.replace('.mp3', '')}, ${blob.url}, NOW())
                     `;
 
