@@ -108,6 +108,7 @@ export async function createMusicalFlowCanvasesTable() {
 }
 
 
+
 export async function createSavedJamsTable() {
   try {
     const result = await sql`
@@ -123,6 +124,27 @@ export async function createSavedJamsTable() {
     return result;
   } catch (error) {
     console.error('Error creating "saved_jams" table:', error);
+    throw error;
+  }
+}
+
+export async function createAuditLogsTable() {
+  try {
+    const result = await sql`
+        CREATE TABLE IF NOT EXISTS audit_logs (
+          id SERIAL PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          action TEXT NOT NULL,
+          resource_type TEXT NOT NULL,
+          resource_id TEXT,
+          details JSONB DEFAULT '{}'::jsonb,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+    console.log(`Created "audit_logs" table`);
+    return result;
+  } catch (error) {
+    console.error('Error creating "audit_logs" table:', error);
     throw error;
   }
 }

@@ -4,6 +4,7 @@ import { sql } from '@vercel/postgres';
 import { currentUser, clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { encodeId } from "@/lib/id-obfuscation";
+import { logAuditAction } from "@/lib/audit";
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
@@ -28,6 +29,17 @@ export async function deleteUser(userId: string) {
         // 2. Delete from App DB
         await sql`DELETE FROM videos WHERE user_id = ${userId}`;
         await sql`DELETE FROM users WHERE id = ${userId}`;
+
+        const currentUserObj = await currentUser();
+        if (currentUserObj) {
+            await logAuditAction({
+                userId: currentUserObj.id,
+                action: 'DELETE_USER',
+                resourceType: 'user',
+                resourceId: userId
+            });
+        }
+
         revalidatePath('/admin/users');
         return { success: true };
     } catch (err) {
@@ -57,6 +69,17 @@ export async function banUser(userId: string, email: string) {
         await sql`DELETE FROM videos WHERE user_id = ${userId}`;
         await sql`DELETE FROM users WHERE id = ${userId}`;
 
+        const currentUserObj = await currentUser();
+        if (currentUserObj) {
+            await logAuditAction({
+                userId: currentUserObj.id,
+                action: 'BAN_USER',
+                resourceType: 'user',
+                resourceId: userId,
+                details: { banned_email: email }
+            });
+        }
+
         revalidatePath('/admin/users');
         return { success: true };
     } catch (err) {
@@ -78,6 +101,18 @@ export async function forceLogoutUser(userId: string) {
         }
 
         console.log(`[forceLogoutUser] Revoked ${sessions.data.length} sessions for user ${userId}`);
+
+        const currentUserObj = await currentUser();
+        if (currentUserObj) {
+            await logAuditAction({
+                userId: currentUserObj.id,
+                action: 'FORCE_LOGOUT',
+                resourceType: 'user',
+                resourceId: userId,
+                details: { session_count: sessions.data.length }
+            });
+        }
+
         return { success: true, count: sessions.data.length };
     } catch (err) {
         console.error("Error forcing logout:", err);
@@ -292,6 +327,15 @@ export async function createVideoRecord(url: string, title?: string) {
           VALUES (${url}, ${title || 'Untitled Jam'}, 'pending', ${user.id}, 'pending', 'pending', 0)
           RETURNING id, youtube_url, title, status, created_at, approval_status, processing_status, processing_progress;
         `;
+
+        await logAuditAction({
+            userId: user.id,
+            action: 'SUBMIT_JAM',
+            resourceType: 'jam',
+            resourceId: result.rows[0].id.toString(),
+            details: { url, title }
+        });
+
         return { success: true, video: result.rows[0] };
     } catch (error) {
         console.error('Failed to create video record:', error);
@@ -302,6 +346,17 @@ export async function createVideoRecord(url: string, title?: string) {
 export async function searchJams(query: string): Promise<Video[]> {
     const user = await currentUser();
     if (!user) return [];
+
+    // Log the search (filtering out short/empty queries if desired, but logging all for now)
+    if (query && query.length > 2) {
+        // Fire and forget logging to avoid slowing down search
+        logAuditAction({
+            userId: user.id,
+            action: 'SEARCH_JAMS',
+            resourceType: 'system',
+            details: { query }
+        });
+    }
 
     const searchTerm = `%${query}%`;
 
@@ -344,6 +399,14 @@ export async function saveJam(videoId: number) {
             VALUES (${user.id}, ${videoId})
             ON CONFLICT (user_id, video_id) DO NOTHING
         `;
+
+        await logAuditAction({
+            userId: user.id,
+            action: 'ADD_TO_LIBRARY',
+            resourceType: 'jam',
+            resourceId: videoId.toString()
+        });
+
         revalidatePath('/videos');
         return { success: true };
     } catch (err) {
@@ -435,6 +498,14 @@ export async function updateVideoApproval(videoId: number, status: 'approved' | 
                 WHERE id = ${videoId}
             `;
         }
+
+        await logAuditAction({
+            userId: user.id,
+            action: status === 'approved' ? 'APPROVE_JAM' : 'REJECT_JAM',
+            resourceType: 'jam',
+            resourceId: videoId.toString()
+        });
+
         revalidatePath('/videos');
         revalidatePath('/admin/videos');
         return { success: true };
@@ -451,13 +522,13 @@ export async function isAdmin() {
     const email = user.emailAddresses[0]?.emailAddress;
     if (ADMIN_EMAIL && email === ADMIN_EMAIL) return true;
 
-    const res = await sql`SELECT role FROM users WHERE id = ${user.id}`;
+    const res = await sql`SELECT role FROM users WHERE id = ${user.id} `;
     return res.rows[0]?.role === 'admin';
 }
 
 export async function trackUserActivity(userId: string) {
     try {
-        await sql`UPDATE users SET last_login = NOW() WHERE id = ${userId}`;
+        await sql`UPDATE users SET last_login = NOW() WHERE id = ${userId} `;
     } catch (e) {
         console.error("Failed to track user activity:", e);
     }
@@ -469,17 +540,17 @@ export async function getUserStatus() {
 
     const email = user.emailAddresses[0]?.emailAddress?.toLowerCase();
 
-    console.log(`[getUserStatus] Checking status for ${email} (${user.id})`);
+    console.log(`[getUserStatus] Checking status for ${email}(${user.id})`);
 
     try {
         // Check if banned - this handles cases where user was 'banned' (deleted + added to ban list)
-        const bannedCheck = await sql`SELECT 1 FROM banned_emails WHERE email = ${email}`;
+        const bannedCheck = await sql`SELECT 1 FROM banned_emails WHERE email = ${email} `;
         if (bannedCheck.rows.length > 0) {
             console.log(`[getUserStatus] User ${email} is banned`);
             return 'blocked';
         }
 
-        const res = await sql`SELECT status, role FROM users WHERE id = ${user.id}`;
+        const res = await sql`SELECT status, role FROM users WHERE id = ${user.id} `;
 
         // If user record doesn't exist, create it as pending
         if (res.rows.length === 0) {
@@ -490,9 +561,9 @@ export async function getUserStatus() {
             const role = 'user';
 
             await sql`
-                INSERT INTO users (id, email, first_name, last_name, role, status, last_login)
-                VALUES (${user.id}, ${email}, ${firstName}, ${lastName}, ${role}, 'pending', NOW())
-                ON CONFLICT (id) DO NOTHING
+                INSERT INTO users(id, email, first_name, last_name, role, status, last_login)
+        VALUES(${user.id}, ${email}, ${firstName}, ${lastName}, ${role}, 'pending', NOW())
+                ON CONFLICT(id) DO NOTHING
             `;
 
             // Re-fetch to be sure or just return pending
@@ -501,13 +572,13 @@ export async function getUserStatus() {
 
         if (res.rows.length > 0) {
             // Update last_login silently for existing users
-            await sql`UPDATE users SET last_login = NOW() WHERE id = ${user.id}`;
+            await sql`UPDATE users SET last_login = NOW() WHERE id = ${user.id} `;
         }
 
         const status = res.rows[0]?.status;
         const role = res.rows[0]?.role;
 
-        console.log(`[getUserStatus] DB result for ${user.id}: status=${status}, role=${role}`);
+        console.log(`[getUserStatus] DB result for ${user.id}: status = ${status}, role = ${role} `);
 
         if (role === 'admin' || (ADMIN_EMAIL && email === ADMIN_EMAIL)) return 'approved';
         return status || 'pending';
@@ -552,18 +623,18 @@ export async function getUsers(): Promise<User[]> {
             // UNLESS it's the admin fallback
 
             await sql`
-                INSERT INTO users (id, email, first_name, last_name, role, status, created_at)
-                VALUES (${cUser.id}, ${email}, ${firstName}, ${lastName}, ${role}, ${isAdminEmail ? 'approved' : 'pending'}, ${new Date(cUser.createdAt).toISOString()})
-                ON CONFLICT (id) DO UPDATE SET
-                    email = EXCLUDED.email,
-                    first_name = EXCLUDED.first_name,
-                    last_name = EXCLUDED.last_name;
-            `;
+                INSERT INTO users(id, email, first_name, last_name, role, status, created_at)
+        VALUES(${cUser.id}, ${email}, ${firstName}, ${lastName}, ${role}, ${isAdminEmail ? 'approved' : 'pending'}, ${new Date(cUser.createdAt).toISOString()})
+                ON CONFLICT(id) DO UPDATE SET
+        email = EXCLUDED.email,
+            first_name = EXCLUDED.first_name,
+            last_name = EXCLUDED.last_name;
+        `;
         }
 
         // 3. Fetch from DB as usual
         const result = await sql`
-            SELECT * FROM users 
+        SELECT * FROM users 
             ORDER BY created_at DESC
         `;
         return result.rows.map(row => ({
@@ -582,7 +653,19 @@ export async function updateUserStatus(userId: string, status: 'approved' | 'blo
     if (!admin) return { success: false, error: "Forbidden" };
 
     try {
-        await sql`UPDATE users SET status = ${status} WHERE id = ${userId}`;
+        await sql`UPDATE users SET status = ${status} WHERE id = ${userId} `;
+
+        const currentUserObj = await currentUser();
+        if (currentUserObj) {
+            await logAuditAction({
+                userId: currentUserObj.id,
+                action: 'UPDATE_USER_STATUS',
+                resourceType: 'user',
+                resourceId: userId,
+                details: { new_status: status }
+            });
+        }
+
         revalidatePath('/admin/users');
         return { success: true };
     } catch (err) {
@@ -618,7 +701,7 @@ export async function getUserLibrary(userId: string): Promise<LibraryJam[]> {
             JOIN users u ON v.user_id = u.id
             WHERE sj.user_id = ${userId}
             ORDER BY sj.created_at DESC
-        `;
+            `;
 
         // 2. Owned Jams
         const ownedResult = await sql`
@@ -659,7 +742,7 @@ export async function getJam(id: number, viewAsUserId?: string) {
             isUserAdmin = true;
         } else if (currentUserObj) {
             // Ideally check DB role, but this is a lightweight server action
-            const userRes = await sql`SELECT role FROM users WHERE id = ${currentUserObj.id}`;
+            const userRes = await sql`SELECT role FROM users WHERE id = ${currentUserObj.id} `;
             isUserAdmin = userRes.rows[0]?.role === 'admin';
         }
 
@@ -693,7 +776,7 @@ export async function getJam(id: number, viewAsUserId?: string) {
 
         // Fetch Stems
         const stemsRes = await sql`
-            SELECT * FROM stems 
+        SELECT * FROM stems 
             WHERE video_id = ${id}
         `;
 
@@ -716,7 +799,7 @@ export async function getJam(id: number, viewAsUserId?: string) {
                     SELECT 1 
                     FROM videos v
                     LEFT JOIN saved_jams sj ON v.id = sj.video_id AND sj.user_id = ${viewAsUserId}
-                    WHERE v.id = ${id} AND (v.user_id = ${viewAsUserId} OR sj.user_id IS NOT NULL)
+                    WHERE v.id = ${id} AND(v.user_id = ${viewAsUserId} OR sj.user_id IS NOT NULL)
                 `;
 
                 if (hasAccess.rows.length === 0) {
@@ -729,7 +812,7 @@ export async function getJam(id: number, viewAsUserId?: string) {
                 targetUserId = viewAsUserId;
 
                 // Fetch impersonated user details for display
-                const uRes = await sql`SELECT first_name, last_name FROM users WHERE id = ${targetUserId}`;
+                const uRes = await sql`SELECT first_name, last_name FROM users WHERE id = ${targetUserId} `;
                 if (uRes.rows.length > 0) {
                     impersonatingUser = uRes.rows[0] as { first_name: string; last_name: string };
                 }
@@ -743,7 +826,7 @@ export async function getJam(id: number, viewAsUserId?: string) {
                 SELECT pitch, tempo, active_track 
                 FROM user_jam_settings 
                 WHERE user_id = ${targetUserId} AND video_id = ${id}
-            `;
+        `;
             if (settingsRes.rows.length > 0) {
                 userSettings = settingsRes.rows[0] as UserJamSettings;
             }
@@ -784,7 +867,7 @@ export async function removeStems(videoId: number) {
 
         // 0. Cleanup Vercel Blobs
         try {
-            const stemsRes = await sql`SELECT blob_url FROM stems WHERE video_id = ${videoId}`;
+            const stemsRes = await sql`SELECT blob_url FROM stems WHERE video_id = ${videoId} `;
             const blobUrls = stemsRes.rows.map(r => r.blob_url).filter(url => url);
 
             if (blobUrls.length > 0) {
@@ -806,11 +889,11 @@ export async function removeStems(videoId: number) {
             try {
                 const entries = await readdir(stemsRoot, { withFileTypes: true });
                 const folders = entries
-                    .filter(e => e.isDirectory() && e.name.startsWith(`${videoId}_`))
+                    .filter(e => e.isDirectory() && e.name.startsWith(`${videoId} _`))
                     .map(e => join(stemsRoot, e.name));
 
                 for (const folder of folders) {
-                    console.log(`Removing stem folder: ${folder}`);
+                    console.log(`Removing stem folder: ${folder} `);
                     await rm(folder, { recursive: true, force: true });
                 }
             } catch {
@@ -820,7 +903,7 @@ export async function removeStems(videoId: number) {
 
         // Database Cleanup
         await sql`BEGIN`;
-        await sql`DELETE FROM stems WHERE video_id = ${videoId}`;
+        await sql`DELETE FROM stems WHERE video_id = ${videoId} `;
         await sql`
             UPDATE videos 
             SET processing_status = 'pending', processing_progress = 0 
@@ -833,15 +916,26 @@ export async function removeStems(videoId: number) {
             const uploadsRoot = join(process.cwd(), 'local_uploads');
             const uploadEntries = await readdir(uploadsRoot, { withFileTypes: true });
             const uploadFiles = uploadEntries
-                .filter(e => e.isFile() && e.name.startsWith(`${videoId}_`))
+                .filter(e => e.isFile() && e.name.startsWith(`${videoId} _`))
                 .map(e => join(uploadsRoot, e.name));
 
             for (const file of uploadFiles) {
-                console.log(`Removing local upload: ${file}`);
+                console.log(`Removing local upload: ${file} `);
                 await rm(file, { force: true });
             }
         } catch (e) {
             console.warn("Error cleaning up local_uploads (might not exist):", e);
+        }
+
+        const currentUserObj = await currentUser();
+        if (currentUserObj) {
+            await logAuditAction({
+                userId: currentUserObj.id,
+                action: 'REMOVE_STEMS',
+                resourceType: 'jam',
+                resourceId: videoId.toString(),
+                details: {}
+            });
         }
 
         revalidatePath('/admin/videos');
@@ -867,11 +961,11 @@ export async function cancelProcessing(videoId: number) {
             const uploadsRoot = join(process.cwd(), 'local_uploads');
             const uploadEntries = await readdir(uploadsRoot, { withFileTypes: true });
             const uploadFiles = uploadEntries
-                .filter(e => e.isFile() && e.name.startsWith(`${videoId}_`))
+                .filter(e => e.isFile() && e.name.startsWith(`${videoId} _`))
                 .map(e => join(uploadsRoot, e.name));
 
             for (const file of uploadFiles) {
-                console.log(`[cancelProcessing] Removing local upload: ${file}`);
+                console.log(`[cancelProcessing] Removing local upload: ${file} `);
                 await rm(file, { force: true });
             }
         } catch (e) {
@@ -904,7 +998,18 @@ export async function deleteJam(videoId: number) {
 
         // 2. Delete the video Record
         // Cascading deletes will handle: stems, user_jam_settings, extracted_sections
-        await sql`DELETE FROM videos WHERE id = ${videoId}`;
+        await sql`DELETE FROM videos WHERE id = ${videoId} `;
+
+        const currentUserObj = await currentUser();
+        if (currentUserObj) {
+            await logAuditAction({
+                userId: currentUserObj.id,
+                action: 'DELETE_JAM',
+                resourceType: 'jam',
+                resourceId: videoId.toString(),
+                details: {}
+            });
+        }
 
         revalidatePath('/admin/videos');
         return { success: true };
@@ -933,19 +1038,27 @@ export async function saveJamSettings(videoId: number, settings: UserJamSettings
 
     const targetUserId = impersonatedUserId || user.id;
 
-    console.log(`[saveJamSettings] Saving for user ${targetUserId}, video ${videoId}:`, settings);
+    console.log(`[saveJamSettings] Saving for user ${targetUserId}, video ${videoId}: `, settings);
 
     try {
         await sql`
-            INSERT INTO user_jam_settings (user_id, video_id, pitch, tempo, active_track, updated_at)
-            VALUES (${targetUserId}, ${videoId}, ${Math.round(settings.pitch)}, ${Math.round(settings.tempo)}, ${settings.active_track}, NOW())
-            ON CONFLICT (user_id, video_id) 
-            DO UPDATE SET 
-                pitch = EXCLUDED.pitch,
-                tempo = EXCLUDED.tempo,
-                active_track = EXCLUDED.active_track,
-                updated_at = NOW();
+            INSERT INTO user_jam_settings(user_id, video_id, pitch, tempo, active_track, updated_at)
+        VALUES(${targetUserId}, ${videoId}, ${Math.round(settings.pitch)}, ${Math.round(settings.tempo)}, ${settings.active_track}, NOW())
+            ON CONFLICT(user_id, video_id) 
+            DO UPDATE SET
+        pitch = EXCLUDED.pitch,
+            tempo = EXCLUDED.tempo,
+            active_track = EXCLUDED.active_track,
+            updated_at = NOW();
         `;
+        await logAuditAction({
+            userId: targetUserId,
+            action: 'UPDATE_SESSION_SETTINGS',
+            resourceType: 'jam',
+            resourceId: videoId.toString(),
+            details: { ...settings }
+        });
+
         console.log("[saveJamSettings] Success.");
         return { success: true };
     } catch (err) {
@@ -980,11 +1093,20 @@ export async function saveExtractedSection(videoId: number, start: number, end: 
 
     try {
         const result = await sql`
-            INSERT INTO extracted_sections (user_id, video_id, title, start_time, end_time)
-            VALUES (${targetUserId}, ${videoId}, ${title}, ${start}, ${end})
-            RETURNING *;
+            INSERT INTO extracted_sections(user_id, video_id, title, start_time, end_time)
+        VALUES(${targetUserId}, ${videoId}, ${title}, ${start}, ${end})
+        RETURNING *;
         `;
-        revalidatePath(`/jam/${videoId}`); // Assuming this is the path
+        await logAuditAction({
+            userId: targetUserId,
+            action: 'EXTRACT_SECTION',
+            resourceType: 'section',
+            resourceId: result.rows[0].id.toString(),
+            details: { title, start, end, videoId }
+        });
+
+        revalidatePath(`/jam/${videoId}`); // Following the space-y pattern from the read file which seems odd but sticking to existing logic or fixing? The previous code had spaces. Let's fix the path.
+        revalidatePath(`/session/${videoId}`);
         return { success: true, section: result.rows[0] };
     } catch (err) {
         console.error("Error saving extracted section:", err);
@@ -997,10 +1119,10 @@ export async function getExtractedSections(videoId: number) {
     if (!user) return [];
     try {
         const result = await sql`
-            SELECT * FROM extracted_sections 
+        SELECT * FROM extracted_sections 
             WHERE video_id = ${videoId} AND user_id = ${user.id}
             ORDER BY created_at DESC
-        `;
+            `;
         return result.rows as ExtractedSection[];
     } catch (err) {
         console.error("Error fetching extracted sections:", err);
@@ -1025,6 +1147,15 @@ export async function updateSectionChordAdjustments(sectionId: number, adjustmen
             SET chord_adjustments = ${JSON.stringify(adjustments)} 
             WHERE id = ${sectionId} AND user_id = ${targetUserId}
         `;
+
+        await logAuditAction({
+            userId: targetUserId,
+            action: 'UPDATE_CHORD',
+            resourceType: 'section',
+            resourceId: sectionId.toString(),
+            details: { adjustments }
+        });
+
         revalidatePath('/session/[id]', 'page');
         return { success: true };
     } catch (err) {
@@ -1046,10 +1177,18 @@ export async function resetSectionChordAdjustments(sectionId: number, impersonat
     try {
         await sql`
             UPDATE extracted_sections 
-            SET chord_adjustments = '{}'::jsonb,
-                added_chords = '[]'::jsonb
+            SET chord_adjustments = '{}':: jsonb,
+            added_chords = '[]':: jsonb
             WHERE id = ${sectionId} AND user_id = ${targetUserId}
         `;
+        await logAuditAction({
+            userId: targetUserId,
+            action: 'RESET_CHORDS',
+            resourceType: 'section',
+            resourceId: sectionId.toString(),
+            details: {}
+        });
+
         revalidatePath('/session/[id]', 'page');
         return { success: true };
     } catch (err) {
@@ -1071,9 +1210,17 @@ export async function addSectionChord(sectionId: number, chord: string, imperson
     try {
         await sql`
             UPDATE extracted_sections
-            SET added_chords = COALESCE(added_chords, '[]'::jsonb) || ${JSON.stringify([chord])}::jsonb
+            SET added_chords = COALESCE(added_chords, '[]':: jsonb) || ${JSON.stringify([chord])}:: jsonb
             WHERE id = ${sectionId} AND user_id = ${targetUserId}
         `;
+        await logAuditAction({
+            userId: targetUserId,
+            action: 'ADD_CHORD',
+            resourceType: 'section',
+            resourceId: sectionId.toString(),
+            details: { chord }
+        });
+
         revalidatePath('/session/[id]', 'page');
         return { success: true };
     } catch (err) {
@@ -1093,7 +1240,7 @@ export async function removeSectionChord(sectionId: number, chord: string, imper
     const targetUserId = impersonatedUserId || user.id;
 
     try {
-        const sectionRes = await sql`SELECT added_chords FROM extracted_sections WHERE id = ${sectionId} AND user_id = ${targetUserId}`;
+        const sectionRes = await sql`SELECT added_chords FROM extracted_sections WHERE id = ${sectionId} AND user_id = ${targetUserId} `;
         if (sectionRes.rows.length === 0) return { success: false, error: "Section not found" };
 
         const current = (sectionRes.rows[0]?.added_chords || []) as string[];
@@ -1103,9 +1250,17 @@ export async function removeSectionChord(sectionId: number, chord: string, imper
             current.splice(index, 1);
             await sql`
                 UPDATE extracted_sections
-                SET added_chords = ${JSON.stringify(current)}::jsonb
+                SET added_chords = ${JSON.stringify(current)}:: jsonb
                 WHERE id = ${sectionId} AND user_id = ${targetUserId}
-            `;
+        `;
+            await logAuditAction({
+                userId: targetUserId,
+                action: 'REMOVE_CHORD',
+                resourceType: 'section',
+                resourceId: sectionId.toString(),
+                details: { chord }
+            });
+
             revalidatePath('/session/[id]', 'page');
         }
         return { success: true };
@@ -1131,13 +1286,22 @@ export async function deleteExtractedSection(sectionId: number, impersonatedUser
             DELETE FROM extracted_sections 
             WHERE id = ${sectionId} AND user_id = ${targetUserId}
             RETURNING video_id
-        `;
+            `;
 
         if (result.rowCount === 0) {
             return { success: false, error: "Section not found or unauthorized" };
         }
 
         const videoId = result.rows[0].video_id;
+
+        await logAuditAction({
+            userId: targetUserId,
+            action: 'DELETE_SECTION',
+            resourceType: 'section',
+            resourceId: sectionId.toString(),
+            details: { videoId }
+        });
+
         revalidatePath(`/session/${encodeId(videoId)}`);
 
         return { success: true };
@@ -1166,6 +1330,14 @@ export async function renameExtractedSection(sectionId: number, newTitle: string
         if (result.rowCount === 0) {
             return { success: false, error: "Section not found or unauthorized" };
         }
+        await logAuditAction({
+            userId: targetUserId,
+            action: 'RENAME_SECTION',
+            resourceType: 'section',
+            resourceId: sectionId.toString(),
+            details: { newTitle }
+        });
+
         revalidatePath('/session/[id]', 'page');
         return { success: true };
     } catch (err) {
@@ -1189,13 +1361,21 @@ export async function saveFlowCanvas(videoId: number, state: any, impersonatedUs
 
     try {
         await sql`
-            INSERT INTO musical_flow_canvases (user_id, video_id, canvas_state, updated_at)
-            VALUES (${targetUserId}, ${videoId}, ${state}, NOW())
-            ON CONFLICT (user_id, video_id) 
-            DO UPDATE SET 
-                canvas_state = EXCLUDED.canvas_state,
-                updated_at = NOW();
+            INSERT INTO musical_flow_canvases(user_id, video_id, canvas_state, updated_at)
+        VALUES(${targetUserId}, ${videoId}, ${state}, NOW())
+            ON CONFLICT(user_id, video_id) 
+            DO UPDATE SET
+        canvas_state = EXCLUDED.canvas_state,
+            updated_at = NOW();
         `;
+        await logAuditAction({
+            userId: targetUserId,
+            action: 'UPDATE_FLOW_CANVAS',
+            resourceType: 'jam',
+            resourceId: videoId.toString(),
+            details: {}
+        });
+
         return { success: true };
     } catch (err) {
         console.error("Error saving flow canvas:", err);
@@ -1243,13 +1423,13 @@ export async function syncUser() {
         // Upsert user: Insert if missing, otherwise update metadata and last_login
         // We use ON CONFLICT (id) to handle race conditions
         const result = await sql`
-            INSERT INTO users (id, email, first_name, last_name, role, status, last_login)
-            VALUES (${user.id}, ${email}, ${firstName}, ${lastName}, ${role}, ${status}, NOW())
-            ON CONFLICT (id) DO UPDATE SET
-                email = EXCLUDED.email,
-                first_name = EXCLUDED.first_name,
-                last_name = EXCLUDED.last_name,
-                last_login = NOW()
+            INSERT INTO users(id, email, first_name, last_name, role, status, last_login)
+        VALUES(${user.id}, ${email}, ${firstName}, ${lastName}, ${role}, ${status}, NOW())
+            ON CONFLICT(id) DO UPDATE SET
+        email = EXCLUDED.email,
+            first_name = EXCLUDED.first_name,
+            last_name = EXCLUDED.last_name,
+            last_login = NOW()
             RETURNING role, status;
         `;
 
@@ -1263,12 +1443,54 @@ export async function syncUser() {
         // Fallback catch - attempt to read existing if insert failed hard
         // (though Upsert usually handles it)
         try {
-            const res = await sql`SELECT role, status FROM users WHERE id = ${user.id}`;
+            const res = await sql`SELECT role, status FROM users WHERE id = ${user.id} `;
             if (res.rows.length > 0) {
                 return { role: res.rows[0].role, status: res.rows[0].status };
             }
         } catch { /* ignore */ }
 
         return { role: 'user', status: 'pending' };
+    }
+}
+
+export async function logClientEvent(action: string, details: any) {
+    const user = await currentUser();
+    if (!user) return;
+
+    await logAuditAction({
+        userId: user.id,
+        action,
+        resourceType: 'client_event',
+        details
+    });
+}
+
+export async function searchUsers(query: string) {
+    const admin = await isAdmin();
+    if (!admin) return [];
+
+    if (!query || query.length < 2) return [];
+
+    try {
+        const searchTerm = `%${query}%`;
+        const result = await sql`
+            SELECT id, first_name, last_name, email 
+            FROM users 
+            WHERE 
+                first_name ILIKE ${searchTerm} OR 
+                last_name ILIKE ${searchTerm} OR 
+                email ILIKE ${searchTerm}
+            LIMIT 10
+        `;
+
+        return result.rows.map(row => ({
+            id: row.id as string,
+            first_name: row.first_name as string,
+            last_name: row.last_name as string,
+            email: row.email as string
+        }));
+    } catch (err) {
+        console.error("Error searching users:", err);
+        return [];
     }
 }

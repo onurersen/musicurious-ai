@@ -24,6 +24,9 @@ export function NavbarActions({ isAdmin, isApproved }: NavbarActionsProps) {
                     <Link href="/admin/users" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
                         Users
                     </Link>
+                    <Link href="/admin/audit" className="text-sm font-medium text-purple-400 hover:text-purple-300 transition-colors">
+                        Audit Logs
+                    </Link>
                 </>
             )}
         </>
