@@ -11,8 +11,22 @@ Musicurious AI is an advanced music practice and collaboration platform designed
     -   Pitch shifting and Tempo control (independent).
     -   Looping and Section Extraction.
 - **Musical Flow Canvas**: A visual node-based editor to map out the structure of a song/jam.
+    -   **PDF Export**: Download your musical flow designs as PDF documents.
 - **Chord Recognition**: Detects chords from audio and visualizes them on the timeline and canvas.
 - **User Isolation**: Personal library management where annotations, sections, and settings are private to each user.
+- **Audit Logging**: Comprehensive tracking of user actions for administrative review.
+    -   Admin Dashboard (`/admin/audit`) to view and filter logs.
+
+## Visual Walkthroughs
+
+### 1. Searching and Opening a Jam
+Navigate through your library and quickly find the music you want to practice.
+![Jam Search Flow](file:///Users/jf27yc/.gemini/antigravity/brain/1f81232a-f50e-4452-b78f-19582d2d373a/jam_search_flow_1768239531221.webp)
+
+### 2. Interactive Player
+Control every aspect of the track. Solo instruments, muted drums, or change the tempo/pitch to suit your practice needs.
+![Player Capabilities](file:///Users/jf27yc/.gemini/antigravity/brain/1f81232a-f50e-4452-b78f-19582d2d373a/player_capabilities_retry_-62135596800000.webp)
+
 
 ## Getting Started
 
