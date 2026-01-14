@@ -68,9 +68,12 @@ export function VideoRow({ video, isDev }: { video: Video, isDev: boolean }) {
             if (!res.success) throw new Error(res.error);
             router.refresh();
             setShowRemoveStemsConfirm(false);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (e: any) {
-            alert("Removal failed: " + e.message);
+             
+             
+             
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            alert("Removal failed: " + msg);
         } finally {
             setLoading(false);
         }
@@ -112,7 +115,7 @@ export function VideoRow({ video, isDev }: { video: Video, isDev: boolean }) {
                         } else if (data.type === 'error') {
                             throw new Error(data.message);
                         }
-                    } catch (err: any) {
+                    } catch {
                         // ignore non-json or partial lines
                         // But strictly check for known error response from nextjs logic if it wasn't json
                         if (line.includes("No processed stems found")) {
@@ -126,12 +129,14 @@ export function VideoRow({ video, isDev }: { video: Video, isDev: boolean }) {
             setProcStatus('completed');
             setProgress(100);
             router.refresh();
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (e: any) {
-            alert("Transfer failed: " + e.message);
+             
+             
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            alert("Transfer failed: " + msg);
 
             // Auto-recovery for Zombie State
-            if (e.message.includes("No processed stems found")) {
+            if (msg.includes("No processed stems found")) {
                 alert("It looks like the audio files are missing from the server. You should remove the jam to reset the status and try again.");
                 setShowRemoveStemsConfirm(true);
             }
@@ -288,8 +293,9 @@ export function VideoRow({ video, isDev }: { video: Video, isDev: boolean }) {
                                                     const res = await deleteJam(video.id);
                                                     if (!res.success) throw new Error(res.error);
                                                     router.refresh();
-                                                } catch (e: any) {
-                                                    alert("Deletion failed: " + e.message);
+                                                } catch (e: unknown) {
+                                                    const msg = e instanceof Error ? e.message : String(e);
+                                                    alert("Deletion failed: " + msg);
                                                 } finally {
                                                     setLoading(false);
                                                 }
@@ -666,9 +672,10 @@ function ProcessingUploadButton({ videoId, onUploadStart }: { videoId: number, o
             // Immediately refresh to show processing state
             onUploadStart();
 
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
             console.error("Upload error:", err);
-            alert(`Network/Client Error: ${err.message}`);
+            alert(`Network/Client Error: ${msg}`);
         } finally {
             setUploading(false);
         }

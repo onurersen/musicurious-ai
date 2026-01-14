@@ -13,7 +13,7 @@ export async function logAuditAction({
     action: string;
     resourceType: string;
     resourceId?: string;
-    details?: Record<string, any>;
+    details?: Record<string, unknown>;
 }) {
     // If not running on server (shouldn't happen if called from action but good to catch)
     if (typeof window !== 'undefined') {
@@ -47,7 +47,7 @@ export interface AuditLog {
     action: string;
     resource_type: string;
     resource_id?: string;
-    details: any;
+    details: unknown;
     created_at: string;
     first_name?: string;
     last_name?: string;

@@ -161,7 +161,7 @@ export function RequestJamModal({ isOpen, onClose }: RequestJamModalProps) {
                             <AlertCircle size={24} />
                         </div>
                         <h3 className="text-xl font-bold">Start Request?</h3>
-                        <p className="text-muted-foreground">This doesn't look like a music video. Continue anyway?</p>
+                        <p className="text-muted-foreground">This doesn&apos;t look like a music video. Continue anyway?</p>
                         <div className="flex gap-2 mt-2">
                             <button onClick={handleSubmit} className="flex-1 bg-primary text-white py-2 rounded-xl">Yes, Request</button>
                             <button onClick={() => setShowNonMusicWarning(false)} className="flex-1 bg-white/10 text-white py-2 rounded-xl">Cancel</button>

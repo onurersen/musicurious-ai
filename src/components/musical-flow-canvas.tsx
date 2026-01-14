@@ -259,6 +259,7 @@ function CanvasInternal({ videoId, initialState, extractedSections, jamTitle, ch
         const doc = new jsPDF();
 
         // Helper to draw a chord diagram
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const drawChordDiagram = (doc: jsPDF, x: number, y: number, chordName: string, shape: any) => {
             const scale = 0.4; // Scale down the diagram
             // Dimensions based on standard react-chords style approx

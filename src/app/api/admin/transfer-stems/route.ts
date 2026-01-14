@@ -56,8 +56,9 @@ export async function POST(request: Request) {
     try {
         entries = await readdir(stemsRoot, { withFileTypes: true });
         await log(`[Transfer API] Found ${entries.length} entries in htdemucs`);
-    } catch (e: any) {
-        await log(`[Transfer API] htdemucs directory not found: ${e.message}`);
+    } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        await log(`[Transfer API] htdemucs directory not found: ${msg}`);
         return NextResponse.json({ error: 'Stems directory (htdemucs) not found. Process likely not started.' }, { status: 404 });
     }
 
@@ -115,7 +116,6 @@ export async function POST(request: Request) {
                         access: 'public',
                         addRandomSuffix: false,
                         token: process.env.BLOB_READ_WRITE_TOKEN,
-                        // @ts-ignore - allowOverwrite is valid but types might be old
                         allowOverwrite: true
                     });
                     await log(`[Transfer API] Uploaded ${file} to ${blob.url}`);
@@ -146,11 +146,12 @@ export async function POST(request: Request) {
 
                 send(JSON.stringify({ type: 'done', message: 'Transfer successful!' }));
                 controller.close();
-            } catch (err: any) {
-                await log(`[Transfer API] Stream error: ${err.message}`);
+            } catch (err: unknown) {
+                const msg = err instanceof Error ? err.message : String(err);
+                await log(`[Transfer API] Stream error: ${msg}`);
                 console.error("Stream error:", err);
                 try { await sql`ROLLBACK`; } catch (e) { await log(`[Transfer API] Rollback failed: ${e}`); }
-                controller.enqueue(encoder.encode(JSON.stringify({ type: 'error', message: err.message }) + '\n'));
+                controller.enqueue(encoder.encode(JSON.stringify({ type: 'error', message: msg }) + '\n'));
                 controller.close();
             }
         }
