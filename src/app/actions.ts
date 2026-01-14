@@ -1130,7 +1130,7 @@ export async function getExtractedSections(videoId: number) {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export async function updateSectionChordAdjustments(sectionId: number, adjustments: Record<string, { action: 'rename' | 'hide', to?: string }>, impersonatedUserId?: string) {
     const user = await currentUser();
     if (!user) return { success: false, error: "Unauthorized" };
@@ -1453,7 +1453,7 @@ export async function syncUser() {
     }
 }
 
-export async function logClientEvent(action: string, details: any) {
+export async function logClientEvent(action: string, details: Record<string, unknown>) {
     const user = await currentUser();
     if (!user) return;
 

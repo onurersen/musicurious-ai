@@ -19,6 +19,7 @@ export function DownloadOptionsModal({
     const [chordOption, setChordOption] = useState<'namesOnly' | 'namesAndDiagrams'>('namesAndDiagrams');
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
     }, []);
 

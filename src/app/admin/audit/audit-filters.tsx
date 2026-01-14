@@ -62,6 +62,7 @@ export function AuditFilters() {
     // Initial label set if ID exists (we might not have name, so just show ID or generic)
     useEffect(() => {
         if (initialUserId && !selectedUserLabel) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedUserLabel(initialUserId); // Fallback until we can maybe fetch it? 
             // Ideally we'd fetch the user info to display name, or pass it from server.
             // For now, ID is acceptable fallback if came from URL directly.
@@ -82,6 +83,7 @@ export function AuditFilters() {
     // Search Users Debounce
     useEffect(() => {
         if (!userQuery || userQuery.length < 2) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setUserOptions([]);
             return;
         }

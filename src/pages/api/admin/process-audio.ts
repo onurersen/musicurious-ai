@@ -22,6 +22,13 @@ async function ensureDir(dir: string) {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const busboy = require('busboy');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { appendFile, rename } = require('fs/promises');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { extname } = require('path');
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {
         res.setHeader('Allow', 'POST');
@@ -43,12 +50,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const uploadDir = join(process.cwd(), 'local_uploads');
         await ensureDir(uploadDir);
 
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const busboy = require('busboy');
+        // busboy already required
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _busboy = busboy;
         const totalBytes = req.headers['content-length'];
         console.log(`[API-PAGES] Starting upload. Content-Length: ${totalBytes}`);
         // Initialize file logger
-        const { appendFile } = require('fs/promises');
+        // appendFile already required
         // Define log file relative to project root since we might be in .next
         const logFile = join(process.cwd(), 'local_uploads', 'debug_log.txt');
 
@@ -70,7 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const fileWritePromises: Promise<void>[] = [];
 
         await new Promise<void>((resolve, reject) => {
-            bb.on('file', (name: string, file: IncomingMessage, info: any) => {
+            bb.on('file', (name: string, file: IncomingMessage, info: { filename: string, encoding: string, mimeType: string }) => {
                 const { filename } = info;
                 originalFilename = filename;
                 log(`Busboy receiving file: ${filename}`);
@@ -122,8 +130,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     }
 
                     // Rename
-                    const { rename } = require('fs/promises');
-                    const { extname } = require('path');
+                    // Rename already required
                     const timestamp = Date.now();
                     const ext = extname(originalFilename) || '.wav'; // Fallback to .wav
                     const finalName = `${videoId}_${timestamp}_uploaded${ext}`;
@@ -163,19 +170,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     res.status(200).json({ success: true, message: 'Processing started', filePath: finalPath });
                     resolve();
 
-                } catch (err: any) {
-                    log(`Processing logic error: ${err.message}`);
+                } catch (err: unknown) {
+                    const msg = err instanceof Error ? err.message : String(err);
+                    log(`Processing logic error: ${msg}`);
                     if (!res.headersSent) {
-                        res.status(500).json({ error: `Processing failed: ${err.message}` });
+                        res.status(500).json({ error: `Processing failed: ${msg}` });
                     }
                     resolve();
                 }
             });
 
-            bb.on('error', (err: any) => {
-                log(`Busboy stream level error: ${err.message}`);
+            bb.on('error', (err: unknown) => {
+                const msg = err instanceof Error ? err.message : String(err);
+                log(`Busboy stream level error: ${msg}`);
                 if (!res.headersSent) {
-                    res.status(500).json({ error: `Upload stream failed: ${err.message}` });
+                    res.status(500).json({ error: `Upload stream failed: ${msg}` });
                 }
                 resolve();
             });
@@ -183,10 +192,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             req.pipe(bb);
         });
 
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error('API Handler Critical Error:', e);
         if (!res.headersSent) {
-            res.status(500).json({ error: `Critical Server Error: ${e.message}`, stack: e.stack });
+            const msg = e instanceof Error ? e.message : String(e);
+            res.status(500).json({ error: `Critical Server Error: ${msg}`, stack: e instanceof Error ? e.stack : undefined });
         }
     }
 }

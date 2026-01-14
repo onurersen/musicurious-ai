@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, Fragment } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { format } from 'date-fns';
-import { ChevronDown, ChevronRight, Search, Filter } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { AuditLog } from '@/lib/audit';
 
 export function AuditLogsTable({ logs }: { logs: AuditLog[] }) {
-    const router = useRouter();
-    const searchParams = useSearchParams();
+    // const router = useRouter(); 
+    // const searchParams = useSearchParams();
     const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
     const toggleRow = (id: number) => {

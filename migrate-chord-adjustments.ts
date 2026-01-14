@@ -17,8 +17,8 @@ async function migrate() {
         `;
 
         console.log('Migration completed successfully.');
-    } catch (e: any) {
-        if (e.message.includes('already exists')) {
+    } catch (e: unknown) {
+        if (e instanceof Error && e.message.includes('already exists')) {
             console.log('Column already exists (caught via error).');
         } else {
             console.error('Migration failed:', e);

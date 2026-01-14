@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import { Play, Pause, Loader2, Volume2, Music, Music2, RotateCcw, Repeat, Scissors, Trash2, Pencil, Save, X } from "lucide-react";
+import { Play, Pause, Loader2, Volume2, Music, Music2, RotateCcw, Repeat, Scissors, Trash2, Pencil, Save, X, Download } from "lucide-react";
 import * as Tone from "tone";
 import { saveJamSettings, type UserJamSettings, saveExtractedSection, getExtractedSections, deleteExtractedSection, renameExtractedSection, updateSectionChordAdjustments, resetSectionChordAdjustments, addSectionChord, removeSectionChord, type ExtractedSection } from "@/app/actions";
 import { ChordDisplay } from "./chord-display";
@@ -23,9 +23,11 @@ interface SessionPlayerProps {
     chordsTimeline?: { chord: string; start: number; end: number }[];
     extractedSections?: ExtractedSection[];
     impersonatedUserId?: string;
+    isAdmin?: boolean;
+    isLocal?: boolean;
 }
 
-export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, initialSettings, timeSignature, chordsTimeline = [], extractedSections: propsExtractedSections = [], impersonatedUserId }: SessionPlayerProps) {
+export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, initialSettings, timeSignature, chordsTimeline = [], extractedSections: propsExtractedSections = [], impersonatedUserId, isAdmin = false, isLocal = false }: SessionPlayerProps) {
     const [selectedTrack, setSelectedTrack] = useState<SessionTrack | null>(() => {
         if (initialSettings?.active_track) {
             const found = tracks.find(t => t.name === initialSettings.active_track);
@@ -216,7 +218,6 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
 
     // Initialize Tone.js Context
     useEffect(() => {
-        console.log("[SessionPlayer] Mounted with settings:", initialSettings);
         // Start Tone context on first user interaction if needed, but we do it on Load usually
         return () => {
 
@@ -228,7 +229,6 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                 pitchShiftEffectRef.current.dispose();
             }
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Load Track logic
@@ -655,7 +655,7 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
         }, 2000); // 2 seconds debounce
 
         return () => clearTimeout(timer);
-    }, [pitchShift, targetBpm, selectedTrack, videoId]);
+    }, [pitchShift, targetBpm, selectedTrack, videoId, impersonatedUserId]);
 
     // Auto-scroll to Chords when Loop is activated
     useEffect(() => {
@@ -758,10 +758,6 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
-    if (tracks.length === 0) {
-        return <div className="text-white text-center py-12">No audio tracks found for this session.</div>;
-    }
-
     // --- Chord Visualization Logic ---
 
     // 1. Helper to resolve renaming/hiding
@@ -822,6 +818,10 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
         // Set removes duplicates
         return Array.from(new Set([...timelineList, ...addedList]));
     }, [loopSegments, activeExtractedSection, deriveChordName]);
+
+    if (tracks.length === 0) {
+        return <div className="text-white text-center py-12">No audio tracks found for this session.</div>;
+    }
 
     return (
         <div className="flex flex-col gap-8 w-full">
@@ -1040,36 +1040,56 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                         <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1">Available Stems</h3>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                             {instrumentStems.map((track) => (
-                                <button
-                                    key={track.name}
-                                    onClick={() => setSelectedTrack(track)}
-                                    className={`
-                                        relative group overflow-hidden rounded-xl border p-4 text-left transition-all duration-200
+                                <div key={track.name} className="relative group">
+                                    <button
+                                        onClick={() => setSelectedTrack(track)}
+                                        className={`
+                                        w-full relative overflow-hidden rounded-xl border p-4 text-left transition-all duration-200
                                         ${selectedTrack?.name === track.name
-                                            ? 'bg-purple-500/20 border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
-                                            : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
-                                        }
+                                                ? 'bg-purple-500/20 border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
+                                                : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
+                                            }
                                     `}
-                                >
-                                    <div className="flex items-start justify-between mb-2">
-                                        <Music
-                                            size={20}
-                                            className={`transition-colors ${selectedTrack?.name === track.name ? 'text-purple-400' : 'text-muted-foreground group-hover:text-white'}`}
-                                        />
-                                        {selectedTrack?.name === track.name && (
-                                            <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-                                        )}
-                                    </div>
+                                    >
+                                        <div className="flex items-start justify-between mb-2">
+                                            <Music
+                                                size={20}
+                                                className={`transition-colors ${selectedTrack?.name === track.name ? 'text-purple-400' : 'text-muted-foreground group-hover:text-white'}`}
+                                            />
+                                            {selectedTrack?.name === track.name && (
+                                                <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+                                            )}
+                                        </div>
 
-                                    <div className="space-y-1">
-                                        <div className={`font-medium text-sm truncate capitalize ${selectedTrack?.name === track.name ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
-                                            {track.name.replace('other', 'Guitar & Other').replace('.mp3', '').replace(/_/g, ' ')}
+                                        <div className="space-y-1">
+                                            <div className={`font-medium text-sm truncate capitalize ${selectedTrack?.name === track.name ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                                                {track.name.replace('other', 'Guitar & Other').replace('.mp3', '').replace(/_/g, ' ')}
+                                            </div>
+                                            <div className="text-[10px] text-muted-foreground uppercase">
+                                                Instrument
+                                            </div>
                                         </div>
-                                        <div className="text-[10px] text-muted-foreground uppercase">
-                                            Instrument
-                                        </div>
-                                    </div>
-                                </button>
+                                    </button>
+                                    {isAdmin && isLocal && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const params = new URLSearchParams({
+                                                    url: track.url,
+                                                    pitch: pitchShift.toString(),
+                                                    targetBpm: targetBpm.toString(),
+                                                    baseBpm: baseBpm.toString(),
+                                                    name: `${track.name}_${pitchShift}semi_${Math.round(targetBpm)}bpm.mp3`
+                                                });
+                                                window.open(`/api/admin/download-stem?${params.toString()}`, '_blank');
+                                            }}
+                                            className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-black/40 hover:bg-black/60 text-white/50 hover:text-white transition-all opacity-0 group-hover:opacity-100 z-10"
+                                            title="Download processed (Pitch/Tempo)"
+                                        >
+                                            <Download size={14} />
+                                        </button>
+                                    )}
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -1085,44 +1105,64 @@ export function SessionPlayer({ tracks, baseBpm, baseKey, baseScale, videoId, in
                         <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1">Available Filters</h3>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                             {filterStems.map((track) => (
-                                <button
-                                    key={track.name}
-                                    onClick={() => setSelectedTrack(track)}
-                                    className={`
-                                        relative group overflow-hidden rounded-xl border p-4 text-left transition-all duration-200
+                                <div key={track.name} className="relative group">
+                                    <button
+                                        onClick={() => setSelectedTrack(track)}
+                                        className={`
+                                        w-full relative overflow-hidden rounded-xl border p-4 text-left transition-all duration-200
                                         ${selectedTrack?.name === track.name
-                                            ? 'bg-purple-500/20 border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
-                                            : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
-                                        }
-                                    `}
-                                >
-                                    <div className="flex items-start justify-between mb-2">
-                                        <div className="relative">
-                                            <Music
-                                                size={20}
-                                                className={`transition-colors ${selectedTrack?.name === track.name ? 'text-purple-400' : 'text-muted-foreground group-hover:text-white'}`}
-                                            />
-                                        </div>
-
-                                        {selectedTrack?.name === track.name && (
-                                            <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-                                        )}
-                                    </div>
-
-                                    <div className="space-y-1">
-                                        <div className={`font-medium text-sm truncate capitalize ${selectedTrack?.name === track.name ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
-                                            {track.name
-                                                .replace('no_guitar_other', 'No Guitar & Other')
-                                                .replace(/^no_/, 'No ')
-                                                .replace('.mp3', '')
-                                                .replace(/_/g, ' ')
+                                                ? 'bg-purple-500/20 border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
+                                                : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
                                             }
+                                    `}
+                                    >
+                                        <div className="flex items-start justify-between mb-2">
+                                            <div className="relative">
+                                                <Music
+                                                    size={20}
+                                                    className={`transition-colors ${selectedTrack?.name === track.name ? 'text-purple-400' : 'text-muted-foreground group-hover:text-white'}`}
+                                                />
+                                            </div>
+
+                                            {selectedTrack?.name === track.name && (
+                                                <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+                                            )}
                                         </div>
-                                        <div className="text-[10px] text-muted-foreground uppercase">
-                                            Filter
+
+                                        <div className="space-y-1">
+                                            <div className={`font-medium text-sm truncate capitalize ${selectedTrack?.name === track.name ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                                                {track.name
+                                                    .replace('no_guitar_other', 'No Guitar & Other')
+                                                    .replace(/^no_/, 'No ')
+                                                    .replace('.mp3', '')
+                                                    .replace(/_/g, ' ')
+                                                }
+                                            </div>
+                                            <div className="text-[10px] text-muted-foreground uppercase">
+                                                Filter
+                                            </div>
                                         </div>
-                                    </div>
-                                </button>
+                                    </button>
+                                    {isAdmin && isLocal && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const params = new URLSearchParams({
+                                                    url: track.url,
+                                                    pitch: pitchShift.toString(),
+                                                    targetBpm: targetBpm.toString(),
+                                                    baseBpm: baseBpm.toString(),
+                                                    name: `${track.name}_${pitchShift}semi_${Math.round(targetBpm)}bpm.mp3`
+                                                });
+                                                window.open(`/api/admin/download-stem?${params.toString()}`, '_blank');
+                                            }}
+                                            className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-black/40 hover:bg-black/60 text-white/50 hover:text-white transition-all opacity-0 group-hover:opacity-100 z-10"
+                                            title="Download processed (Pitch/Tempo)"
+                                        >
+                                            <Download size={14} />
+                                        </button>
+                                    )}
+                                </div>
                             ))}
                         </div>
                     </div>
