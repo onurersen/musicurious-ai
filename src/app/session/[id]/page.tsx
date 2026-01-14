@@ -1,4 +1,4 @@
-import { getJam, getExtractedSections } from "@/app/actions";
+import { getJam, getExtractedSections, isAdmin } from "@/app/actions";
 import { SessionPlayer } from "@/components/session-player";
 import { MusicalFlowCanvas } from "@/components/musical-flow-canvas";
 import { QuickNav } from "@/components/quick-nav";
@@ -16,6 +16,9 @@ export default async function SessionPage({
 }) {
     const { id } = await params;
     const { viewAs } = await searchParams;
+
+    const isUserAdmin = await isAdmin();
+    const isLocal = process.env.NODE_ENV === 'development';
 
     // 1. Check for legacy integer ID and redirect
     if (/^\d+$/.test(id)) {
@@ -121,6 +124,8 @@ export default async function SessionPage({
                         chordsTimeline={video.chords}
                         extractedSections={extractedSections}
                         impersonatedUserId={impersonatingUser ? viewAs : undefined}
+                        isAdmin={isUserAdmin}
+                        isLocal={isLocal}
                     />
                 </div>
 
